@@ -1,0 +1,2 @@
+# Preserve original third-party font license formatting.
+apps/client/assets/fonts/*OFL.txt whitespace=-blank-at-eol

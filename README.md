@@ -6,6 +6,8 @@ GitHub 仓库：[simon-996/simontalk](https://github.com/simon-996/simontalk)。
 
 当前阶段、完成情况和下一步统一见 [HANDOFF.md](HANDOFF.md)。技术栈中 Flutter 已确认，其余方案的决策状态见产品总纲。
 
+已建立 Flutter 客户端、FastAPI 与 PostgreSQL 账号基础，支持邀请码注册、登录、密码重设和独立练习偏好。启动、维护和检查命令见[本地开发](docs/development/local-development.md)。实时语音和学习记录尚未接入。
+
 AI 接手先读根目录 [AGENTS.md](AGENTS.md)，再读 [HANDOFF.md](HANDOFF.md)。交接文档集中维护当前阶段、最近进展、下一步、所需输入和工作边界；支持 AGENTS.md 的工具可通过该入口接手，其他工具可由用户指定先读这两个文件。
 
 给新 AI 的启动指令：“先阅读项目根目录的 AGENTS.md 和 HANDOFF.md，核对实际仓库状态，再按交接中的当前阶段与下一步继续。”
