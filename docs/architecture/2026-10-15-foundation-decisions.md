@@ -6,7 +6,7 @@
 
 | 项目 | 决定 |
 | --- | --- |
-| 首批验证 | 用户明确选择 Android 优先，同时验证 Web；iOS 保持工程支持，完整设备验证按路线推进 |
+| 首批验证 | 2026-10-16用户更新为Flutter Web优先；Android构建与设备验收暂停，保留Android/iOS工程，后续恢复时单独验证 |
 | Flutter | 使用本机 stable 3.47.5 / Dart 3.13.4，不为本次开发升级全局 SDK |
 | 客户端 | Riverpod、go_router、http；移动端凭证使用 flutter_secure_storage，Web 使用 HttpOnly Cookie |
 | 后端 | Python 3.13、uv、FastAPI、Pydantic、同步 SQLAlchemy、psycopg、Alembic |

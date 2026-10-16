@@ -1,6 +1,6 @@
 # 本地开发
 
-当前真实可用范围是账号与练习偏好。语音、反馈、记录及费用尚未接入。Android 优先，同时验证 Web；iOS 已有工程配置，尚未构建或真机验收。
+当前真实可用范围是账号与练习偏好。语音、反馈、记录及费用尚未接入。2026-10-16用户更新为 **Flutter Web优先**；Android构建与安装验收暂停，保留Android/iOS工程。
 
 ## 环境
 
@@ -59,6 +59,8 @@ python3 -m http.server 7357 --bind 127.0.0.1 --directory build/web
 
 ## Android 与 iOS
 
+**当前暂停原生构建，不作为Web开发和验收的前置条件。** 以下命令供恢复原生任务时参考；先重新评估磁盘、模板Gradle内存配置、Java和SDK环境。2026-10-16构建因磁盘不足失败，未生成APK；按用户要求清理了本轮新增下载及中间产物，未成功验证的Gradle调优也已撤回。详情见[构建与清理记录](2026-10-16-android-build-verification.md)。
+
 ```sh
 cd apps/client
 flutter devices
@@ -67,6 +69,16 @@ flutter build apk --debug --dart-define=API_BASE_URL=http://10.0.2.2:8000
 ```
 
 `10.0.2.2` 是 Android 模拟器访问开发主机的地址。已连接真机可使用 `adb reverse tcp:8000 tcp:8000`，并把 API 参数改为 `http://127.0.0.1:8000`。不要把开发数据库暴露到局域网。只有 Android debug 允许 HTTP，发布应显式配置 HTTPS API。当前模板的 release 签名仍为调试签名，不能作为正式分发包。
+
+恢复任务后，面向arm64手机的本地调试包可使用：
+
+```sh
+flutter build apk --debug --target-platform android-arm64 --dart-define=API_BASE_URL=http://127.0.0.1:8000
+```
+
+成功后的文件应位于 `apps/client/build/app/outputs/flutter-apk/app-debug.apk`，被Git忽略；目前没有该产物。这个API地址需要手机连接开发主机并执行上述`adb reverse`才可使用；将APK单独发给朋友不能连接这里的服务。构建成功后还需检查APK元数据、签名，再单独完成真机安装、登录与安全存储验收。
+
+2026-10-16 本机 SDK 未接受的协议是 `microxr-sysimage-license`，普通 Android 手机构建没有请求它。不要把 `flutter doctor` 的汇总警告当成当前构建的实际失败阶段；如构建明确请求新组件的许可，由本人阅读并处理。
 
 iOS 使用相同 Flutter 页面与 Keychain 存储；HTTP 开发地址受系统 ATS 限制，使用 HTTPS 开发服务。证书、签名、模拟器和 Keychain 真机验证留在 iOS 验收步骤处理。
 
@@ -91,4 +103,4 @@ flutter widget-preview start
 
 组件预览位于 `lib/design/account_components.dart`，只展示品牌和按钮的深浅色，不连接服务、不申请媒体权限。品牌启动图标可以用 `uv run --with pillow scripts/generate_brand_icons.py` 重新生成，脚本与 Flutter 的绘制路径保持一致。
 
-GitHub Actions 配置了独立 PostgreSQL、API 检查和 Flutter 分析/测试/Web 构建。未推送之前，只能声称工作流已配置，不能声称远端 CI 已通过。
+GitHub Actions配置了独立PostgreSQL、API检查和Flutter分析/测试/Web构建。按当前Web优先方向，已移除APK自动构建步骤。未推送之前，只能声称工作流已配置，不能声称远端CI已通过。

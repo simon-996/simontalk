@@ -56,4 +56,3 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - run: flutter build web --release --no-web-resources-cdn
-      - run: flutter build apk --debug

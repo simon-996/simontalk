@@ -4,6 +4,8 @@
 
 **Goal:** 交付真实 PostgreSQL 账号与偏好 API，以及 Android/Web 优先的 Flutter 注册、登录、初始难度和设置客户端。
 
+**后续更新（2026-10-16）：** 本计划保留首批实施记录；用户已改为Flutter Web为主、暂停Android。后续不按旧平台顺序继续下载或构建原生，最新状态见根目录HANDOFF.md。
+
 **Architecture:** 一个 Flutter 客户端、一个 FastAPI 服务和 PostgreSQL。前后端遵循固定账号契约，UI 不持有供应商密钥；Cookie/Bearer 通过平台适配分开。
 
 **Tech Stack:** Flutter 3.47.5、Riverpod、go_router、http、flutter_secure_storage；Python 3.13、uv、FastAPI、SQLAlchemy、psycopg、Alembic、PostgreSQL 17。
