@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 
 import 'dart:async';
+import 'dart:convert';
+import 'dart:ui' show CheckedState;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -20,11 +23,14 @@ void main() {
     String? token,
     Size size = const Size(390, 844),
     double scale = 1,
+    double keyboardInset = 0,
   }) async {
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
+    tester.view.viewInsets = FakeViewPadding(bottom: keyboardInset);
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
+    addTearDown(tester.view.resetViewInsets);
     final store = fixtures.MemoryTokenStore()..token = token;
     final repository = AccountRepository(
       ApiClient(
@@ -63,6 +69,79 @@ void main() {
     expect(find.text('请输入用户名'), findsOneWidget);
     expect(find.text('请输入密码'), findsOneWidget);
     expect(requests, 0);
+  });
+
+  testWidgets('page titles expose heading semantics', (tester) async {
+    await launch(
+      tester,
+      client: MockClient((_) async => http.Response('{}', 500)),
+    );
+    expect(
+      tester
+          .getSemantics(find.text('欢迎回来'))
+          .getSemanticsData()
+          .flagsCollection
+          .isHeader,
+      isTrue,
+    );
+  });
+
+  testWidgets('difficulty exposes a checked mutually exclusive choice', (
+    tester,
+  ) async {
+    await launch(
+      tester,
+      token: 'valid',
+      client: MockClient(
+        (request) async => fixtures.jsonResponse(
+          request.url.path == '/v1/me'
+              ? fixtures.user
+              : {...fixtures.preferences, 'difficulty': 'beginner'},
+          200,
+        ),
+      ),
+    );
+    final flags = tester
+        .getSemantics(find.text('轻松起步'))
+        .getSemanticsData()
+        .flagsCollection;
+    expect(flags.isChecked, CheckedState.isTrue);
+    expect(flags.isInMutuallyExclusiveGroup, isTrue);
+  });
+
+  testWidgets('arrow keys change difficulty locally until explicitly saved', (
+    tester,
+  ) async {
+    final patches = <Map<String, dynamic>>[];
+    await launch(
+      tester,
+      token: 'valid',
+      client: MockClient((request) async {
+        if (request.url.path == '/v1/me') {
+          return fixtures.jsonResponse(fixtures.user, 200);
+        }
+        if (request.method == 'PATCH') {
+          final patch = jsonDecode(request.body) as Map<String, dynamic>;
+          patches.add(patch);
+          return fixtures.jsonResponse({...patch, 'version': 2}, 200);
+        }
+        return fixtures.jsonResponse({
+          ...fixtures.preferences,
+          'difficulty': 'beginner',
+        }, 200);
+      }),
+    );
+    await tester.ensureVisible(find.text('轻松起步'));
+    Focus.of(tester.element(find.text('轻松起步'))).requestFocus();
+    await tester.pump();
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    await tester.pumpAndSettle();
+    expect(find.text('有尚未保存的修改'), findsOneWidget);
+    expect(patches, isEmpty);
+    await tester.ensureVisible(find.widgetWithText(FilledButton, '保存设置'));
+    await tester.tap(find.widgetWithText(FilledButton, '保存设置'));
+    await tester.pumpAndSettle();
+    expect(patches.single['difficulty'], 'intermediate');
   });
 
   testWidgets('login prevents a second submit while waiting', (tester) async {
@@ -276,5 +355,40 @@ void main() {
       await tester.ensureVisible(find.text('邀请码注册'));
       expect(tester.takeException(), isNull);
     });
+  }
+
+  for (final mode in ['join', 'reset']) {
+    for (final size in [const Size(320, 568), const Size(844, 390)]) {
+      testWidgets(
+        '$mode submit remains reachable at $size with 200% text and keyboard',
+        (tester) async {
+          const inset = 220.0;
+          await launch(
+            tester,
+            size: size,
+            scale: 2,
+            keyboardInset: inset,
+            client: MockClient((_) async => http.Response('{}', 500)),
+          );
+          final link = find.text(mode == 'join' ? '邀请码注册' : '忘记密码');
+          await tester.ensureVisible(link);
+          await tester.tap(link);
+          await tester.pumpAndSettle();
+          final submit = find.widgetWithText(
+            FilledButton,
+            mode == 'join' ? '创建账号' : '更新密码',
+          );
+          await tester.ensureVisible(submit);
+          await tester.tap(submit);
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(submit);
+          await tester.pumpAndSettle();
+          final rect = tester.getRect(submit);
+          expect(rect.top, greaterThanOrEqualTo(0));
+          expect(rect.bottom, lessThanOrEqualTo(size.height - inset));
+          expect(tester.takeException(), isNull);
+        },
+      );
+    }
   }
 }

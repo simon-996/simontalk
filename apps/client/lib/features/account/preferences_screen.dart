@@ -82,27 +82,35 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                 : '${session.user.displayName}，让每次交流更适合你。',
           ),
           if (state.error != null) StatusMessage(state.error!),
-          Text('对话难度', style: Theme.of(context).textTheme.titleLarge),
+          const SectionHeading('对话难度'),
           const SizedBox(height: 8),
           Text(
             '这会影响话题和表达的复杂度，不代表能力评定。',
             style: Theme.of(context).textTheme.bodySmall,
           ),
           const SizedBox(height: 20),
-          for (final difficulty in Difficulty.values) ...[
-            _DifficultyChoice(
-              value: difficulty,
-              selected: draft.difficulty == difficulty,
-              enabled: !state.busy,
-              onTap: () => setState(
-                () => _draft = draft.copyWith(difficulty: difficulty),
-              ),
+          RadioGroup<Difficulty>(
+            groupValue: draft.difficulty,
+            onChanged: (value) {
+              if (state.busy || value == null) return;
+              setState(() => _draft = draft.copyWith(difficulty: value));
+            },
+            child: Column(
+              children: [
+                for (final difficulty in Difficulty.values) ...[
+                  _DifficultyChoice(
+                    value: difficulty,
+                    selected: draft.difficulty == difficulty,
+                    enabled: !state.busy,
+                  ),
+                  const SizedBox(height: 12),
+                ],
+              ],
             ),
-            const SizedBox(height: 12),
-          ],
+          ),
           if (!widget.onboarding) ...[
             const Divider(),
-            Text('交流节奏', style: Theme.of(context).textTheme.titleLarge),
+            const SectionHeading('交流节奏'),
             const SizedBox(height: 16),
             SwitchListTile.adaptive(
               activeTrackColor: colors.primary,
@@ -119,7 +127,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
                     ),
             ),
             const Divider(),
-            Text('显示与辅助', style: Theme.of(context).textTheme.titleLarge),
+            const SectionHeading('显示与辅助'),
             const SizedBox(height: 16),
             SwitchListTile.adaptive(
               activeTrackColor: colors.primary,
@@ -195,60 +203,38 @@ class _DifficultyChoice extends StatelessWidget {
     required this.value,
     required this.selected,
     required this.enabled,
-    required this.onTap,
   });
   final Difficulty value;
   final bool selected;
   final bool enabled;
-  final VoidCallback onTap;
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    return Semantics(
-      selected: selected,
-      button: true,
-      child: Material(
-        color: selected ? colors.surfaceContainerLow : colors.surface,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: BorderSide(
-            color: selected ? colors.primary : colors.outline,
-            width: selected ? 2 : 1,
-          ),
+    return Material(
+      color: selected ? colors.surfaceContainerLow : colors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(20),
+        side: BorderSide(
+          color: selected ? colors.primary : colors.outline,
+          width: selected ? 2 : 1,
         ),
-        clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: enabled ? onTap : null,
-          child: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Icon(
-                  selected
-                      ? Icons.radio_button_checked
-                      : Icons.radio_button_off,
-                  color: selected ? colors.primary : colors.onSurfaceVariant,
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        value.label,
-                        style: Theme.of(context).textTheme.labelLarge,
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        value.description,
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: RadioListTile<Difficulty>(
+        value: value,
+        enabled: enabled,
+        selected: selected,
+        activeColor: colors.primary,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 12,
+        ),
+        title: Text(value.label, style: Theme.of(context).textTheme.labelLarge),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: Text(
+            value.description,
+            style: Theme.of(context).textTheme.bodySmall,
           ),
         ),
       ),

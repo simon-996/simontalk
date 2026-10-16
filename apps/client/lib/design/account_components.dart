@@ -167,7 +167,10 @@ class PageIntro extends StatelessWidget {
         ),
         const SizedBox(height: 40),
       ],
-      Text(title, style: Theme.of(context).textTheme.headlineMedium),
+      Semantics(
+        header: true,
+        child: Text(title, style: Theme.of(context).textTheme.headlineMedium),
+      ),
       const SizedBox(height: 12),
       Text(
         description,
@@ -176,6 +179,17 @@ class PageIntro extends StatelessWidget {
       ),
       const SizedBox(height: 32),
     ],
+  );
+}
+
+class SectionHeading extends StatelessWidget {
+  const SectionHeading(this.title, {super.key});
+  final String title;
+
+  @override
+  Widget build(BuildContext context) => Semantics(
+    header: true,
+    child: Text(title, style: Theme.of(context).textTheme.titleLarge),
   );
 }
 
@@ -265,6 +279,36 @@ Widget darkBrandPreview() => MaterialApp(
         BrandMark(),
         SizedBox(height: 24),
         PrimaryAction(label: '保存设置', onPressed: null),
+      ],
+    ),
+  ),
+);
+
+@Preview(name: '标题与错误 · 窄屏大字号', size: Size(320, 640))
+Widget accessibleStatusPreview() => _statusPreview(Brightness.light);
+
+@Preview(
+  name: '标题与错误 · 深色大字号',
+  size: Size(320, 640),
+  brightness: Brightness.dark,
+)
+Widget darkAccessibleStatusPreview() => _statusPreview(Brightness.dark);
+
+Widget _statusPreview(Brightness brightness) => MaterialApp(
+  theme: buildAppTheme(brightness),
+  builder: (context, child) => MediaQuery(
+    data: MediaQuery.of(context).copyWith(textScaler: TextScaler.linear(2)),
+    child: child!,
+  ),
+  home: const AccountFrame(
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        PageIntro(title: '练习偏好', description: '让每次交流更适合你。', brand: false),
+        SectionHeading('对话难度'),
+        SizedBox(height: 16),
+        StatusMessage('暂时无法连接服务，请检查网络后重试。'),
       ],
     ),
   ),

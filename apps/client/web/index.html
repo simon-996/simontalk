@@ -17,6 +17,7 @@
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="description" content="SimonTalk，让英语走进日常对话。">
 
@@ -31,16 +32,78 @@
 
   <title>SimonTalk</title>
   <link rel="manifest" href="manifest.json">
+  <style>
+    :root { color-scheme: light dark; --background: #f5f7f2; --foreground: #18251d; --muted: #526157; --accent: #245c45; --on-accent: #fff; }
+    @media (prefers-color-scheme: dark) {
+      :root { --background: #151c18; --foreground: #e7eee7; --muted: #bbc9bd; --accent: #a4d6b0; --on-accent: #113822; }
+    }
+    body { margin: 0; background: var(--background); }
+    #startup { position: fixed; inset: 0; z-index: 1; display: grid; place-items: center; overflow: auto; box-sizing: border-box; padding: max(24px, env(safe-area-inset-top)) max(24px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(24px, env(safe-area-inset-left)); background: var(--background); color: var(--foreground); font: 16px/1.65 system-ui, sans-serif; text-align: center; }
+    .startup-content { width: min(100%, 400px); margin: auto; }
+    .startup-brand { width: 64px; height: 64px; color: var(--accent); }
+    #startup h1 { margin: 12px 0 24px; font-size: 24px; }
+    #startup-status { color: var(--muted); overflow-wrap: anywhere; }
+    .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--muted); border-top-color: transparent; border-radius: 50%; animation: turn 1s linear infinite; }
+    #startup[data-failed] .spinner { display: none; }
+    #startup-retry { min-height: 48px; margin: 12px 0; padding: 12px 24px; border: 0; border-radius: 16px; background: var(--accent); color: var(--on-accent); font: inherit; font-weight: 600; cursor: pointer; }
+    #startup-retry:focus-visible { outline: 3px solid var(--foreground); outline-offset: 4px; }
+    @keyframes turn { to { transform: rotate(360deg); } }
+    @media (prefers-reduced-motion: reduce) { .spinner { animation: none; } }
+  </style>
 </head>
 <body>
-  <!--
-    You can customize the "flutter_bootstrap.js" script.
-    This is useful to provide a custom configuration to the Flutter loader
-    or to give the user feedback during the initialization process.
-
-    For more details:
-    * https://docs.flutter.dev/platform-integration/web/initialization
-  -->
-  <script src="flutter_bootstrap.js" async></script>
+  <main id="startup" aria-labelledby="startup-title">
+    <div class="startup-content">
+      <svg class="startup-brand" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M41 14C18 2 3 19 13 36L10 46L22 42C30 45 40 41 43 35M23 29C26 19 44 18 51 28C59 40 50 49 43 49L49 57L36 51C29 50 24 45 24 40"/>
+      </svg>
+      <h1 id="startup-title">SimonTalk</h1>
+      <span class="spinner" aria-hidden="true"></span>
+      <p id="startup-status" role="status" aria-live="polite">正在加载你的英语日常，首次打开可能需要一点时间。</p>
+      <button id="startup-retry" type="button" hidden>重新加载</button>
+      <noscript><p>需要启用 JavaScript 才能使用 SimonTalk。请启用后重新加载页面。</p></noscript>
+    </div>
+  </main>
+  <script>
+    (() => {
+      const startup = document.getElementById('startup');
+      const status = document.getElementById('startup-status');
+      const retry = document.getElementById('startup-retry');
+      let finished = false;
+      const timer = setTimeout(() => {
+        if (finished) return;
+        status.textContent = '仍在加载，你可以继续等待，或检查网络后重新加载。';
+        retry.hidden = false;
+      }, 15000);
+      const fail = () => {
+        if (finished) return;
+        clearTimeout(timer);
+        startup.setAttribute('data-failed', '');
+        status.setAttribute('role', 'alert');
+        status.setAttribute('aria-live', 'assertive');
+        status.textContent = '页面加载失败，请检查网络后重新加载。';
+        retry.hidden = false;
+      };
+      retry.addEventListener('click', () => window.location.reload());
+      window.addEventListener('simontalk-startup-error', fail);
+      const isStartupScript = (source) => {
+        if (typeof source !== 'string' || !source) return false;
+        const url = new URL(source, document.baseURI);
+        return url.origin === new URL(document.baseURI).origin &&
+          /\/(main\.dart|flutter_bootstrap)\.js$/.test(url.pathname);
+      };
+      window.addEventListener('error', (event) => {
+        if (event.target?.id === 'flutter-loader' ||
+            (event.target?.tagName === 'SCRIPT' && isStartupScript(event.target.src)) ||
+            isStartupScript(event.filename)) fail();
+      }, true);
+      window.addEventListener('flutter-first-frame', () => {
+        finished = true;
+        clearTimeout(timer);
+        startup.remove();
+      }, { once: true });
+    })();
+  </script>
+  <script id="flutter-loader" src="flutter_bootstrap.js" async></script>
 </body>
 </html>

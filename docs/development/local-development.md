@@ -57,6 +57,8 @@ python3 -m http.server 7357 --bind 127.0.0.1 --directory build/web
 
 `--no-web-resources-cdn` 加上仓库的 bootstrap 使用本地 CanvasKit；中文字体随应用分发，普通中英文界面不依赖运行时 Google 字体服务。未覆盖字符的本地回退、真实大陆网络首屏性能及缓存策略仍需验收。
 
+Web首帧前有HTML加载状态，15秒后允许继续等待或主动重载，启动资源或初始化失败有重载入口。首帧后由Flutter接管；这些状态不等于已支持离线使用。中文字体当前约17.8MB，加载优化与真实网络基线仍待完成，见[Web验证记录](2026-10-16-web-foundation-verification.md)。
+
 ## Android 与 iOS
 
 **当前暂停原生构建，不作为Web开发和验收的前置条件。** 以下命令供恢复原生任务时参考；先重新评估磁盘、模板Gradle内存配置、Java和SDK环境。2026-10-16构建因磁盘不足失败，未生成APK；按用户要求清理了本轮新增下载及中间产物，未成功验证的Gradle调优也已撤回。详情见[构建与清理记录](2026-10-16-android-build-verification.md)。
@@ -98,9 +100,12 @@ cd apps/client
 dart format --output=none --set-exit-if-changed lib test
 flutter analyze
 flutter test
+node --test test/web/startup_test.mjs
 flutter widget-preview start
 ```
 
 组件预览位于 `lib/design/account_components.dart`，只展示品牌和按钮的深浅色，不连接服务、不申请媒体权限。品牌启动图标可以用 `uv run --with pillow scripts/generate_brand_icons.py` 重新生成，脚本与 Flutter 的绘制路径保持一致。
+
+另有标题/错误的浅深色320宽、200%字号预览定义。2026-10-16实际运行Previewer时，Web服务可启动但显示“No previews detected”；没有把它视为预览验收成功。详细现象见Web验证记录，未修改SDK或把临时生成目录提交到Git。独立预览工具尚待排查，页面可继续通过widget测试和正式Web产物验证。
 
 GitHub Actions配置了独立PostgreSQL、API检查和Flutter分析/测试/Web构建。按当前Web优先方向，已移除APK自动构建步骤。未推送之前，只能声称工作流已配置，不能声称远端CI已通过。
