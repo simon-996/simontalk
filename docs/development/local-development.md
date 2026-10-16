@@ -57,7 +57,7 @@ python3 -m http.server 7357 --bind 127.0.0.1 --directory build/web
 
 `--no-web-resources-cdn` 加上仓库的 bootstrap 使用本地 CanvasKit；中文字体随应用分发，普通中英文界面不依赖运行时 Google 字体服务。未覆盖字符的本地回退、真实大陆网络首屏性能及缓存策略仍需验收。
 
-Web首帧前有HTML加载状态，15秒后允许继续等待或主动重载，启动资源或初始化失败有重载入口。首帧后由Flutter接管；这些状态不等于已支持离线使用。中文字体当前约17.8MB，加载优化与真实网络基线仍待完成，见[Web验证记录](2026-10-16-web-foundation-verification.md)。
+Web首帧前有HTML加载状态，15秒后允许继续等待或主动重载，启动资源或初始化失败有重载入口。首帧后由Flutter接管；这些状态不等于已支持离线使用。中文字体已完整压缩为约7.8MB，保留源字体全部30,890个Unicode映射和可变字重；加载前验证长度与SHA-256。WebCrypto要求HTTPS或受信任loopback，不支持局域网普通HTTP。字体工具、数据和限制见[字体说明](../../apps/client/assets/fonts/README.md)与[本轮验证](2026-10-16-web-font-verification.md)。实际大陆网络首开仍待验收。
 
 ## Android 与 iOS
 
@@ -103,6 +103,8 @@ flutter test
 node --test test/web/startup_test.mjs
 flutter widget-preview start
 ```
+
+Web字体完整性校验在仓库根目录运行`uv run scripts/check_web_fonts.py`；发布构建后用`uv run scripts/check_web_fonts.py --web-build apps/client/build/web`同时核验发布文件。此工具使用Python3.11/3.12和脚本声明的固定字体依赖，后端仍使用Python3.13。
 
 组件预览位于 `lib/design/account_components.dart`，只展示品牌和按钮的深浅色，不连接服务、不申请媒体权限。品牌启动图标可以用 `uv run --with pillow scripts/generate_brand_icons.py` 重新生成，脚本与 Flutter 的绘制路径保持一致。
 

@@ -25,10 +25,9 @@ flutter:
   assets:
     - assets/fonts/OFL.txt
     - assets/fonts/Roboto-OFL.txt
+    - path: assets/fonts/NotoSansSC.woff2
+      platforms: [web]
   fonts:
     - family: Roboto
       fonts:
         - asset: assets/fonts/Roboto.ttf
-    - family: NotoSansSC
-      fonts:
-        - asset: assets/fonts/NotoSansSC.ttf
