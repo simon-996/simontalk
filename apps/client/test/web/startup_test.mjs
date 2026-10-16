@@ -149,3 +149,15 @@ test('unrelated resource failures and late errors do not replace the app', () =>
   assert.equal(page.elements.get('startup').removed, true);
   assert.equal(page.elements.get('startup-retry').hidden, true);
 });
+
+test('optional microphone script failure is announced without blocking the app', () => {
+  const page = launch();
+  let announced = false;
+  page.window.addEventListener('simontalk-microphone-ready', () => { announced = true; });
+  page.window.dispatchEvent({type: 'error', target: {id: 'microphone-loader'}});
+  assert.equal(page.window.simontalkMicrophoneFailed, true);
+  assert.equal(announced, true);
+  assert.equal(page.elements.get('startup-retry').hidden, true);
+  page.frame();
+  assert.equal(page.elements.get('startup').removed, true);
+});

@@ -1,6 +1,6 @@
 # 本地开发
 
-当前真实可用范围是账号与练习偏好。语音、反馈、记录及费用尚未接入。2026-10-16用户更新为 **Flutter Web优先**；Android构建与安装验收暂停，保留Android/iOS工程。
+当前真实可用范围是账号、练习偏好与Web本机麦克风检查。AI实时语音、反馈、记录及费用尚未接入。2026-10-16用户更新为 **Flutter Web优先**；Android构建与安装验收暂停，保留Android/iOS工程。
 
 ## 环境
 
@@ -100,11 +100,13 @@ cd apps/client
 dart format --output=none --set-exit-if-changed lib test
 flutter analyze
 flutter test
-node --test test/web/startup_test.mjs
+node --test test/web/*_test.mjs
 flutter widget-preview start
 ```
 
 Web字体完整性校验在仓库根目录运行`uv run scripts/check_web_fonts.py`；发布构建后用`uv run scripts/check_web_fonts.py --web-build apps/client/build/web`同时核验发布文件。此工具使用Python3.11/3.12和脚本声明的固定字体依赖，后端仍使用Python3.13。
+
+Web偏好页的“麦克风检查”只在用户点击后申请音频，展示本机短时输入音量，最长30秒，不录音、不上传、不调用模型。取消/超时后的晚到授权也会释放，后台/退出/账号组件更换会停止；回前台需重新开始。真实麦克风、系统许可和手机浏览器仍待人工验收，不能用替身测试充当硬件证据。详见[本机检查验证](2026-10-17-microphone-check-verification.md)。
 
 组件预览位于 `lib/design/account_components.dart`，只展示品牌和按钮的深浅色，不连接服务、不申请媒体权限。品牌启动图标可以用 `uv run --with pillow scripts/generate_brand_icons.py` 重新生成，脚本与 Flutter 的绘制路径保持一致。
 

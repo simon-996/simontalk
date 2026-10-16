@@ -93,6 +93,15 @@
           /\/(main\.dart|flutter_bootstrap)\.js$/.test(url.pathname);
       };
       window.addEventListener('error', (event) => {
+        const optionalSource = event.filename || event.target?.src;
+        const optionalUrl = optionalSource ? new URL(optionalSource, document.baseURI) : null;
+        if (event.target?.id === 'microphone-loader' ||
+            (optionalUrl?.origin === new URL(document.baseURI).origin &&
+             /\/microphone_probe\.js$/.test(optionalUrl.pathname))) {
+          window.simontalkMicrophoneFailed = true;
+          window.dispatchEvent(new Event('simontalk-microphone-ready'));
+          return;
+        }
         if (event.target?.id === 'flutter-loader' ||
             (event.target?.tagName === 'SCRIPT' && isStartupScript(event.target.src)) ||
             isStartupScript(event.filename)) fail();
@@ -104,6 +113,7 @@
       }, { once: true });
     })();
   </script>
+  <script id="microphone-loader" src="microphone_probe.js" defer></script>
   <script id="flutter-loader" src="flutter_bootstrap.js" async></script>
 </body>
 </html>

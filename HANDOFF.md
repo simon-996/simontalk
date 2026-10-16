@@ -1,6 +1,6 @@
 # SimonTalk 项目交接
 
-最后更新：2026-10-16（Asia/Shanghai）。有实质进展时更新，并先核对实际 Git、文件和验证结果。
+最后更新：2026-10-17（Asia/Shanghai）。有实质进展时更新，并先核对实际 Git、文件和验证结果。
 
 ## 1. 一分钟理解项目
 
@@ -23,14 +23,14 @@
 | 客户端 | `apps/client/`，Android/iOS/Web；真实注册、登录、重设、初始难度、偏好保存与退出 |
 | 后端 | `services/api/`，FastAPI、PostgreSQL17、Alembic；邀请/会话/重设/偏好与CLI |
 | 本地数据 | Compose专用数据库127.0.0.1:54329；开发库`simontalk`、独立测试库`simontalk_test` |
-| 页面 | 深浅色、双弧线品牌、响应式表单、错误恢复；没有练习占位页 |
-| 检查 | 后端沿用42项记录；Flutter28项、Node启动10项通过，分析/格式与Web release构建通过；本轮新增完整字体/摘要/发布包校验通过 |
+| 页面 | 深浅色、双弧线品牌、响应式表单、错误恢复；Web本机麦克风检查；没有练习占位页 |
+| 检查 | 后端沿用42项记录；Flutter41项、Node26项通过，分析/格式与Web release构建通过；字体/摘要/发布包此前校验通过 |
 | 原生 | Android曾因磁盘不足构建失败，没有APK；已暂停并清理本轮新增资源。Android/iOS工程保留，均无设备验收证据 |
 | CI | 已配置PostgreSQL/API检查、Flutter分析/测试/Web构建；APK步骤已移除，未推送、远端未运行 |
 | 语音/学习 | 实时语音、反馈、重练、记录、用量与成本控制未实现 |
 | 生产 | 没有线上服务；TLS、正式签名、备份恢复与运维待后续 |
 
-启动、维护与检查见[本地开发](docs/development/local-development.md)，最新进展见[Web字体验证](docs/development/2026-10-16-web-font-verification.md)及[首屏与键盘验证](docs/development/2026-10-16-web-foundation-verification.md)。账号基础和Android清理记录仍保留对应历史事实。
+启动、维护与检查见[本地开发](docs/development/local-development.md)，最新进展见[本机麦克风检查验证](docs/development/2026-10-17-microphone-check-verification.md)、[Web字体验证](docs/development/2026-10-16-web-font-verification.md)及[首屏与键盘验证](docs/development/2026-10-16-web-foundation-verification.md)。账号基础和Android清理记录仍保留对应历史事实。
 
 ## 3. 已确认与工程采用
 
@@ -50,7 +50,7 @@
 
 ## 4. 下一步
 
-1. 以Flutter Web持续推进：完整中文字体已压缩56.2%，下一项做不调用模型的本机麦克风检查，复用到真实语音前置准备；权限拒绝、等待取消、晚到授权、后台与离开必须释放资源。实际手机浏览器、屏幕阅读器与大陆网络首开仍待验收，不宣称阶段2全部完成。Android构建不阻塞Web，未经新指令不重新下载原生依赖或启动模拟器。
+1. 以Flutter Web持续推进：完整字体压缩与本机麦克风检查已实现；下一项收拢真实语音接入契约与无付费调用的准入/会话生命周期基础，不能把替身或拒绝入口当成语音完成。实际麦克风、手机浏览器、屏幕阅读器与大陆网络仍待验收，不宣称阶段2全部完成。Android构建不阻塞Web，未经新指令不重新下载原生依赖或启动模拟器。
 2. 本地功能分支核对最新提交与干净状态，不擅自推送或部署；之后获推送授权时运行Web/API远端CI。
 3. 应用内浏览器预检后传输异常本轮再次出现一次；明确重试后安全凭证提示、再次提交登录及退出成功。根因未确定，未调整CORS/CSRF、不自动重放，继续观察。
 4. 模型账号/地域/预算明确后推进最小真实语音闭环，实测插话、断线、释放、上游终止与计量，有证据后增加练习页。
@@ -91,6 +91,6 @@
 
 本批见[实施计划](docs/superpowers/plans/2026-10-15-account-foundation.md)，后续对照[交互](docs/design/2026-10-15-screen-and-interaction-spec.md)、[视觉](docs/design/2026-10-15-visual-design-spec.md)和[验证](docs/validation/2026-10-15-validation-plan.md)。本机已安装Flutter响应式/预览/布局排查与UI/UX Pro Max，另有design-taste-frontend；它们不随Git克隆自动安装，也不构成产品验收。
 
-最近工作：完整中文字体17,772,300→7,782,072字节，字符/轮廓/变体/元数据和发布包校验通过；Web专用加载与长度/SHA-256校验、404/200错误内容/等长损坏真实故障验证；独立复核P2已修复，无剩余P1/P2。此前Web首屏恢复、键盘、大字号28项Flutter/10项Node通过。Previewer启动但未识别注解，不算验收通过，临时脚手架已清理。Android失败后已按要求清理约1.79GiB新增资源，继续Web优先。
+最近工作：Web本机麦克风检查接入偏好页，等待/取消/30秒上限、晚到许可、后台、账号销毁和上下文中断清理；可选脚本延迟就绪可恢复，浏览器实际35秒延迟验证。Flutter41项/Node26项、分析与release通过；独立复核两项P2已修复，无剩余P1/P2。硬件未采集、未接受权限；完整中文字体此前压缩56.2%，保留30,890映射/字重并校验摘要。Previewer未识别注解，非验收通过；Android新增资源已清理约1.79GiB，继续Web优先。
 
 后续交接更新完成内容/证据、剩余问题、可执行下一步、缺少输入和提交/推送/部署状态。用户最新指令优先，不沿用旧阶段边界。

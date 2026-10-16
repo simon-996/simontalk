@@ -56,7 +56,7 @@ jobs:
           version: '0.11.8'
           python-version: '3.12'
       - run: flutter pub get --enforce-lockfile
-      - run: node --test test/web/startup_test.mjs
+      - run: node --test test/web/*_test.mjs
       - run: dart format --output=none --set-exit-if-changed lib test
       - run: flutter analyze
       - run: flutter test
