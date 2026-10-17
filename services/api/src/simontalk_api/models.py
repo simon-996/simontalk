@@ -6,6 +6,7 @@ from sqlalchemy import (
     CheckConstraint,
     DateTime,
     ForeignKey,
+    ForeignKeyConstraint,
     Index,
     Integer,
     String,
@@ -18,6 +19,15 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from simontalk_api.db import Base
+
+OCCUPIED_CONNECTION_STATES = (
+    "preparing",
+    "negotiating",
+    "configuring",
+    "ready",
+    "closing",
+    "unknown",
+)
 
 
 class User(Base):
@@ -110,11 +120,14 @@ class PracticeSession(Base):
     request_digest: Mapped[str] = mapped_column(String(64))
     mode: Mapped[str] = mapped_column(String(16))
     status: Mapped[str] = mapped_column(String(16), server_default="created")
+    connection_epoch: Mapped[int] = mapped_column(Integer, server_default="0")
     configuration: Mapped[dict] = mapped_column(JSONB)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     __table_args__ = (
         UniqueConstraint("user_id", "creation_key", name="practice_creation_key"),
+        UniqueConstraint("id", "user_id", name="practice_id_owner"),
+        CheckConstraint("connection_epoch >= 0", name="practice_connection_epoch"),
         CheckConstraint("mode = 'free_chat'", name="practice_mode"),
         CheckConstraint(
             "status IN ('created','connecting','active','interrupted',"
@@ -128,5 +141,67 @@ class PracticeSession(Base):
             postgresql_where=text(
                 "status IN ('created','connecting','active','interrupted','ending')"
             ),
+        ),
+    )
+
+
+class RealtimeConnection(Base):
+    __tablename__ = "realtime_connections"
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    session_id: Mapped[uuid.UUID] = mapped_column()
+    user_id: Mapped[uuid.UUID] = mapped_column()
+    creation_key: Mapped[uuid.UUID] = mapped_column()
+    request_digest: Mapped[str] = mapped_column(String(64))
+    client_instance_id: Mapped[uuid.UUID] = mapped_column()
+    epoch: Mapped[int] = mapped_column(Integer)
+    configuration: Mapped[dict] = mapped_column(JSONB)
+    status: Mapped[str] = mapped_column(String(16), server_default="preparing")
+    termination_status: Mapped[str] = mapped_column(String(16), server_default="not_started")
+    state_reason: Mapped[str | None] = mapped_column(String(48))
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    lease_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["session_id", "user_id"],
+            ["practice_sessions.id", "practice_sessions.user_id"],
+            name="connection_practice_owner",
+            ondelete="CASCADE",
+        ),
+        UniqueConstraint("user_id", "creation_key", name="connection_creation_key"),
+        UniqueConstraint("session_id", "epoch", name="connection_epoch"),
+        CheckConstraint("epoch > 0", name="positive_connection_epoch"),
+        CheckConstraint(
+            "status IN ('preparing','negotiating','configuring','ready',"
+            "'closing','closed','failed','unknown')",
+            name="connection_status",
+        ),
+        CheckConstraint(
+            "termination_status IN ('not_started','unknown','confirmed')",
+            name="connection_termination_status",
+        ),
+        CheckConstraint(
+            "(status='preparing' AND termination_status='not_started') OR "
+            "(status IN ('negotiating','configuring','ready','closing','unknown') "
+            "AND termination_status='unknown') OR "
+            "(status IN ('closed','failed') AND termination_status IN ('not_started','confirmed'))",
+            name="connection_termination_evidence",
+        ),
+        CheckConstraint(
+            "(status IN ('closed','failed')) = (ended_at IS NOT NULL)",
+            name="connection_ended_at",
+        ),
+        Index(
+            "one_open_connection_per_user",
+            "user_id",
+            unique=True,
+            postgresql_where=text("status NOT IN ('closed','failed')"),
+        ),
+        Index(
+            "one_open_connection_per_practice",
+            "session_id",
+            unique=True,
+            postgresql_where=text("status NOT IN ('closed','failed')"),
         ),
     )

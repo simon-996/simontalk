@@ -22,7 +22,7 @@
 
 快照分别保存原始偏好与effective_difficulty，临时覆盖不改写个人设置。重放登记不代表当前媒体准入仍然开放，未来每次真正建连都须重新鉴权与准入。锁后再次检查身份，拒绝等待期间已禁用/撤销的会话；已经通过身份检查的在途业务写入可能与退出并行，退出不是取消所有在途操作或终止上游的证据。
 
-状态允许总纲中的created/connecting/active/interrupted/ending/completed/cancelled/failed；当前端点只能创建与取消未建连准备。未来调用供应商前，必须在事务中先把created改为connecting；只有确定未调用上游的created可走本取消接口。无法确认终止时保留占用，不能因业务标记或超时重新允许付费连接。
+状态允许总纲中的created/connecting/active/interrupted/ending/completed/cancelled/failed；本端点只能创建与取消未建连准备。[连接登记与租约](2026-10-17-connection-reservations-api.md)已实现：练习详情包含connection_epoch，登记连接时事务性进入connecting，只有所有尝试均确定未调用上游且已安全终结时可回created。本取消接口同时检查连接占用与上游历史。无法确认终止时保留占用，不能因业务标记或超时重新允许付费连接；即使父状态异常终结，未知连接仍独立阻止新练习。
 
 将来实现删除时必须保留幂等键的删除墓碑，防止迟到重试重建已删练习；本批没有删除接口，也没有清空历史。没有可靠练习内容时不产生复盘、成绩或已完成记录。
 

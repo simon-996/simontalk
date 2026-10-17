@@ -4,6 +4,7 @@ import sys
 from sqlalchemy.exc import SQLAlchemyError
 
 from simontalk_api.config import Settings
+from simontalk_api.connections import expire_connection_leases
 from simontalk_api.db import create_database
 from simontalk_api.maintenance import disable_user, issue_invite, issue_reset
 
@@ -16,6 +17,10 @@ def main():
     commands.add_parser("disable", help="Disable an account and revoke sessions").add_argument(
         "username"
     )
+    scan = commands.add_parser(
+        "expire-connections", help="Expire business leases without claiming upstream termination"
+    )
+    scan.add_argument("--limit", type=int, default=100, choices=range(1, 1001), metavar="1..1000")
     args = parser.parse_args()
     engine, factory = create_database(Settings().database_url)
     try:
@@ -24,9 +29,13 @@ def main():
                 result = issue_invite(db)
             elif args.command == "reset":
                 result = issue_reset(db, args.username)
-            else:
+            elif args.command == "disable":
                 disable_user(db, args.username)
                 result = "Account disabled."
+            else:
+                result = (
+                    f"Expired connection leases: {expire_connection_leases(db, limit=args.limit)}."
+                )
         # Single-use credentials are printed once, only after a successful commit.
         print(result)
     except (ValueError, SQLAlchemyError):

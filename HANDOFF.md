@@ -12,7 +12,7 @@
 
 ## 2. 当前阶段与边界
 
-**第2阶段账号/偏好、Web首屏与本机麦克风检查已实现；第3阶段准备登记、WebRTC传输底层与Flutter桥接已实现，真实浏览器合成输入回环通过。阶段2完整设备验收、供应商真实语音与学习闭环均未完成。**
+**第2阶段账号/偏好、Web首屏与本机麦克风检查已实现；第3阶段准备登记、连接代次/业务租约、WebRTC传输底层与Flutter桥接已实现，真实浏览器合成输入回环通过。阶段2完整设备验收、供应商真实语音与学习闭环均未完成。**
 
 用户已要求“开始吧”和多次“继续”，允许应用工程及本地验证。**2026-10-17最新指令：按照建议路线持续开发，不逐项汇报和确认；需要本人确认或更改的部分先跳过，待后续补齐后再实施。以Flutter Web为主，暂停Android构建和安装。** 常规可逆工程选择直接执行，验证与边界持续写入本文件；未提供的模型账号与预算不能由持续开发授权推定，付费连接仍关闭，不推送远端、不对外部署。物理设备许可、账号/预算及真实手机条件暂缓，不反复提问，也不阻塞其他工程工作。
 
@@ -21,16 +21,16 @@
 | 仓库 | `/Users/simon/workplace/projects/simontalk`，origin为`https://github.com/simon-996/simontalk.git` |
 | Git | main保留文档基线`71ecbe0`；当前`feat/account-foundation`，核对最新日志/状态；未推送 |
 | 客户端 | `apps/client/`，真实账号/偏好；Web麦克风检查和WebRTC传输/Dart桥接；原生工程保留 |
-| 后端 | `services/api/`，FastAPI、PostgreSQL17、Alembic；账号与CLI、准备登记/快照/幂等/并发；真实语音准入固定关闭 |
+| 后端 | `services/api/`，FastAPI/PostgreSQL17/Alembic；账号、练习/连接准备、代次、幂等/并发与租约扫描CLI；真实语音准入固定关闭 |
 | 本地数据 | Compose专用数据库127.0.0.1:54329；开发库`simontalk`、独立测试库`simontalk_test` |
 | 页面 | 深浅色、双弧线品牌、响应式表单、错误恢复；Web本机麦克风检查；没有练习占位页 |
-| 检查 | 本轮Flutter43项/Node51项、分析、Web release、字体、六项组件预览和真实浏览器合成回环通过；此前后端62项/准备20项及Ruff/Alembic通过，本轮未重跑后端 |
+| 检查 | 本轮后端91项（含连接29项）、Ruff、开发/测试库Alembic及真实HTTP鉴权通过；此前Flutter43项/Node51项、分析/构建/字体、六项预览及合成回环通过，本轮未重跑客户端 |
 | 原生 | Android曾因磁盘不足构建失败，没有APK；已暂停并清理本轮新增资源。Android/iOS工程保留，均无设备验收证据 |
 | CI | 已配置PostgreSQL/API检查、Flutter分析/测试/Web构建；APK步骤已移除，未推送、远端未运行 |
 | 语音/学习 | Web媒体底层已实现但未接练习页；供应商语音、反馈、重练、记录、用量与成本控制未实现 |
 | 生产 | 没有线上服务；TLS、正式签名、备份恢复与运维待后续 |
 
-启动、维护与检查见[本地开发](docs/development/local-development.md)，最新进展见[预览字体验证](docs/development/2026-10-17-preview-font-verification.md)、[WebRTC传输验证](docs/development/2026-10-17-web-realtime-transport-verification.md)、[准备登记验证](docs/development/2026-10-17-practice-preparation-verification.md)和[麦克风检查](docs/development/2026-10-17-microphone-check-verification.md)。账号基础、首屏/键盘和Android清理保留历史记录。
+启动、维护与检查见[本地开发](docs/development/local-development.md)，最新进展见[连接与租约验证](docs/development/2026-10-17-connection-reservations-verification.md)、[预览字体验证](docs/development/2026-10-17-preview-font-verification.md)、[WebRTC传输验证](docs/development/2026-10-17-web-realtime-transport-verification.md)、[准备登记验证](docs/development/2026-10-17-practice-preparation-verification.md)和[麦克风检查](docs/development/2026-10-17-microphone-check-verification.md)。账号基础、首屏/键盘和Android清理保留历史记录。
 
 ## 3. 已确认与工程采用
 
@@ -50,7 +50,7 @@
 
 ## 4. 下一步
 
-1. 以Flutter Web持续推进：准备登记与WebRTC传输底层已实现。后续按技术设计补受鉴权的连接尝试代次/租约、供应商能力/事件映射与持久观测；准入仍503，不用测试许可开放真实连接。模型/预算或设备条件不足的任务先跳过，继续不依赖它们的工程；原生构建/下载/模拟器继续暂停。
+1. 以Flutter Web持续推进：练习/连接登记、代次/业务租约与传输底层已实现。下一批连接客户端业务生命周期与传输层，补代次隔离、配置确认、后台/业务失联释放及受限信令接口；再落实供应商能力/事件映射与持久观测。准入仍503，不用测试许可开放真实连接；模型/预算/设备条件不足的任务先跳过，原生继续暂停。
 2. 本地功能分支核对最新提交与干净状态，不擅自推送或部署；之后获推送授权时运行Web/API远端CI。
 3. 应用内浏览器预检后传输异常本轮再次出现一次；明确重试后安全凭证提示、再次提交登录及退出成功。根因未确定，未调整CORS/CSRF、不自动重放，继续观察。
 4. 待用户后续补齐账号/地域/预算与设备条件，再做物理麦克风及最小供应商语音闭环，实测插话、断线、释放、上游终止与计量，有证据后增加练习页。当前不主动索要重复确认，不把这些暂缓项冒充完成。
@@ -67,7 +67,7 @@
 | --- | --- |
 | 1方案准备 | 工程前置落实；模型、费用与真机条件在对应任务前补齐 |
 | 2工程底座 | 账号/偏好、首屏恢复、键盘选择与六项组件预览通过；Web性能与完整浏览器验收未完成，原生暂停 |
-| 3真实语音 | 准备登记、默认拒绝、Web传输底层及合成输入回环通过；供应商语音、模型事件、费用与终止实测缺失 |
+| 3真实语音 | 练习/连接登记、代次/业务租约、默认拒绝、Web传输底层及合成回环通过；客户端业务协调、供应商语音/事件、费用与终止实测缺失 |
 | 4学习闭环 | 未开始 |
 | 5可靠性/成本 | 未开始 |
 | 6Web交付与朋友试用 | 未开始；原生分发暂停 |
@@ -91,6 +91,6 @@
 
 本批见[实施计划](docs/superpowers/plans/2026-10-15-account-foundation.md)，后续对照[交互](docs/design/2026-10-15-screen-and-interaction-spec.md)、[视觉](docs/design/2026-10-15-visual-design-spec.md)和[验证](docs/validation/2026-10-15-validation-plan.md)。本机已安装Flutter响应式/预览/布局排查与UI/UX Pro Max，另有design-taste-frontend；它们不随Git克隆自动安装，也不构成产品验收。
 
-最近工作：WebRTC传输与Dart桥接及真实IAB合成静音回环通过；待定播放阻塞激活P2已修复，22项定向复核无剩余P1/P2。随后修复独立Previewer字体初始化/中文标题，实际6项预览可见；全量Flutter43项、Node51项与分析/构建/字体检查通过。未申请物理麦克风、未连接供应商；后端、开发库与真实503策略未改，本轮未重跑后端。原生继续暂停。Previewer旧空注册本轮未复现，连续热重载仍有SDK错误，冷启动可用，未修改SDK。当前功能分支本地保存，未推送/部署；详见上述验证记录。
+最近工作：连接准备、单调epoch、45秒业务租约、幂等/并发和保守到期扫描CLI；91项后端（29项定向）、Ruff/格式、开发/测试库Alembic通过，独立静态复核无确定P1/P2。开发库head为8e637f95bca1，API已重启；实际HTTP新接口匿名401，仍1账号/0练习/0连接，扫描0条。未知上游继续占用，扫描未自动调度且不终止媒体。客户端本轮未改；此前字体预览、WebRTC合成回环及43/51项证据仍保留。物理/模型验证暂缓；原生暂停，Previewer连续热重载SDK限制仍在。当前功能分支本地保存，未推送/部署。
 
 后续交接更新完成内容/证据、剩余问题、可执行下一步、缺少输入和提交/推送/部署状态。用户最新指令优先，不沿用旧阶段边界。

@@ -73,7 +73,7 @@
 
 阿里云文档明确区分 WebRTC 媒体轨道与 DataChannel，并要求 AppServer 参与 SDP 鉴权；它不提供专用 WebRTC SDK。[官方 WebRTC 接入说明](https://help.aliyun.com/zh/model-studio/realtime-webrtc-access)与 [flutter_webrtc 包说明](https://pub.dev/packages/flutter_webrtc)分别证明接口和组件能力，不能代替这两者在本项目三端上的集成验证。
 
-2026-10-17工程推进：当前Web优先阶段使用浏览器原生RTCPeerConnection和Dart JS interop，暂不增加原生依赖。已实现的是供应商无关的传输底层`RealtimeTransport`：一次信令、客户端/服务端事件通道、显式配置确认后的上行、静音、播放观察与本地关闭。`start`只表示传输及事件通道可用；供应商适配器收到配置确认后调用`activate`。激活完成与实际播放独立；`playback_waiting`/`playback_blocked`不冒充播放成功，`local_closed`不代表上游费用终止。完整领域`RealtimeSession`、供应商事件映射和业务连接代次仍待实现，不能把底层直接接到页面当成真实练习。[底层设计](../superpowers/specs/2026-10-17-web-realtime-transport-design.md)与[验证边界](../development/2026-10-17-web-realtime-transport-verification.md)。
+2026-10-17工程推进：当前Web优先阶段使用浏览器原生RTCPeerConnection和Dart JS interop，暂不增加原生依赖。已实现供应商无关的传输底层`RealtimeTransport`，以及后端[连接准备登记/代次与业务租约](2026-10-17-connection-reservations-api.md)。底层`start`只表示传输及事件通道可用；供应商适配器收到配置确认后调用`activate`。激活完成与实际播放独立；`playback_waiting`/`playback_blocked`不冒充播放成功，`local_closed`不代表上游费用终止。完整领域`RealtimeSession`、供应商事件映射、SDP网关与客户端业务连接协调仍待实现，不能把底层直接接到页面当成真实练习。[底层设计](../superpowers/specs/2026-10-17-web-realtime-transport-design.md)与[验证边界](../development/2026-10-17-web-realtime-transport-verification.md)。
 
 ### 3.2 开始一次练习
 
@@ -136,6 +136,8 @@
 | 反馈任务 | pending / running / retry_wait / succeeded / failed / cancelled；独立于练习完成状态 |
 
 服务端根据事件推进持久业务状态，但直连媒体状态主要来自客户端观测，应保留来源。业务后端失联时，客户端建议暂停拾音并主动关闭媒体；这是降低意外消耗的客户端行为，不能证明服务器已经终止上游计费。
+
+当前业务连接登记分配服务端单调epoch并保存公开配置；45秒业务租约到期时，只有preparing/not_started能安全终结，已进入或无法确认上游的状态转unknown并继续占用。扫描器有真实CLI入口但没有自动周期调度；它不终止媒体或结算费用。当前新登记真实准入仍固定503，其他媒体状态仅有未来集成契约及明确测试种子。[接口与约束](2026-10-17-connection-reservations-api.md)。
 
 ### 5.2 用户轮次和 AI 已播放文字
 
@@ -236,7 +238,7 @@ User → 多个 PracticeSession → 多个 RealtimeConnection / Turn；PracticeS
 | GET / PATCH /v1/me/preferences | PATCH 含 difficulty、speech_pace、subtitle_default、chinese_hints_enabled、translation_mode 中的允许字段及期望 version | 200 偏好与新 version；版本冲突 409；首版 translation_mode 仅 on_demand；显示开关可立即生效，生成策略用于新练习，不修改当前或历史快照 |
 | GET /v1/topics | 可选分页/类别 | 200 可用的日常主题，不接受自定义上游提示词 |
 | POST /v1/practice-sessions | topic_id 或 free_chat、可选难度覆盖；Idempotency-Key | 201 session_id、快照、准入结果；同 key 返回原练习 |
-| POST /v1/practice-sessions/{sid}/connections | client_instance_id、恢复意图；Idempotency-Key | 201 connection_id、epoch、供应商公开配置；无长期密钥；旧连接未知时可拒绝自动新建 |
+| POST /v1/practice-sessions/{sid}/connections | client_instance_id、expected_epoch；Idempotency-Key | 201连接准备对象、epoch及公开配置；真实准入仍关闭；旧连接未知时拒绝新建，详见实际契约 |
 | POST /v1/practice-sessions/{sid}/connections/{cid}/sdp | application/sdp Offer；同一尝试的幂等键 | 200 application/sdp Answer；错误为 JSON；校验本人/代次/状态，不成为通用代理 |
 | POST /v1/practice-sessions/{sid}/connections/{cid}/events | 有界批次的稳定事件 ID、sequence、生命周期/播放观测 | 200 已确认水位；重复事件忽略；客户端用量标记来源 |
 | PUT /v1/practice-sessions/{sid}/turns/{tid} | connection_id、epoch、revision、最终文字及播放证据 | 200 新版本或同版本原结果；同版本不同内容 409；拒绝封存后静默改写 |

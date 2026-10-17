@@ -10,6 +10,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
 from simontalk_api.config import Settings
+from simontalk_api.connection_routes import router as connection_router
 from simontalk_api.db import create_database
 from simontalk_api.errors import APIError
 from simontalk_api.practice import UnavailableAdmission
@@ -117,4 +118,5 @@ def create_app(settings: Settings | None = None):
 
     app.include_router(router)
     app.include_router(practice_router)
+    app.include_router(connection_router)
     return app

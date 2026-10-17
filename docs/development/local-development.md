@@ -32,11 +32,12 @@ uv run uvicorn simontalk_api.main:create_app --factory --host 127.0.0.1 --port 8
 uv run simontalk-admin invite
 uv run simontalk-admin reset username
 uv run simontalk-admin disable username
+uv run simontalk-admin expire-connections --limit 100
 ```
 
 邀请单次 72 小时；重设凭证单次 15 分钟。凭证仅显示一次，不写入 Git。前台不自动发短信、邮件，也不提供远程管理员 API。更多身份与生产配置见 [API 说明](../../services/api/README.md)。
 
-更新后运行`uv run alembic upgrade head`，新增练习准备表，当前head为`2acda42539f0`。API源码修改后须重启本地Uvicorn，启动命令未启用自动重载。真实运行的练习创建默认503且不写数据；测试策略仅用于独立测试库，不能通过环境变量开启没有接入的语音服务。详见[准备登记验证](2026-10-17-practice-preparation-verification.md)。
+更新后运行`uv run alembic upgrade head`，练习/连接准备均有持久表，当前head为`8e637f95bca1`。API源码修改后须重启本地Uvicorn，启动命令未启用自动重载。真实运行的新练习/连接准入固定503；测试策略仅用于独立测试库，不能通过环境变量开启没有接入的语音服务。连接扫描CLI只处理业务租约，未开始上游可安全终结，上游未知继续占用；没有自动周期调度或媒体终止能力。详见[准备登记验证](2026-10-17-practice-preparation-verification.md)与[连接租约验证](2026-10-17-connection-reservations-verification.md)。
 
 ## Flutter Web
 

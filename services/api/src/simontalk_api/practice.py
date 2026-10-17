@@ -7,7 +7,12 @@ from pydantic import ConfigDict
 from sqlalchemy import select
 
 from simontalk_api.errors import APIError
-from simontalk_api.models import PracticeSession, UserPreferences
+from simontalk_api.models import (
+    OCCUPIED_CONNECTION_STATES,
+    PracticeSession,
+    RealtimeConnection,
+    UserPreferences,
+)
 from simontalk_api.schemas import InputModel, PreferencesOutput
 from simontalk_api.security import digest, now
 
@@ -39,6 +44,7 @@ class PracticeOutput(InputModel):
     id: UUID
     mode: str
     status: str
+    connection_epoch: int
     configuration: dict
     created_at: datetime
     ended_at: datetime | None
@@ -68,7 +74,15 @@ def create_preparation(db, user_id, payload: PracticeInput, key, admission: Prac
         )
         .limit(1)
     )
-    if active is not None:
+    connection = db.scalar(
+        select(RealtimeConnection.id)
+        .where(
+            RealtimeConnection.user_id == user_id,
+            RealtimeConnection.status.in_(OCCUPIED_CONNECTION_STATES),
+        )
+        .limit(1)
+    )
+    if active is not None or connection is not None:
         raise APIError(409, "practice_in_progress", "已有练习尚未结束，请先处理当前练习。")
     preferences = db.get(UserPreferences, user_id)
     if preferences.difficulty is None:
@@ -117,6 +131,17 @@ def cancel_preparation(db, user_id, session_id):
         raise APIError(
             409, "preparation_not_cancellable", "练习已进入建连或结束处理，无法作为准备取消。"
         )
+    unsafe = db.scalar(
+        select(RealtimeConnection.id)
+        .where(
+            RealtimeConnection.session_id == practice.id,
+            (RealtimeConnection.status.in_(OCCUPIED_CONNECTION_STATES))
+            | (RealtimeConnection.termination_status != "not_started"),
+        )
+        .limit(1)
+    )
+    if unsafe is not None:
+        raise APIError(409, "preparation_not_cancellable", "连接尚未安全结束，无法取消练习准备。")
     practice.status = "cancelled"
     practice.ended_at = now()
     db.commit()
