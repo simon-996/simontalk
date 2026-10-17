@@ -36,7 +36,16 @@ class ApiClient {
     String method,
     String path, {
     Map<String, dynamic>? body,
+    String? accountId,
+    String? idempotencyKey,
   }) async {
+    void checkAccount() {
+      if (accountId != null && expectedAccountId != accountId) {
+        throw const ApiException('account_changed', '当前账号已变化，请确认身份后再操作。');
+      }
+    }
+
+    checkAccount();
     final mutating = method != 'GET';
     if (isWeb && mutating && _csrf == null) {
       final response = await request('GET', '/v1/auth/csrf');
@@ -45,17 +54,22 @@ class ApiClient {
         throw const ApiException('invalid_response', '服务响应异常，请稍后重试。');
       }
     }
+    checkAccount();
     final headers = <String, String>{'Accept': 'application/json'};
-    if (expectedAccountId != null &&
+    if (accountId != null) {
+      headers['X-Account-ID'] = accountId;
+    } else if (expectedAccountId != null &&
         (path == '/v1/me/preferences' || path == '/v1/auth/logout')) {
       headers['X-Account-ID'] = expectedAccountId!;
     }
+    if (idempotencyKey != null) headers['Idempotency-Key'] = idempotencyKey;
     if (body != null) headers['Content-Type'] = 'application/json';
     if (isWeb && mutating) headers['X-CSRF-Token'] = _csrf!;
     if (!isWeb) {
       final token = await tokenStore.read();
       if (token != null) headers['Authorization'] = 'Bearer $token';
     }
+    checkAccount();
     try {
       final request = http.Request(method, baseUrl.resolve(path));
       request.headers.addAll(headers);
@@ -63,6 +77,7 @@ class ApiClient {
       final response = await (() async => http.Response.fromStream(
         await _client.send(request),
       ))().timeout(timeout);
+      checkAccount();
       if (response.statusCode == 204) return {};
       Map<String, dynamic> data;
       try {
@@ -106,6 +121,11 @@ class ApiClient {
     'reset_invalid' => '重设凭证无效、已使用或已过期，请联系维护者重新获取。',
     'validation_error' => '请检查填写内容后重试。',
     'rate_limited' => '操作太频繁，请稍后再试。',
+    'realtime_unavailable' => '实时语音尚未就绪，暂时无法开始练习。',
+    'practice_in_progress' ||
+    'connection_in_progress' => '已有练习或连接尚未安全结束，请先处理当前练习。',
+    'connection_lease_expired' => '连接租约已到期，请确认当前状态后重新准备。',
+    'practice_configuration_changed' => '语音配置已更改，请重新准备练习。',
     _ => '服务暂时不可用，请稍后重试。',
   };
 }

@@ -1,0 +1,221 @@
+import '../account/account_models.dart';
+
+bool isPracticeUuid(String value) => RegExp(
+  r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
+).hasMatch(value);
+
+String _uuid(dynamic value) {
+  if (value is! String || !isPracticeUuid(value)) throw const FormatException();
+  return value.toLowerCase();
+}
+
+int _integer(dynamic value, int minimum) {
+  if (value is! int || value < minimum || value > 2147483647) {
+    throw const FormatException();
+  }
+  return value;
+}
+
+DateTime _time(dynamic value) {
+  if (value is! String || !RegExp(r'(Z|[+-]\d{2}:\d{2})$').hasMatch(value)) {
+    throw const FormatException();
+  }
+  return DateTime.parse(value).toUtc();
+}
+
+T _parse<T>(T Function() read) {
+  try {
+    return read();
+  } on Object {
+    throw const FormatException('Invalid practice response');
+  }
+}
+
+enum PracticeStatus {
+  created,
+  connecting,
+  active,
+  interrupted,
+  ending,
+  completed,
+  cancelled,
+  failed,
+}
+
+enum ConnectionStatus {
+  preparing,
+  negotiating,
+  configuring,
+  ready,
+  closing,
+  unknown,
+  closed,
+  failed,
+}
+
+enum TerminationStatus { notStarted, unknown, confirmed }
+
+class ProviderConfiguration {
+  ProviderConfiguration.fromJson(Map<String, dynamic> json)
+    : provider = _label(json['provider']),
+      region = _label(json['region']),
+      model = _label(json['model']),
+      configId = _label(json['config_id']);
+  final String provider;
+  final String region;
+  final String model;
+  final String configId;
+
+  static String _label(dynamic value) {
+    if (value is! String || value.isEmpty || value.length > 256) {
+      throw const FormatException();
+    }
+    return value;
+  }
+
+  bool matches(ProviderConfiguration other) =>
+      provider == other.provider &&
+      region == other.region &&
+      model == other.model &&
+      configId == other.configId;
+}
+
+class PracticeConfiguration {
+  PracticeConfiguration._(
+    this.preferences,
+    this.effectiveDifficulty,
+    this.provider,
+  );
+  factory PracticeConfiguration.fromJson(Map<String, dynamic> json) =>
+      _parse(() {
+        if (json['schema_version'] != 1) throw const FormatException();
+        final raw = json['preferences'] as Map<String, dynamic>;
+        final preferences = AccountPreferences.fromJson(raw);
+        if (preferences.difficulty == null ||
+            preferences.version < 1 ||
+            !['slow', 'normal'].contains(preferences.speechPace) ||
+            raw['translation_mode'] != 'on_demand') {
+          throw const FormatException();
+        }
+        return PracticeConfiguration._(
+          preferences,
+          Difficulty.values.byName(json['effective_difficulty'] as String),
+          ProviderConfiguration.fromJson(
+            json['provider'] as Map<String, dynamic>,
+          ),
+        );
+      });
+  final AccountPreferences preferences;
+  final Difficulty effectiveDifficulty;
+  final ProviderConfiguration provider;
+}
+
+class PracticePreparation {
+  PracticePreparation._(
+    this.id,
+    this.status,
+    this.connectionEpoch,
+    this.configuration,
+    this.createdAt,
+    this.endedAt,
+  );
+  factory PracticePreparation.fromJson(Map<String, dynamic> json) => _parse(() {
+    if (json['mode'] != 'free_chat') throw const FormatException();
+    return PracticePreparation._(
+      _uuid(json['id']),
+      PracticeStatus.values.byName(json['status'] as String),
+      _integer(json['connection_epoch'], 0),
+      PracticeConfiguration.fromJson(
+        json['configuration'] as Map<String, dynamic>,
+      ),
+      _time(json['created_at']),
+      json['ended_at'] == null ? null : _time(json['ended_at']),
+    );
+  });
+  final String id;
+  final PracticeStatus status;
+  final int connectionEpoch;
+  final PracticeConfiguration configuration;
+  final DateTime createdAt;
+  final DateTime? endedAt;
+}
+
+class ConnectionReservation {
+  ConnectionReservation._(
+    this.id,
+    this.sessionId,
+    this.clientInstanceId,
+    this.epoch,
+    this.configuration,
+    this.status,
+    this.terminationStatus,
+    this.stateReason,
+    this.createdAt,
+    this.lastSeenAt,
+    this.leaseExpiresAt,
+    this.endedAt,
+  );
+  factory ConnectionReservation.fromJson(Map<String, dynamic> json) =>
+      _parse(() {
+        final status = ConnectionStatus.values.byName(json['status'] as String);
+        final termination = switch (json['termination_status']) {
+          'not_started' => TerminationStatus.notStarted,
+          'unknown' => TerminationStatus.unknown,
+          'confirmed' => TerminationStatus.confirmed,
+          _ => throw const FormatException(),
+        };
+        final terminal = [
+          ConnectionStatus.closed,
+          ConnectionStatus.failed,
+        ].contains(status);
+        final ended = json['ended_at'] == null ? null : _time(json['ended_at']);
+        final validEvidence = status == ConnectionStatus.preparing
+            ? termination == TerminationStatus.notStarted
+            : terminal
+            ? termination != TerminationStatus.unknown
+            : termination == TerminationStatus.unknown;
+        final created = _time(json['created_at']);
+        final lastSeen = _time(json['last_seen_at']);
+        final expires = _time(json['lease_expires_at']);
+        if (!validEvidence ||
+            terminal != (ended != null) ||
+            lastSeen.isBefore(created) ||
+            !expires.isAfter(lastSeen)) {
+          throw const FormatException();
+        }
+        return ConnectionReservation._(
+          _uuid(json['id']),
+          _uuid(json['session_id']),
+          _uuid(json['client_instance_id']),
+          _integer(json['epoch'], 1),
+          ProviderConfiguration.fromJson(
+            json['configuration'] as Map<String, dynamic>,
+          ),
+          status,
+          termination,
+          json['state_reason'] as String?,
+          created,
+          lastSeen,
+          expires,
+          ended,
+        );
+      });
+  final String id;
+  final String sessionId;
+  final String clientInstanceId;
+  final int epoch;
+  final ProviderConfiguration configuration;
+  final ConnectionStatus status;
+  final TerminationStatus terminationStatus;
+  final String? stateReason;
+  final DateTime createdAt;
+  final DateTime lastSeenAt;
+  final DateTime leaseExpiresAt;
+  final DateTime? endedAt;
+  bool get canCancel =>
+      status == ConnectionStatus.preparing &&
+      terminationStatus == TerminationStatus.notStarted;
+  bool get safelyEnded =>
+      endedAt != null && terminationStatus != TerminationStatus.unknown;
+  Duration get leaseDuration => leaseExpiresAt.difference(lastSeenAt);
+}

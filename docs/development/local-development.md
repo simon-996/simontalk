@@ -113,6 +113,8 @@ Web偏好页的“麦克风检查”只在用户点击后申请音频，展示�
 
 WebRTC生产传输底层与Dart桥接已实现，尚未接到练习页或供应商。Node检查包含Dart→JS桥接编译；`test/web/realtime_loopback.html`可在独立本地开发服务中执行真实WebRTC回环，输入为合成静音，不申请物理麦克风、不调用模型。它不进入发布包，不作为真实语音或费用验收。步骤与边界见[传输层验证](2026-10-17-web-realtime-transport-verification.md)。
 
+`lib/features/practice/`提供真实HTTP仓库和准备生命周期，按账号绑定原始幂等键、单调代次及业务续租；后台/停止仅安全取消未开始信令的登记，失败需明确恢复，不自动重连。provider目前尚未被练习页面消费，创建作用域不自动请求API或麦克风；后端真实准入仍固定503。`flutter test test/features/practice`验证HTTP/时钟替身成功路径，不能作为真实模型或硬件证据。契约与限制见[客户端准备生命周期](../architecture/2026-10-17-client-preparation-lifecycle.md)与[本轮验证](2026-10-17-client-preparation-verification.md)。
+
 组件预览位于 `lib/design/account_components.dart`，只展示品牌和按钮的深浅色，不连接服务、不申请媒体权限。品牌启动图标可以用 `uv run --with pillow scripts/generate_brand_icons.py` 重新生成，脚本与 Flutter 的绘制路径保持一致。
 
 另有标题/错误及麦克风失败/等待的浅深色320宽、200%字号预览。2026-10-17默认Previewer实际发现6项，修复独立入口的包资产字体初始化后，卡片与外层标题中文均实际可见；此前空注册问题本轮未复现，不推定其根因。可运行`flutter widget-preview start --web-server --offline`并访问终端地址。连续更新时SDK热重载可能报错，字体缓存变化或报错后采用全局热重启/冷启动。未修改SDK或提交生成目录；证据与限制见[预览字体验证](2026-10-17-preview-font-verification.md)。
