@@ -1,7 +1,20 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import Boolean, CheckConstraint, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import (
+    Boolean,
+    CheckConstraint,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+    func,
+    text,
+)
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from simontalk_api.db import Base
@@ -87,3 +100,33 @@ class RateLimitBucket(Base):
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     attempts: Mapped[int] = mapped_column(Integer)
     __table_args__ = (CheckConstraint("attempts > 0", name="positive_attempts"),)
+
+
+class PracticeSession(Base):
+    __tablename__ = "practice_sessions"
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    creation_key: Mapped[uuid.UUID] = mapped_column()
+    request_digest: Mapped[str] = mapped_column(String(64))
+    mode: Mapped[str] = mapped_column(String(16))
+    status: Mapped[str] = mapped_column(String(16), server_default="created")
+    configuration: Mapped[dict] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    __table_args__ = (
+        UniqueConstraint("user_id", "creation_key", name="practice_creation_key"),
+        CheckConstraint("mode = 'free_chat'", name="practice_mode"),
+        CheckConstraint(
+            "status IN ('created','connecting','active','interrupted',"
+            "'ending','completed','cancelled','failed')",
+            name="practice_status",
+        ),
+        Index(
+            "one_open_practice_per_user",
+            "user_id",
+            unique=True,
+            postgresql_where=text(
+                "status IN ('created','connecting','active','interrupted','ending')"
+            ),
+        ),
+    )

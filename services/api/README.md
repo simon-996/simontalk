@@ -2,6 +2,8 @@
 
 Python 3.13+、uv、FastAPI、同步 SQLAlchemy/psycopg 与 PostgreSQL 17。账号与个人偏好使用真实数据库，服务启动不自动创建表；必须先执行 Alembic 迁移。
 
+另有供应商无关的练习准备登记：所有权、偏好快照、UUID幂等键和单用户并发保护。真实语音准入固定关闭，创建返回503 `realtime_unavailable`且不写练习；没有环境开关能启用空服务，也没有供应商调用。成功路径只通过独立测试库中的明确策略替身验证。接口与未来媒体边界见[准备登记契约](../../docs/architecture/2026-10-17-practice-preparation-api.md)。
+
 ## 本地启动
 
 从仓库根目录启动专用开发数据库：
@@ -60,3 +62,5 @@ uv run alembic check
 首次在仓库根目录执行 `docker compose -f deploy/compose.yaml exec -T db createdb -U simontalk simontalk_test` 建立独立测试库；已存在时跳过。
 
 测试覆盖邀请/偏好/重设的并发原子性、凭证摘要、用户隔离、过期/撤销/禁用、Cookie/CSRF/Origin、生产 Secure、持久限流容量与清理、敏感信息脱敏以及真实数据库断连时的 readiness。
+
+练习准备测试另覆盖同/异幂等键并发、数据库唯一约束、快照不变、跨应用实例重放、持锁期间撤销/禁用、取消和建连状态竞争。连接尝试、实际终止、转写和费用尚未实现；取消准备不能用于关闭已建媒体。

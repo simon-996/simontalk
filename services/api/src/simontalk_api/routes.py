@@ -3,6 +3,7 @@ from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
+from simontalk_api.db import database_session
 from simontalk_api.errors import APIError
 from simontalk_api.models import AuthSession, Invite, PasswordResetGrant, User, UserPreferences
 from simontalk_api.rate_limit import rate_limit
@@ -31,11 +32,6 @@ from simontalk_api.security import (
 )
 
 router = APIRouter(prefix="/v1")
-
-
-def database_session(request: Request):
-    with request.app.state.session_factory() as db:
-        yield db
 
 
 def auth_output(user, token, platform, response, settings):

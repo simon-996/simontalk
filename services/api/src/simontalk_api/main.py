@@ -12,6 +12,8 @@ from starlette.exceptions import HTTPException
 from simontalk_api.config import Settings
 from simontalk_api.db import create_database
 from simontalk_api.errors import APIError
+from simontalk_api.practice import UnavailableAdmission
+from simontalk_api.practice_routes import router as practice_router
 from simontalk_api.routes import router
 
 logger = logging.getLogger(__name__)
@@ -40,13 +42,20 @@ def error_response(request, status, code, message):
 def create_app(settings: Settings | None = None):
     app = FastAPI(title="SimonTalk API", docs_url=None, redoc_url=None, openapi_url=None)
     app.state.settings = settings or Settings()
+    app.state.practice_admission = UnavailableAdmission()
     app.state.engine, app.state.session_factory = create_database(app.state.settings.database_url)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=app.state.settings.allowed_origins,
         allow_credentials=True,
         allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
-        allow_headers=["Content-Type", "Authorization", "X-CSRF-Token", "X-Account-ID"],
+        allow_headers=[
+            "Content-Type",
+            "Authorization",
+            "X-CSRF-Token",
+            "X-Account-ID",
+            "Idempotency-Key",
+        ],
         expose_headers=["X-Request-ID"],
     )
 
@@ -107,4 +116,5 @@ def create_app(settings: Settings | None = None):
         return {"status": "ok"}
 
     app.include_router(router)
+    app.include_router(practice_router)
     return app
