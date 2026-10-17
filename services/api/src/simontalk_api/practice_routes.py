@@ -13,6 +13,7 @@ from simontalk_api.practice import (
     create_preparation,
     own_preparation,
 )
+from simontalk_api.practice_recovery import PracticeRecoveryOutput, current_preparation
 from simontalk_api.security import protect_mutation, session_identity
 
 router = APIRouter(prefix="/v1/practice-sessions")
@@ -37,6 +38,12 @@ def create(
     return create_preparation(
         db, user.id, payload, idempotency_key, request.app.state.practice_admission
     )
+
+
+@router.get("/current", response_model=PracticeRecoveryOutput)
+def current(request: Request, db: Session = Depends(database_session)):
+    user = session_identity(request, db)[1]
+    return current_preparation(db, user.id)
 
 
 @router.get("/{session_id}", response_model=PracticeOutput)

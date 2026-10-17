@@ -63,6 +63,12 @@ class PracticeRepository {
   }
 
   Future<PracticePreparation> loadPractice(String id) => _practice('GET', id);
+  Future<PracticeRecovery> loadCurrentPreparation() async =>
+      _read<PracticeRecovery>(
+        await _request('GET', '/v1/practice-sessions/current'),
+        PracticeRecovery.fromJson,
+        (_) => true,
+      );
   Future<PracticePreparation> cancelPractice(String id) =>
       _practice('POST', id, '/cancel-preparation');
   Future<PracticePreparation> _practice(

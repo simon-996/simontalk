@@ -44,6 +44,7 @@ class PracticeOutput(InputModel):
     id: UUID
     mode: str
     status: str
+    state_reason: str | None
     connection_epoch: int
     configuration: dict
     created_at: datetime
@@ -143,6 +144,7 @@ def cancel_preparation(db, user_id, session_id):
     if unsafe is not None:
         raise APIError(409, "preparation_not_cancellable", "连接尚未安全结束，无法取消练习准备。")
     practice.status = "cancelled"
+    practice.state_reason = "cancelled_before_signalling"
     practice.ended_at = now()
     db.commit()
     return practice

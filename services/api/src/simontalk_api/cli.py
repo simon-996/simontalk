@@ -7,10 +7,11 @@ from simontalk_api.config import Settings
 from simontalk_api.connections import expire_connection_leases
 from simontalk_api.db import create_database
 from simontalk_api.maintenance import disable_user, issue_invite, issue_reset
+from simontalk_api.practice_maintenance import run_maintenance_batch
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Local SimonTalk account maintenance")
+    parser = argparse.ArgumentParser(description="Local SimonTalk maintenance")
     commands = parser.add_subparsers(dest="command", required=True)
     commands.add_parser("invite", help="Issue a single-use 72-hour invitation")
     commands.add_parser("reset", help="Issue a 15-minute reset grant").add_argument("username")
@@ -21,9 +22,22 @@ def main():
         "expire-connections", help="Expire business leases without claiming upstream termination"
     )
     scan.add_argument("--limit", type=int, default=100, choices=range(1, 1001), metavar="1..1000")
+    cleanup = commands.add_parser(
+        "cleanup-preparations", help="Run bounded connection and unused preparation cleanup"
+    )
+    cleanup.add_argument(
+        "--limit", type=int, default=100, choices=range(1, 1001), metavar="1..1000"
+    )
     args = parser.parse_args()
     engine, factory = create_database(Settings().database_url)
     try:
+        if args.command == "cleanup-preparations":
+            counts = run_maintenance_batch(factory, limit=args.limit)
+            print(
+                f"Expired connection leases: {counts.connections_expired}; "
+                f"expired preparations: {counts.preparations_expired}."
+            )
+            return
         with factory.begin() as db:
             if args.command == "invite":
                 result = issue_invite(db)

@@ -118,6 +118,7 @@ class PracticePreparation {
     this.configuration,
     this.createdAt,
     this.endedAt,
+    this.stateReason,
   );
   factory PracticePreparation.fromJson(Map<String, dynamic> json) => _parse(() {
     if (json['mode'] != 'free_chat') throw const FormatException();
@@ -130,6 +131,7 @@ class PracticePreparation {
       ),
       _time(json['created_at']),
       json['ended_at'] == null ? null : _time(json['ended_at']),
+      json['state_reason'] as String?,
     );
   });
   final String id;
@@ -138,6 +140,48 @@ class PracticePreparation {
   final PracticeConfiguration configuration;
   final DateTime createdAt;
   final DateTime? endedAt;
+  final String? stateReason;
+}
+
+/// Identity-scoped recovery evidence. It does not grant this client a lease.
+class PracticeRecovery {
+  PracticeRecovery._(this.practice, this.connection);
+  factory PracticeRecovery.fromJson(Map<String, dynamic> json) => _parse(() {
+    if (!json.containsKey('practice') || !json.containsKey('connection')) {
+      throw const FormatException();
+    }
+    final practice = json['practice'] == null
+        ? null
+        : PracticePreparation.fromJson(
+            json['practice'] as Map<String, dynamic>,
+          );
+    final connection = json['connection'] == null
+        ? null
+        : ConnectionReservation.fromJson(
+            json['connection'] as Map<String, dynamic>,
+          );
+    if (connection != null &&
+        (practice == null ||
+            connection.sessionId != practice.id ||
+            connection.epoch > practice.connectionEpoch ||
+            !connection.configuration.matches(
+              practice.configuration.provider,
+            ))) {
+      throw const FormatException();
+    }
+    if (practice != null &&
+        [
+          PracticeStatus.completed,
+          PracticeStatus.cancelled,
+          PracticeStatus.failed,
+        ].contains(practice.status) &&
+        (connection == null || connection.safelyEnded)) {
+      throw const FormatException();
+    }
+    return PracticeRecovery._(practice, connection);
+  });
+  final PracticePreparation? practice;
+  final ConnectionReservation? connection;
 }
 
 class ConnectionReservation {

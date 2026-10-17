@@ -241,4 +241,73 @@ void main() {
       isFalse,
     );
   });
+
+  test(
+    'current recovery is one account-bound GET with no CSRF, keys or mutations',
+    () async {
+      handler = (_) async => response({'practice': null, 'connection': null});
+      final result = await repository.loadCurrentPreparation();
+      expect(result.practice, isNull);
+      expect(result.connection, isNull);
+      expect(requests.length, 1);
+      expect(requests.single.method, 'GET');
+      expect(requests.single.url.path, '/v1/practice-sessions/current');
+      expect(requests.single.headers['X-Account-ID'], accountId);
+      expect(requests.single.headers.containsKey('Idempotency-Key'), isFalse);
+      expect(requests.single.body, isEmpty);
+    },
+  );
+
+  test(
+    'current recovery preserves other client identity without taking ownership',
+    () async {
+      handler = (_) async => response({
+        'practice': practiceJson(status: 'connecting', epoch: 1),
+        'connection': connectionJson(instance: requestKey),
+      });
+      final result = await repository.loadCurrentPreparation();
+      expect(result.practice!.connectionEpoch, 1);
+      expect(result.connection!.clientInstanceId, requestKey);
+      expect(requests.length, 1);
+    },
+  );
+
+  test('recovery rejects malformed shape, unrelated connection, future epoch and configuration', () async {
+    for (final invalid in [
+      <String, dynamic>{},
+      {'practice': null, 'connection': connectionJson()},
+      {
+        'practice': practiceJson(epoch: 1),
+        'connection': {...connectionJson(), 'session_id': requestKey},
+      },
+      {'practice': practiceJson(), 'connection': connectionJson()},
+      {
+        'practice': practiceJson(epoch: 1),
+        'connection': {
+          ...connectionJson(),
+          'configuration': {...providerJson, 'model': 'other'},
+        },
+      },
+    ]) {
+      handler = (_) async => response(invalid);
+      await expectLater(
+        repository.loadCurrentPreparation(),
+        code('invalid_response'),
+      );
+    }
+  });
+
+  test('recovery exposes expired preparation reason and unknown occupancy under terminal parent', () async {
+    handler = (_) async => response({
+      'practice': {
+        ...practiceJson(status: 'cancelled', epoch: 1),
+        'state_reason': 'preparation_expired',
+      },
+      'connection': connectionJson(status: 'unknown', termination: 'unknown'),
+    });
+    final result = await repository.loadCurrentPreparation();
+    expect(result.practice!.stateReason, 'preparation_expired');
+    expect(result.connection!.status, ConnectionStatus.unknown);
+    expect(result.connection!.canCancel, isFalse);
+  });
 }

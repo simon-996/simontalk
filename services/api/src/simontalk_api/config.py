@@ -16,6 +16,9 @@ class Settings(BaseSettings):
     register_ip_limit: int = Field(default=10, ge=1)
     reset_ip_limit: int = Field(default=10, ge=1)
     rate_limit_window_seconds: int = Field(default=600, ge=1)
+    practice_maintenance_interval_seconds: float = Field(
+        default=15, ge=1, le=300, allow_inf_nan=False
+    )
 
     @model_validator(mode="after")
     def validate_security(self):

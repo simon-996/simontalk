@@ -33,11 +33,12 @@ uv run simontalk-admin invite
 uv run simontalk-admin reset username
 uv run simontalk-admin disable username
 uv run simontalk-admin expire-connections --limit 100
+uv run simontalk-admin cleanup-preparations --limit 100
 ```
 
 邀请单次 72 小时；重设凭证单次 15 分钟。凭证仅显示一次，不写入 Git。前台不自动发短信、邮件，也不提供远程管理员 API。更多身份与生产配置见 [API 说明](../../services/api/README.md)。
 
-更新后运行`uv run alembic upgrade head`，练习/连接准备均有持久表，当前head为`8e637f95bca1`。API源码修改后须重启本地Uvicorn，启动命令未启用自动重载。真实运行的新练习/连接准入固定503；测试策略仅用于独立测试库，不能通过环境变量开启没有接入的语音服务。连接扫描CLI只处理业务租约，未开始上游可安全终结，上游未知继续占用；没有自动周期调度或媒体终止能力。详见[准备登记验证](2026-10-17-practice-preparation-verification.md)与[连接租约验证](2026-10-17-connection-reservations-verification.md)。
+更新后运行`uv run alembic upgrade head`，练习/连接准备均有持久表，当前head为`c43a7de028f1`（新增准备结束原因和清理索引）。API源码修改后须重启本地Uvicorn，启动命令未启用自动重载。真实运行的新练习/连接准入固定503；测试策略仅用于独立测试库，不能通过环境变量开启没有接入的语音服务。正常API lifespan现每15秒自动执行一批连接租约和300秒闲置准备清理，间隔可由`SIMONTALK_PRACTICE_MAINTENANCE_INTERVAL_SECONDS`设为1–300秒；手动完整批次使用cleanup-preparations。未开始上游可安全终结，上游未知继续占用；进程关闭期间不调度，没有媒体终止能力。详见[准备登记验证](2026-10-17-practice-preparation-verification.md)、[连接租约验证](2026-10-17-connection-reservations-verification.md)与[恢复清理验证](2026-10-17-preparation-recovery-verification.md)。
 
 ## Flutter Web
 
@@ -113,7 +114,7 @@ Web偏好页的“麦克风检查”只在用户点击后申请音频，展示�
 
 WebRTC生产传输底层与Dart桥接已实现，尚未接到练习页或供应商。Node检查包含Dart→JS桥接编译；`test/web/realtime_loopback.html`可在独立本地开发服务中执行真实WebRTC回环，输入为合成静音，不申请物理麦克风、不调用模型。它不进入发布包，不作为真实语音或费用验收。步骤与边界见[传输层验证](2026-10-17-web-realtime-transport-verification.md)。
 
-`lib/features/practice/`提供真实HTTP仓库和准备生命周期，按账号绑定原始幂等键、单调代次及业务续租；后台/停止仅安全取消未开始信令的登记，失败需明确恢复，不自动重连。provider目前尚未被练习页面消费，创建作用域不自动请求API或麦克风；后端真实准入仍固定503。`flutter test test/features/practice`验证HTTP/时钟替身成功路径，不能作为真实模型或硬件证据。契约与限制见[客户端准备生命周期](../architecture/2026-10-17-client-preparation-lifecycle.md)与[本轮验证](2026-10-17-client-preparation-verification.md)。
+`lib/features/practice/`提供真实HTTP仓库和准备生命周期，按账号绑定原始幂等键、单调代次及业务续租，并可只读读取当前登记；后台/停止仅安全取消未开始信令的登记，失败需明确恢复，不自动重连。provider目前尚未被练习页面消费，创建作用域不自动请求API或麦克风；后端真实准入仍固定503。`flutter test test/features/practice`验证HTTP/时钟替身成功路径，不能作为真实模型或硬件证据。契约与限制见[客户端准备生命周期](../architecture/2026-10-17-client-preparation-lifecycle.md)、[准备验证](2026-10-17-client-preparation-verification.md)与[恢复清理验证](2026-10-17-preparation-recovery-verification.md)。
 
 组件预览位于 `lib/design/account_components.dart`，只展示品牌和按钮的深浅色，不连接服务、不申请媒体权限。品牌启动图标可以用 `uv run --with pillow scripts/generate_brand_icons.py` 重新生成，脚本与 Flutter 的绘制路径保持一致。
 

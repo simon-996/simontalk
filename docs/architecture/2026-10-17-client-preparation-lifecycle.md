@@ -6,8 +6,8 @@
 
 | 文件 | 责任 |
 | --- | --- |
-| practice_models.dart | 只读练习快照/公开配置/连接对象，解析UUID、代次、枚举、带时区时间和终止证据组合 |
-| practice_repository.dart | 固定accountId；7项创建/详情/取消/续租操作直接调用现有HTTP契约，核对返回归属/代次/配置 |
+| practice_models.dart | 只读练习快照/公开配置/连接对象/当前登记恢复，解析UUID、代次、枚举、带时区时间和终止证据组合 |
+| practice_repository.dart | 固定accountId；8项创建/详情/取消/续租/当前登记读取直接调用现有HTTP契约，核对返回归属/代次/配置 |
 | practice_preparation_controller.dart | 单个准备流程、创建键、内存恢复、15秒串行续租与保守截止、后台停止和安全取消 |
 | practice_providers.dart | 随登录账号绑定的autoDispose provider，创建作用域时不自动登记；目前尚未被练习页面消费 |
 
@@ -29,7 +29,7 @@ ApiClient的专用accountId和idempotencyKey参数分别写X-Account-ID与Idempo
 
 普通网络失败后，`retry()`复用原键和payload；不能调用begin生成第二套登记。停止后的retry只补齐曾发送但没有结果的登记，再立即安全取消：丢失练习结果不会顺便创建连接；丢失连接结果复用原连接key和expected_epoch。该恢复不启动续租或媒体。并发retry共享串行工作，不重复取消。账号改变时旧作用域不向新身份发清理操作。
 
-在途响应晚到且身份仍匹配时会补做清理；超时后的未知结果需明确重试。键和原输入目前只在内存，刷新/进程退出后的持久恢复、按key只读查询及服务器自动清理仍待后续。整个应用关闭可能先关闭HTTP客户端，异步取消不能保证送达；不能声称退出应用或取消数据库准备已终止供应商媒体。
+在途响应晚到且身份仍匹配时会补做清理；超时后的未知结果需明确重试。键和原输入目前只在内存。已提供loadCurrentPreparation只读读取服务器当前占用，并有服务端定期安全清理；页面消费、按原key恢复未知请求及跨进程持久操作恢复仍待后续。读取其他客户端实例不自动接管/续租/取消，详见[恢复与清理](2026-10-17-preparation-recovery-and-cleanup.md)。整个应用关闭可能先关闭HTTP客户端，异步取消不能保证送达；不能声称退出应用或取消数据库准备已终止供应商媒体。
 
 ## 验证边界
 

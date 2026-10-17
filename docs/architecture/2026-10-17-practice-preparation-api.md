@@ -16,6 +16,7 @@
 | --- | --- |
 | POST /v1/practice-sessions | JSON `mode: free_chat`、可选`difficulty_override`；必须UUID格式Idempotency-Key。成功201；同用户同key且规范化输入一致返回原登记及原快照，输入不同409 `idempotency_conflict` |
 | GET /v1/practice-sessions/{sid} | 200本人准备状态与快照；他人/不存在404 `practice_not_found`，不返回SDP或凭证 |
+| GET /v1/practice-sessions/current | 200本人当前练习及最新/占用连接，空时practice/connection均null；单SQL只读、不续租、不接管，未知占用优先 |
 | POST /v1/practice-sessions/{sid}/cancel-preparation | 无body；只允许`created`取消为`cancelled`，重复返回同一终态；已进入建连/活动/未知终止状态409 `preparation_not_cancellable`，不声称上游已停 |
 
 同用户创建请求通过锁定User行序列化，数据库部分唯一索引再次保证只能一个未终结练习。已有相同幂等登记先重放，再检查新请求准入；不同key不得绕过并发限制，409 `practice_in_progress`。没有自动按客户端计时释放未知连接。偏好更新不会修改已有快照。
@@ -25,6 +26,8 @@
 状态允许总纲中的created/connecting/active/interrupted/ending/completed/cancelled/failed；本端点只能创建与取消未建连准备。[连接登记与租约](2026-10-17-connection-reservations-api.md)已实现：练习详情包含connection_epoch，登记连接时事务性进入connecting，只有所有尝试均确定未调用上游且已安全终结时可回created。本取消接口同时检查连接占用与上游历史。无法确认终止时保留占用，不能因业务标记或超时重新允许付费连接；即使父状态异常终结，未知连接仍独立阻止新练习。
 
 将来实现删除时必须保留幂等键的删除墓碑，防止迟到重试重建已删练习；本批没有删除接口，也没有清空历史。没有可靠练习内容时不产生复盘、成绩或已完成记录。
+
+PracticeOutput现包含nullable state_reason；主动准备取消为cancelled_before_signalling。正常API生命周期已定期清理从未调用上游、无占用且闲置300秒的created准备，原因preparation_expired；保留行/原key，旧key重放终态。详情及当前登记查询边界见[恢复与清理](2026-10-17-preparation-recovery-and-cleanup.md)。
 
 ## 验证
 

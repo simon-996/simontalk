@@ -6,6 +6,8 @@ Python 3.13+、uv、FastAPI、同步 SQLAlchemy/psycopg 与 PostgreSQL 17。账�
 
 连接准备登记、单调代次与45秒业务租约也已实现，沿用同一关闭准入。只有确定未开始上游的准备可安全取消或到期终结；上游未知继续占用，不能依赖本地停止或租约推断费用终止。详见[连接契约](../../docs/architecture/2026-10-17-connection-reservations-api.md)。
 
+另有`GET /v1/practice-sessions/current`按本人身份只读恢复当前登记；API正常lifespan每15秒自动执行一批连接租约及300秒闲置准备清理，未知/历史上游继续保留。详见[恢复与清理契约](../../docs/architecture/2026-10-17-preparation-recovery-and-cleanup.md)。
+
 ## 本地启动
 
 从仓库根目录启动专用开发数据库：
@@ -30,11 +32,12 @@ uv run simontalk-admin invite
 uv run simontalk-admin reset alice
 uv run simontalk-admin disable alice
 uv run simontalk-admin expire-connections --limit 100
+uv run simontalk-admin cleanup-preparations --limit 100
 ```
 
 CLI 依赖本地数据库环境权限，不提供远程管理员 API。邀请和重设命令在事务提交后只打印一次凭证，请通过用户已授权的渠道交给本人；数据库仅保存 SHA-256 摘要。邀请单次有效 72 小时，重设单次有效 15 分钟；重设成功立即撤销该用户全部登录会话与其他重设凭证。禁用账号立即阻止身份查询与登录。
 
-`expire-connections`扫描单批到期业务租约，limit为1–1000，跳过持锁对象并在锁后重查，提交后仅打印数量；上游未知不释放占用。此命令没有自动周期调度，也不会断开供应商媒体。
+`expire-connections`只扫描单批到期业务租约；`cleanup-preparations`执行和后台相同的完整批次。limit为1–1000，跳过持锁对象并在锁后重查，提交后只打印数量；上游未知不释放占用，也不会断开供应商媒体。自动任务需API lifespan启用，进程停止期间不执行；readiness目前只验证数据库。
 
 ## 身份与错误
 
@@ -49,6 +52,8 @@ CLI 依赖本地数据库环境权限，不提供远程管理员 API。邀请和
 ## 配置与生产边界
 
 配置均以 `SIMONTALK_` 开头，支持 `.env`。`SIMONTALK_DATABASE_URL` 必须使用 `postgresql+psycopg://`。`SIMONTALK_ALLOWED_ORIGINS` 使用 JSON 数组，禁止通配符、路径和用户名；开发模式只允许 `localhost` / `127.0.0.1` 来源。`SIMONTALK_ENVIRONMENT=production` 强制 Secure Cookie 并要求来源 HTTPS。生产必须显式设置数据库凭证与允许来源，提供 HTTPS 终止及同站点 Web/API 域名。
+
+`SIMONTALK_PRACTICE_MAINTENANCE_INTERVAL_SECONDS`默认15秒，范围1–300；每进程一条串行线程和独立数据库池，单批事务/SQL/锁等待分别受局部5秒/2秒/100毫秒限制。失败回滚后下轮重试，关闭服务最多等待线程10秒；不要把后台业务清理视为供应商终止或计费控制。
 
 部署反向代理前，限流使用实际 socket IP，不信任未经配置的 `X-Forwarded-For`。生产网络、代理信任链、TLS、备份恢复、监控和真实设备验收仍属于后续部署验证。当前 API 不调用模型、不发送短信或邮件。
 

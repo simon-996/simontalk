@@ -1,5 +1,7 @@
+import asyncio
 import logging
 import uuid
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -14,6 +16,7 @@ from simontalk_api.connection_routes import router as connection_router
 from simontalk_api.db import create_database
 from simontalk_api.errors import APIError
 from simontalk_api.practice import UnavailableAdmission
+from simontalk_api.practice_maintenance import PracticeMaintenanceRunner
 from simontalk_api.practice_routes import router as practice_router
 from simontalk_api.routes import router
 
@@ -41,7 +44,25 @@ def error_response(request, status, code, message):
 
 
 def create_app(settings: Settings | None = None):
-    app = FastAPI(title="SimonTalk API", docs_url=None, redoc_url=None, openapi_url=None)
+    @asynccontextmanager
+    async def lifespan(application):
+        runner = PracticeMaintenanceRunner(
+            application.state.settings.database_url,
+            interval_seconds=application.state.settings.practice_maintenance_interval_seconds,
+        )
+        application.state.practice_maintenance = runner
+        runner.start()
+        try:
+            yield
+        finally:
+            try:
+                await asyncio.to_thread(runner.stop)
+            finally:
+                application.state.engine.dispose()
+
+    app = FastAPI(
+        title="SimonTalk API", docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan
+    )
     app.state.settings = settings or Settings()
     app.state.practice_admission = UnavailableAdmission()
     app.state.engine, app.state.session_factory = create_database(app.state.settings.database_url)
