@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/widgets.dart';
 
 import '../../core/api_client.dart';
+import '../../core/random_uuid.dart';
 import '../account/account_models.dart';
 import 'practice_models.dart';
 import 'practice_repository.dart';
@@ -31,9 +31,9 @@ class PracticePreparationController extends ChangeNotifier
 
   final PracticeRepository repository;
   final Duration Function() _elapsed;
-  final String clientInstanceId = _uuid();
-  final String _practiceKey = _uuid();
-  final String _connectionKey = _uuid();
+  final String clientInstanceId = randomUuid();
+  final String _practiceKey = randomUuid();
+  final String _connectionKey = randomUuid();
   PreparationPhase _phase = PreparationPhase.idle;
   PreparationPhase get phase => _phase;
   String? _errorCode;
@@ -59,15 +59,6 @@ class PracticePreparationController extends ChangeNotifier
   static Duration Function() _clock() {
     final clock = Stopwatch()..start();
     return () => clock.elapsed;
-  }
-
-  static String _uuid() {
-    final random = Random.secure();
-    final bytes = List<int>.generate(16, (_) => random.nextInt(256));
-    bytes[6] = (bytes[6] & 0x0f) | 0x40;
-    bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    final hex = bytes.map((b) => b.toRadixString(16).padLeft(2, '0')).join();
-    return '${hex.substring(0, 8)}-${hex.substring(8, 12)}-${hex.substring(12, 16)}-${hex.substring(16, 20)}-${hex.substring(20)}';
   }
 
   bool _active(int generation) =>

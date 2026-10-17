@@ -116,7 +116,7 @@ WebRTC生产传输底层与Dart桥接已实现，尚未接到练习页或供应�
 
 `lib/features/practice/`提供真实HTTP仓库和准备生命周期，按账号绑定原始幂等键、单调代次及业务续租，并可只读读取当前登记；后台/停止仅安全取消未开始信令的登记，失败需明确恢复，不自动重连。provider目前尚未被练习页面消费，创建作用域不自动请求API或麦克风；后端真实准入仍固定503。`flutter test test/features/practice`验证HTTP/时钟替身成功路径，不能作为真实模型或硬件证据。契约与限制见[客户端准备生命周期](../architecture/2026-10-17-client-preparation-lifecycle.md)、[准备验证](2026-10-17-client-preparation-verification.md)与[恢复清理验证](2026-10-17-preparation-recovery-verification.md)。
 
-`lib/features/realtime/api_realtime_signaller.dart`提供账号绑定的独立HTTP单次交换，取消/12秒总等待只关闭自己的客户端，不关闭共享账号API。服务端受限offer路由先持久unknown意图再调用网关，实际网关仍关闭。该适配尚未接到页面或媒体协调器，现有准备控制器不能直接接管已发SDP连接；客户端测试为HTTP替身，详见[信令契约](../architecture/2026-10-17-guarded-signalling-api.md)与[验证](2026-10-17-guarded-signalling-verification.md)。
+`lib/features/realtime/api_realtime_signaller.dart`提供账号绑定的独立HTTP单次交换，取消/12秒总等待只关闭自己的客户端，不关闭共享账号API。服务端受限offer路由先持久unknown意图再调用网关，实际网关仍关闭。该适配现由独立PracticeMediaController组合；原准备控制器继续只管理信令前准备。媒体控制器管理配置等待、续租、后台/账号停止和本地释放，信令后不发送准备取消。provider读取不申请媒体，协议工厂默认Unavailable，尚无页面消费；成功配置/媒体路径只使用替身。详见[信令契约](../architecture/2026-10-17-guarded-signalling-api.md)、[媒体协调契约](../architecture/2026-10-17-practice-media-coordinator.md)与[验证](2026-10-17-practice-media-coordinator-verification.md)。
 
 组件预览位于 `lib/design/account_components.dart`，只展示品牌和按钮的深浅色，不连接服务、不申请媒体权限。品牌启动图标可以用 `uv run --with pillow scripts/generate_brand_icons.py` 重新生成，脚本与 Flutter 的绘制路径保持一致。
 

@@ -39,6 +39,6 @@ ApiRealtimeSignaller实现已有RealtimeSignaller接口，每实例绑定账号�
 
 12秒总等待覆盖CSRF/凭证/HTTP全过程；本地取消和HTTP断开均不能证明服务器未交换或供应商已终止。客户端还核对返回的四项身份和答案边界；失败后需读取服务端当前状态，不自动重放。
 
-该适配尚未接到页面或媒体协调器。现有PracticePreparationController只管理信令前准备，不可直接复用来控制已发SDP的媒体连接；配置确认、后台/账号变化/业务失联时的媒体释放及可信上游终止仍待后续。
+该适配已由独立[媒体业务协调器](2026-10-17-practice-media-coordinator.md)组合，仍未接到页面；实际协议工厂与网关保持关闭。PracticePreparationController继续只管理信令前准备，不复用来控制已发SDP的媒体连接。协调器的配置/后台/账号/业务失联路径由替身验证；真实供应商配置和可信上游终止仍待后续。
 
 实现方案见[设计](../superpowers/specs/2026-10-17-guarded-signalling-design.md)，实测见[验证记录](../development/2026-10-17-guarded-signalling-verification.md)。

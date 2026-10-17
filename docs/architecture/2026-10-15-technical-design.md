@@ -73,7 +73,7 @@
 
 阿里云文档明确区分 WebRTC 媒体轨道与 DataChannel，并要求 AppServer 参与 SDP 鉴权；它不提供专用 WebRTC SDK。[官方 WebRTC 接入说明](https://help.aliyun.com/zh/model-studio/realtime-webrtc-access)与 [flutter_webrtc 包说明](https://pub.dev/packages/flutter_webrtc)分别证明接口和组件能力，不能代替这两者在本项目三端上的集成验证。
 
-2026-10-17工程推进：当前Web优先阶段使用浏览器原生RTCPeerConnection和Dart JS interop，暂不增加原生依赖。已实现供应商无关的传输底层`RealtimeTransport`、后端[连接准备登记/代次与业务租约](2026-10-17-connection-reservations-api.md)及[受限单次信令与客户端HTTP适配](2026-10-17-guarded-signalling-api.md)。信令先持久unknown意图再调用网关；实际准入和网关均固定关闭，没有供应商调用。底层`start`只表示传输及事件通道可用；供应商适配器收到配置确认后调用`activate`。激活完成与实际播放独立；`playback_waiting`/`playback_blocked`不冒充播放成功，`local_closed`不代表上游费用终止。完整领域`RealtimeSession`、供应商网关/事件映射与客户端业务连接协调仍待实现，不能把底层直接接到页面当成真实练习。[底层设计](../superpowers/specs/2026-10-17-web-realtime-transport-design.md)与[验证边界](../development/2026-10-17-web-realtime-transport-verification.md)。
+2026-10-17工程推进：当前Web优先阶段使用浏览器原生RTCPeerConnection和Dart JS interop，暂不增加原生依赖。已实现供应商无关的`RealtimeTransport`、后端[连接登记/代次与租约](2026-10-17-connection-reservations-api.md)、[受限单次信令](2026-10-17-guarded-signalling-api.md)及独立[媒体业务协调器](2026-10-17-practice-media-coordinator.md)。信令先持久unknown意图再调用网关；协调器组合准备、信令、续租、配置确认门槛和本地释放。实际准入、网关与客户端协议工厂均固定关闭，成功媒体状态只用替身验证，没有页面或供应商调用。底层`start`仅表示传输及通道可用，协议确认后`activate`；激活与播放观察独立，`local_closed`不代表上游终止。完整领域话语/响应/播放上下文、供应商协议/网关、持久观测和可信终止仍待实现，不能把底层直接接到页面当成真实练习。[底层设计](../superpowers/specs/2026-10-17-web-realtime-transport-design.md)与[验证边界](../development/2026-10-17-web-realtime-transport-verification.md)。
 
 ### 3.2 开始一次练习
 

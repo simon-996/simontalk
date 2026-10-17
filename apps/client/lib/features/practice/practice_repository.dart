@@ -7,7 +7,7 @@ class PracticeRepository {
   PracticeRepository(this.api, {required this.accountId});
   final ApiClient api;
   final String accountId;
-  bool get hasCurrentAccount => api.expectedAccountId == accountId;
+  bool get hasCurrentAccount => api.hasCurrentAccount(accountId);
 
   static void _uuid(String value) {
     if (!isPracticeUuid(value)) {

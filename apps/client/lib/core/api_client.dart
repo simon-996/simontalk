@@ -36,6 +36,8 @@ class ApiClient {
   String? _csrf;
   String? expectedAccountId;
 
+  bool hasCurrentAccount(String accountId) => _currentAccountId == accountId;
+
   String? get _currentAccountId => _closed
       ? null
       : _accountIdentity != null
