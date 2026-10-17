@@ -19,6 +19,8 @@
 | POST /{cid}/renew-lease | client_instance_id、epoch(严格正整数) | 200更新业务租约；只有最新、未到期、非unknown/终态的连接可续租 |
 | POST /{cid}/cancel-preparation | client_instance_id、epoch | 200关闭尚未开始信令的准备；已终结not_started重放当前终态；已进入信令或上游未知409 |
 | POST /{cid}/offer | client_instance_id、epoch、offer | 受限单次交换；先提交negotiating/unknown，再调用网关，有效答案仅进入configuring；实际网关固定关闭，详见信令契约 |
+| POST /{cid}/observations | client_instance_id、epoch、1–16条枚举事实/稳定event_id/sequence | 受限client_observed追加与完全重放，历史连接隔离；不改变业务状态/租约/终止，详见[观测契约](2026-10-18-connection-observations-api.md) |
+| GET /{cid}/observations | after_sequence、limit（1–32） | 本人原连接的只读事实分页，不接管、不续租 |
 
 输出包括id、session_id、client_instance_id、epoch、configuration、status、termination_status、state_reason、last_seen_at、lease_expires_at、created_at、ended_at。configuration只有服务器公开配置标识，不含长期密钥或SDP。
 

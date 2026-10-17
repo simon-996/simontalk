@@ -1,6 +1,6 @@
 # SimonTalk 项目交接
 
-最后更新：2026-10-17（Asia/Shanghai）。有实质进展时更新，并先核对实际 Git、文件和验证结果。
+最后更新：2026-10-18（Asia/Shanghai）。有实质进展时更新，并先核对实际 Git、文件和验证结果。
 
 ## 1. 一分钟理解项目
 
@@ -12,7 +12,7 @@
 
 ## 2. 当前阶段与边界
 
-**第2阶段账号/偏好、Web首屏与本机麦克风检查已实现；第3阶段准备/恢复/清理、代次/租约、WebRTC/Flutter桥接、单次SDP信令及独立媒体业务协调器已实现。协调器组合准备、HTTP信令、续租、配置确认门槛和本地释放，成功配置/媒体路径只用替身验证；此前真实浏览器合成回环证据保留。实际准入/网关/协议工厂均关闭，尚无练习页面、真实供应商语音或学习闭环；完整设备验收仍缺。**
+**第2阶段账号/偏好、Web首屏与本机麦克风检查已实现；第3阶段准备/恢复/清理、代次/租约、WebRTC/Flutter桥接、单次SDP信令及独立媒体业务协调器已实现。本批新增受限client_observed持久观测、只读分页及媒体journal，观测不改变业务或终止证据。成功配置/媒体组合只用替身验证；此前真实浏览器合成回环证据保留。实际准入/网关/协议工厂均关闭，尚无恢复/练习页面、真实供应商语音或学习闭环；完整设备验收仍缺。**
 
 用户已要求“开始吧”和多次“继续”，允许应用工程及本地验证。**2026-10-17最新指令：按照建议路线持续开发，不逐项汇报和确认；需要本人确认或更改的部分先跳过，待后续补齐后再实施。以Flutter Web为主，暂停Android构建和安装。** 常规可逆工程选择直接执行，验证与边界持续写入本文件；未提供的模型账号与预算不能由持续开发授权推定，付费连接仍关闭，不推送远端、不对外部署。物理设备许可、账号/预算及真实手机条件暂缓，不反复提问，也不阻塞其他工程工作。
 
@@ -20,17 +20,17 @@
 | --- | --- |
 | 仓库 | `/Users/simon/workplace/projects/simontalk`，origin为`https://github.com/simon-996/simontalk.git` |
 | Git | main保留文档基线`71ecbe0`；当前`feat/account-foundation`，核对最新日志/状态；未推送 |
-| 客户端 | `apps/client/`，真实账号/偏好；准备HTTP/恢复/信令前控制器、Web麦克风/WebRTC桥接、单次HTTP信令及独立媒体协调器/账号作用域；原生工程保留 |
-| 后端 | `services/api/`，FastAPI/PostgreSQL17/Alembic；账号、准备/恢复、代次/租约、周期清理与CLI、持久单次信令用例；真实语音准入与网关固定关闭 |
+| 客户端 | `apps/client/`，真实账号/偏好；准备HTTP/信令前控制器、Web麦克风/WebRTC桥接、单次HTTP信令、独立媒体协调器/账号作用域及64条有界观测journal；原生工程保留 |
+| 后端 | `services/api/`，FastAPI/PostgreSQL17/Alembic；账号、准备/恢复、代次/租约、周期清理与CLI、单次信令、受限观测追加/分页；真实语音准入与网关固定关闭 |
 | 本地数据 | Compose专用数据库127.0.0.1:54329；开发库`simontalk`、独立测试库`simontalk_test` |
 | 页面 | 深浅色、双弧线品牌、响应式表单、错误恢复；Web本机麦克风检查；没有练习占位页 |
-| 检查 | 本轮Flutter133项（新增协调34项）、Node51项、分析/格式及Web构建/字体通过；后端无修改，本轮未重跑，沿用上批164项/Ruff/两库Alembic及本地HTTP证据；此前预览与合成回环证据保留 |
+| 检查 | 本轮后端192项、Flutter156项、Node51项；Ruff/分析/格式、两库Alembic、Web构建/字体和本地HTTP边界通过；独立审查未发现确定P1/P2，另重跑26项客户端定向通过；此前预览与合成回环证据保留 |
 | 原生 | Android曾因磁盘不足构建失败，没有APK；已暂停并清理本轮新增资源。Android/iOS工程保留，均无设备验收证据 |
 | CI | 已配置PostgreSQL/API检查、Flutter分析/测试/Web构建；APK步骤已移除，未推送、远端未运行 |
-| 语音/学习 | 独立协调器已组合准备/信令/媒体端口，协议默认拒绝、无页面；持久观测、供应商语音/事件、反馈、重练、记录、用量与成本控制未实现 |
+| 语音/学习 | 独立协调器已组合准备/信令/媒体端口及受限持久观测，协议默认拒绝、无页面；恢复消费、供应商语音/事件、反馈、重练、学习记录、用量与成本控制未实现 |
 | 生产 | 没有线上服务；TLS、正式签名、备份恢复与运维待后续 |
 
-启动、维护与检查见[本地开发](docs/development/local-development.md)，最新进展见[媒体协调验证](docs/development/2026-10-17-practice-media-coordinator-verification.md)、[单次信令验证](docs/development/2026-10-17-guarded-signalling-verification.md)、[恢复与自动清理验证](docs/development/2026-10-17-preparation-recovery-verification.md)、[客户端准备验证](docs/development/2026-10-17-client-preparation-verification.md)、[连接与租约验证](docs/development/2026-10-17-connection-reservations-verification.md)、[预览字体验证](docs/development/2026-10-17-preview-font-verification.md)、[WebRTC传输验证](docs/development/2026-10-17-web-realtime-transport-verification.md)、[准备登记验证](docs/development/2026-10-17-practice-preparation-verification.md)和[麦克风检查](docs/development/2026-10-17-microphone-check-verification.md)。账号基础、首屏/键盘和Android清理保留历史记录。
+启动、维护与检查见[本地开发](docs/development/local-development.md)，最新进展见[受限观测验证](docs/development/2026-10-18-connection-observations-verification.md)、[媒体协调验证](docs/development/2026-10-17-practice-media-coordinator-verification.md)、[单次信令验证](docs/development/2026-10-17-guarded-signalling-verification.md)、[恢复与自动清理验证](docs/development/2026-10-17-preparation-recovery-verification.md)、[客户端准备验证](docs/development/2026-10-17-client-preparation-verification.md)、[连接与租约验证](docs/development/2026-10-17-connection-reservations-verification.md)、[预览字体验证](docs/development/2026-10-17-preview-font-verification.md)、[WebRTC传输验证](docs/development/2026-10-17-web-realtime-transport-verification.md)、[准备登记验证](docs/development/2026-10-17-practice-preparation-verification.md)和[麦克风检查](docs/development/2026-10-17-microphone-check-verification.md)。账号基础、首屏/键盘和Android清理保留历史记录。
 
 ## 3. 已确认与工程采用
 
@@ -50,7 +50,7 @@
 
 ## 4. 下一步
 
-1. 以Flutter Web持续推进：媒体协调器已组合准备、信令、续租、配置门槛和本地释放；下一批实现受限持久媒体观测与只读恢复消费，按账号/连接/客户端/代次隔离事实，不允许客户端声明confirmed终止或释放unknown。实际协议尚无实现，服务端信令成功仍只到configuring；不能把替身active冒充供应商就绪。只读恢复尚无页面消费、不接管其他客户端，未知创建key跨进程恢复与丢失答案后的可信终止仍缺。准入/网关/协议保持关闭；模型/预算/设备任务跳过，原生暂停。
+1. 以Flutter Web持续推进：受限持久观测及媒体journal已完成，下一批接入只读恢复消费，补齐客户端观测读取模型和账号作用域恢复状态，再按真实数据接页面；读取不能接管、续租或释放其他客户端连接。unknown继续占用，local_closed不是confirmed终止。实际协议尚无实现，服务端信令成功仍只到configuring；不能把替身active冒充供应商就绪。未知创建key跨进程恢复与丢失答案后的可信终止仍缺。准入/网关/协议保持关闭；模型/预算/设备任务跳过，原生暂停。
 2. 本地功能分支核对最新提交与干净状态，不擅自推送或部署；之后获推送授权时运行Web/API远端CI。
 3. 应用内浏览器预检后传输异常本轮再次出现一次；明确重试后安全凭证提示、再次提交登录及退出成功。根因未确定，未调整CORS/CSRF、不自动重放，继续观察。
 4. 待用户后续补齐账号/地域/预算与设备条件，再做物理麦克风及最小供应商语音闭环，实测插话、断线、释放、上游终止与计量，有证据后增加练习页。当前不主动索要重复确认，不把这些暂缓项冒充完成。
@@ -67,7 +67,7 @@
 | --- | --- |
 | 1方案准备 | 工程前置落实；模型、费用与真机条件在对应任务前补齐 |
 | 2工程底座 | 账号/偏好、首屏恢复、键盘选择与六项组件预览通过；Web性能与完整浏览器验收未完成，原生暂停 |
-| 3真实语音 | 准备/恢复/清理、代次/租约、单次信令、Web底层及独立媒体协调/释放已验证；配置/媒体组合仍为替身，协议/网关关闭；持久观测、供应商语音/事件、费用和终止实测缺失 |
+| 3真实语音 | 准备/恢复/清理、代次/租约、单次信令、Web底层、媒体协调/释放及受限持久观测已验证；配置/媒体组合仍为替身，协议/网关关闭；恢复页面、供应商语音/事件、费用和终止实测缺失 |
 | 4学习闭环 | 未开始 |
 | 5可靠性/成本 | 未开始 |
 | 6Web交付与朋友试用 | 未开始；原生分发暂停 |
@@ -91,6 +91,6 @@
 
 本批见[实施计划](docs/superpowers/plans/2026-10-15-account-foundation.md)，后续对照[交互](docs/design/2026-10-15-screen-and-interaction-spec.md)、[视觉](docs/design/2026-10-15-visual-design-spec.md)和[验证](docs/validation/2026-10-15-validation-plan.md)。本机已安装Flutter响应式/预览/布局排查与UI/UX Pro Max，另有design-taste-frontend；它们不随Git克隆自动安装，也不构成产品验收。
 
-最近工作：独立PracticeMediaController按一次性客户端/key组合准备、真实HTTP signaller、传输和协议端口；15秒串行续租保持旧截止，60秒连接/20秒配置总等待均有单调截止复核，后台/账号/失联/停止立即本地释放。localClosed与服务端清理证据分离，offer之后不发准备取消；早到事件有界，迟到结果不复活。工厂重入停止3项及独立审查发现的阶段截止2项回归先失败后修复；原审查重跑32项定向通过，窄范围修复复核未见新确定问题、未重跑测试。最终Flutter133项（新增34）、Node51项、分析/格式、Web构建39.7秒及字体通过。无后端/数据库改动，未重跑后端；沿用上批164项与head e19bd728ca41、开发库1账号/0练习/0连接及本地HTTP200/401/413记录。媒体成功路径使用明确HTTP/协议/传输替身；实际协议/准入/网关关闭，无页面、持久观测或供应商语音。物理/模型验证暂缓，原生暂停；本地保存，未推送/部署。
+最近工作：按[观测计划](docs/superpowers/plans/2026-10-17-connection-observations.md)实现受限追加/分页及原连接身份复合外键；每批16条、每连接256条，完整重放成功、冲突整批回滚，历史/unknown只追加事实不改业务状态。客户端64条内存journal使用独立HTTP和8秒总截止，账号变化即中止；媒体停止先释放再上报，失败不阻塞。先失败后修复工厂内取消仍发送、延迟Timer接受超时确认两项回归。最终后端192、Flutter156、Node51项通过，Ruff/格式/分析、两库迁移检查、Web构建38.8秒及字体验证通过；独立审查未发现确定P1/P2，并重跑客户端定向26项通过。开发库添加性升级到f80e9c1a24bd，保持1账号/0练习/0连接/0观测；已重启本地API，readiness200、匿名观测401、超限413及响应保护实测通过。成功媒体路径仍为明确替身，观测source固定client_observed，不表示供应商就绪、可信终止或费用。未推送/部署，物理/模型任务暂缓，原生暂停。
 
 后续交接更新完成内容/证据、剩余问题、可执行下一步、缺少输入和提交/推送/部署状态。用户最新指令优先，不沿用旧阶段边界。

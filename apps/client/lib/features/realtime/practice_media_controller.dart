@@ -9,6 +9,7 @@ import '../account/account_models.dart';
 import '../practice/practice_models.dart';
 import '../practice/practice_repository.dart';
 import 'connection_lease_watchdog.dart';
+import 'connection_observation_journal.dart';
 import 'realtime_session_protocol.dart';
 import 'realtime_transport.dart';
 
@@ -38,6 +39,7 @@ class PracticeMediaController extends ChangeNotifier
     required this.transportFactory,
     required this.signallerFactory,
     this.protocolFactory = unavailableRealtimeProtocol,
+    this.observationJournalFactory,
     Duration Function()? elapsed,
   }) : _elapsed = elapsed ?? _clock() {
     _lease = ConnectionLeaseWatchdog(
@@ -55,6 +57,7 @@ class PracticeMediaController extends ChangeNotifier
   final RealtimeTransport Function() transportFactory;
   final RealtimeSignallerFactory signallerFactory;
   final RealtimeProtocolFactory protocolFactory;
+  final ObservationJournalFactory? observationJournalFactory;
   final Duration Function() _elapsed;
   late final ConnectionLeaseWatchdog _lease;
   final String clientInstanceId = randomUuid();
@@ -70,6 +73,11 @@ class PracticeMediaController extends ChangeNotifier
   String? get errorCode => _errorCode;
   String? _lastObservationCode;
   String? get lastObservationCode => _lastObservationCode;
+  RealtimeObservationJournal? _observationJournal;
+  String? _observationError;
+  RealtimeObservationJournal? get observationJournal => _observationJournal;
+  String? get observationErrorCode =>
+      _observationError ?? _observationJournal?.errorCode;
   bool _muted = false;
   bool get muted => _muted;
   bool _signallingAttempted = false;
@@ -179,6 +187,22 @@ class PracticeMediaController extends ChangeNotifier
         throw const RealtimeFailure('local_lease_expired');
       }
       _creating = false;
+      if (observationJournalFactory != null) {
+        try {
+          final journal = observationJournalFactory!(
+            _connection!,
+            clientInstanceId,
+          );
+          if (!_guard()) {
+            journal.abort();
+            return;
+          }
+          _observationJournal = journal;
+        } on Object {
+          _observationError = 'observation_unavailable';
+        }
+      }
+      if (!_guard()) return;
       final protocol = protocolFactory(
         _practice!.configuration,
         RealtimeProtocolCallbacks(
@@ -236,6 +260,8 @@ class PracticeMediaController extends ChangeNotifier
         const Duration(seconds: 20),
         () => unawaited(stop(reason: 'configuration_timeout')),
       );
+      _recordObservation('transport_connected');
+      if (!_guard()) return;
       _publish(PracticeMediaPhase.configuring);
       for (final channel in _channels.toList()) {
         if (!_guard()) return;
@@ -269,6 +295,17 @@ class PracticeMediaController extends ChangeNotifier
     if (observation.code == 'local_closed') {
       unawaited(stop(reason: _safeCode(observation.detail)));
       return;
+    }
+    if ({
+      'requesting_microphone',
+      'negotiating',
+      'playback_waiting',
+      'playback_blocked',
+      'playback_playing',
+      'playback_paused',
+    }.contains(observation.code)) {
+      _recordObservation(observation.code);
+      if (!_guard()) return;
     }
     if (observation.code == 'channel_open') {
       final id = observation.detail;
@@ -337,15 +374,19 @@ class PracticeMediaController extends ChangeNotifier
     }
     if (_confirmedChannel != null) return;
     _confirmedChannel = channelId;
+    _recordObservation('configuration_confirmed');
     unawaited(_activate(channelId));
   }
 
   Future<void> _activate(String channelId) async {
+    if (!_guard()) return;
     try {
       await _transport!.activate(channelId);
       if (!_guard()) return;
       _configurationTimer?.cancel();
       _configurationDeadline = null;
+      _recordObservation('microphone_active');
+      if (!_guard()) return;
       _publish(PracticeMediaPhase.active);
       _completeBegin();
     } on Object catch (error) {
@@ -384,8 +425,10 @@ class PracticeMediaController extends ChangeNotifier
 
   void setMuted(bool value) {
     if (!_guard()) return;
+    final changed = _muted != value;
     _muted = value;
     _protocolCall(() => _transport?.setMuted(value));
+    if (changed && _guard()) _recordObservation(value ? 'muted' : 'unmuted');
     if (_guard()) _publish(_phase);
   }
 
@@ -413,6 +456,34 @@ class PracticeMediaController extends ChangeNotifier
     if (_begun != null && !_begun!.isCompleted) _begun!.complete();
   }
 
+  void _recordObservation(String code, {String? reason}) {
+    try {
+      _observationJournal?.record(code, reason: reason);
+    } on Object {
+      _observationError = 'observation_unavailable';
+      try {
+        _observationJournal?.abort();
+      } on Object {
+        /* Best effort telemetry only. */
+      }
+      _observationJournal = null;
+    }
+  }
+
+  void _finishObservations(String reason) {
+    if (_observationJournal == null) return;
+    try {
+      if (!repository.hasCurrentAccount) {
+        _observationJournal!.abort();
+      } else {
+        _recordObservation('local_closed', reason: reason);
+        _observationJournal?.finish();
+      }
+    } on Object {
+      _observationError = 'observation_unavailable';
+    }
+  }
+
   /// Releases local resources synchronously; API cleanup is separate evidence.
   Future<void> stop({String reason = 'stopped'}) {
     if (_closed) return _creating ? Future.value() : _cleanup();
@@ -438,6 +509,7 @@ class PracticeMediaController extends ChangeNotifier
         /* Continue releasing independent resources. */
       }
     }
+    _finishObservations(_errorCode!);
     _releaseStatus = !_practiceRequested
         ? MediaReleaseStatus.notNeeded
         : _signallingAttempted

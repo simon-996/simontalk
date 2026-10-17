@@ -4,11 +4,12 @@ import uuid
 from starlette.responses import JSONResponse
 
 MAX_OFFER_BODY_BYTES = 96 * 1024
+MAX_OBSERVATION_BODY_BYTES = 8 * 1024
 BODY_TIMEOUT_SECONDS = 5
 
 
-class OfferBodyLimitMiddleware:
-    """Bound SDP request memory/time before FastAPI attempts JSON decoding."""
+class ConnectionBodyLimitMiddleware:
+    """Bound connection writes before FastAPI attempts JSON decoding."""
 
     def __init__(self, app):
         self.app = app
@@ -20,17 +21,20 @@ class OfferBodyLimitMiddleware:
             and scope.get("method") == "POST"
             and path.startswith("/v1/practice-sessions/")
             and "/connections/" in path
-            and path.endswith("/offer")
+            and path.endswith(("/offer", "/observations"))
         ):
             await self.app(scope, receive, send)
             return
+        maximum = (
+            MAX_OBSERVATION_BODY_BYTES if path.endswith("/observations") else MAX_OFFER_BODY_BYTES
+        )
 
         async def reject(status, code):
             request_id = scope.get("state", {}).get("request_id") or str(uuid.uuid4())
             response = JSONResponse(
                 {
                     "code": code,
-                    "message": "信令请求超出接收范围，请重新确认连接状态。",
+                    "message": "连接请求超出接收范围，请重新确认当前状态。",
                     "request_id": request_id,
                 },
                 status_code=status,
@@ -47,7 +51,7 @@ class OfferBodyLimitMiddleware:
                         return
                     chunk = message.get("body", b"")
                     size += len(chunk)
-                    if size > MAX_OFFER_BODY_BYTES:
+                    if size > maximum:
                         too_large = True
                         break
                     chunks.append(chunk)

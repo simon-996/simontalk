@@ -10,6 +10,7 @@
 | connection_lease_watchdog.dart | 单调时钟、保守原截止、续租与截止定时器 |
 | realtime_session_protocol.dart | 供应商协议端口和受保护send/confirmConfigured/fail回调；实际默认Unavailable |
 | practice_media_providers.dart | 随signedIn账号创建/销毁作用域，读取不自动登记或申请媒体 |
+| connection_observation_journal.dart | 2026-10-18新增；原账号/连接/代次绑定的受限媒体观测队列与独立HTTP确认 |
 | core/random_uuid.dart | 原准备与新媒体控制器共用的安全随机v4 UUID |
 
 原PracticePreparationController继续只管理信令前流程，不传递在途租约给新控制器。每个媒体控制器保存自己的clientInstanceId、practiceKey、connectionKey，直接调用已有登记契约；业务后端仍强制单用户占用，不能因为本地有两个provider就并行建连。
@@ -50,4 +51,6 @@ stop同步封闭回调、停止传输、取消独立信令、释放协议与定�
 
 connection属性保留最近一次业务HTTP快照，信令后在下次读取/续租前可能仍显示preparing；不能以旧快照的canCancel覆盖signallingAttempted或将其视为当前服务器状态。
 
-验证见[本轮记录](../development/2026-10-17-practice-media-coordinator-verification.md)。持久观测、供应商协议、可信终止、转写/用量、跨进程恢复和页面均未实现；本轮不把端口和替身结果称为真实语音闭环。
+2026-10-18已接入可选journal工厂：登记成功后才创建，传输、配置确认、激活、播放及显式静音分别记录client_observed事实；停止先释放媒体，再记录一次local_closed并finish，账号已变则abort。工厂和上报错误只影响观测错误/队列，不阻塞媒体安全清理。默认503不创建journal；构造provider仍无API或媒体副作用。后端持久化及只读分页均不改变连接/租约/终止，不能用客户端关闭事实释放unknown。详见[观测契约](2026-10-18-connection-observations-api.md)。
+
+原协调验证见[记录](../development/2026-10-17-practice-media-coordinator-verification.md)，新增组合证据见[观测验证](../development/2026-10-18-connection-observations-verification.md)。供应商协议、可信终止、转写/用量、跨进程恢复和页面仍未实现；不把端口和替身结果称为真实语音闭环。

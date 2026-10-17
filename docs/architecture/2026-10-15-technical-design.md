@@ -73,7 +73,7 @@
 
 阿里云文档明确区分 WebRTC 媒体轨道与 DataChannel，并要求 AppServer 参与 SDP 鉴权；它不提供专用 WebRTC SDK。[官方 WebRTC 接入说明](https://help.aliyun.com/zh/model-studio/realtime-webrtc-access)与 [flutter_webrtc 包说明](https://pub.dev/packages/flutter_webrtc)分别证明接口和组件能力，不能代替这两者在本项目三端上的集成验证。
 
-2026-10-17工程推进：当前Web优先阶段使用浏览器原生RTCPeerConnection和Dart JS interop，暂不增加原生依赖。已实现供应商无关的`RealtimeTransport`、后端[连接登记/代次与租约](2026-10-17-connection-reservations-api.md)、[受限单次信令](2026-10-17-guarded-signalling-api.md)及独立[媒体业务协调器](2026-10-17-practice-media-coordinator.md)。信令先持久unknown意图再调用网关；协调器组合准备、信令、续租、配置确认门槛和本地释放。实际准入、网关与客户端协议工厂均固定关闭，成功媒体状态只用替身验证，没有页面或供应商调用。底层`start`仅表示传输及通道可用，协议确认后`activate`；激活与播放观察独立，`local_closed`不代表上游终止。完整领域话语/响应/播放上下文、供应商协议/网关、持久观测和可信终止仍待实现，不能把底层直接接到页面当成真实练习。[底层设计](../superpowers/specs/2026-10-17-web-realtime-transport-design.md)与[验证边界](../development/2026-10-17-web-realtime-transport-verification.md)。
+2026-10-18工程进展：当前Web优先阶段使用浏览器原生RTCPeerConnection和Dart JS interop，暂不增加原生依赖。已实现供应商无关的`RealtimeTransport`、后端[连接登记/代次与租约](2026-10-17-connection-reservations-api.md)、[受限单次信令](2026-10-17-guarded-signalling-api.md)、独立[媒体业务协调器](2026-10-17-practice-media-coordinator.md)及[受限持久观测](2026-10-18-connection-observations-api.md)。信令先持久unknown意图再调用网关；协调器组合准备、信令、续租、配置确认门槛、本地释放和有界观测journal。实际准入、网关与客户端协议工厂均固定关闭，成功媒体状态只用替身验证，没有页面或供应商调用。底层`start`仅表示传输及通道可用，协议确认后`activate`；激活与播放观察独立，`local_closed`不代表上游终止。完整领域话语/响应/播放上下文、供应商协议/网关、恢复消费和可信终止仍待实现，不能把底层直接接到页面当成真实练习。[底层设计](../superpowers/specs/2026-10-17-web-realtime-transport-design.md)与[验证边界](../development/2026-10-17-web-realtime-transport-verification.md)。
 
 ### 3.2 开始一次练习
 
@@ -139,7 +139,9 @@
 
 当前业务连接登记分配服务端单调epoch并保存公开配置；45秒业务租约到期时，只有preparing/not_started能安全终结，已进入或无法确认上游的状态转unknown并继续占用。扫描器有CLI及正常API lifespan内每15秒有界周期调度，并清理闲置300秒且从未调用上游的created准备；保留原行和幂等键，不终止媒体或结算费用。只读current查询可恢复本人当前占用，异常父终态仍优先保留未知连接。当前新登记真实准入仍固定503，其他媒体状态仅有未来集成契约及明确测试种子。[连接约束](2026-10-17-connection-reservations-api.md)与[恢复/调度](2026-10-17-preparation-recovery-and-cleanup.md)。
 
-客户端信令前准备生命周期已实现：固定账号的HTTP仓库、两个原始创建键、单调时间保守截止、15秒串行续租和后台安全取消。停止后的明确重试只恢复曾发送的未知登记并清理，不推进新连接。账号作用域provider尚未由页面消费，与WebRTC传输层/供应商配置确认的协调仍待接入；这些能力只表示业务准备。[客户端契约](2026-10-17-client-preparation-lifecycle.md)。
+客户端信令前准备生命周期已实现：固定账号的HTTP仓库、两个原始创建键、单调时间保守截止、15秒串行续租和后台安全取消。停止后的明确重试只恢复曾发送的未知登记并清理，不推进新连接。独立媒体控制器另已组合WebRTC和配置确认端口；真实协议尚未实现，账号作用域provider尚未由页面消费。[准备契约](2026-10-17-client-preparation-lifecycle.md)与[媒体契约](2026-10-17-practice-media-coordinator.md)。
+
+受限观测已按原连接/客户端/epoch持久化，来源固定client_observed；历史或unknown可接收迟到事实，但不能改变练习/连接状态、租约、终止或占用。客户端仅用有界内存journal，稳定事件ID/序号、串行确认、显式重试、账号隔离；停止先释放媒体，上报失败不阻塞。记录可能有缺口，不包含话语、音频或用量；只读分页API已有，恢复消费尚缺。当前配置确认也只是客户端观测，不将其升级为服务端ready或可信上游证据。[观测契约](2026-10-18-connection-observations-api.md)。
 
 ### 5.2 用户轮次和 AI 已播放文字
 
@@ -215,6 +217,7 @@ Web 建议静态站与 API 同源。Cookie 会自动携带，因此状态变更�
 | Topic | id、version、title、goal、starter、enabled | 首批少量静态配置也可；不必单独做内容后台 |
 | PracticeSession | id、user_id、kind、status、topic_snapshot、preferences_snapshot、prompt_version、started_at、ended_at、end_reason、transcript_revision/hash、transcript_incomplete、source_session_id、source_feedback_item_id | 普通练习或逐句重练；来源必须同属用户；历史配置不可随偏好更新 |
 | RealtimeConnection | id、session_id、user_id、epoch、provider、model、region、adapter_version、provider_session_id、status、last_seen_at、termination_status、provider_request_id | session_id + epoch 唯一；上游 ID/TTL 可为空，空值不表示可终止 |
+| ConnectionObservation（已实现） | connection_id、client_instance_id、epoch、event_id、sequence、code、elapsed_ms、reason、event_digest、source、received_at | 原连接身份复合外键；event_id/sequence各自按连接唯一；source固定client_observed，无业务状态转移；每连接API最多256条 |
 | Turn | id、session_id、user_id、connection_id、turn_index、role、provider_item_id、response_id、revision、text、played_text、delivery_status、played_until_ms、playback_evidence、finalized_at | session_id + id 唯一；用户话语不填播放字段；模型生成文本和可用上下文分开 |
 | Feedback | id、session_id、user_id、transcript_revision/hash、prompt_version、model、status、next_step、created_at | 同一会话输入版本和提示词版本只有一份有效结果 |
 | FeedbackItem | id、feedback_id、user_id、source_turn_id、original_quote、suggestion、explanation_zh、kind、uncertainty | 最多三项，引用须能在当前用户最终话语中定位 |
@@ -241,8 +244,9 @@ User → 多个 PracticeSession → 多个 RealtimeConnection / Turn；PracticeS
 | GET /v1/topics | 可选分页/类别 | 200 可用的日常主题，不接受自定义上游提示词 |
 | POST /v1/practice-sessions | topic_id 或 free_chat、可选难度覆盖；Idempotency-Key | 201 session_id、快照、准入结果；同 key 返回原练习 |
 | POST /v1/practice-sessions/{sid}/connections | client_instance_id、expected_epoch；Idempotency-Key | 201连接准备对象、epoch及公开配置；真实准入仍关闭；旧连接未知时拒绝新建，详见实际契约 |
-| POST /v1/practice-sessions/{sid}/connections/{cid}/sdp | application/sdp Offer；同一尝试的幂等键 | 200 application/sdp Answer；错误为 JSON；校验本人/代次/状态，不成为通用代理 |
-| POST /v1/practice-sessions/{sid}/connections/{cid}/events | 有界批次的稳定事件 ID、sequence、生命周期/播放观测 | 200 已确认水位；重复事件忽略；客户端用量标记来源 |
+| POST /v1/practice-sessions/{sid}/connections/{cid}/offer | client_instance_id、epoch、offer；单次受限JSON | 已实现；200 JSON answer，仅进入configuring；失败/重复保持可信边界，网关实际关闭，详见[信令契约](2026-10-17-guarded-signalling-api.md) |
+| POST /v1/practice-sessions/{sid}/connections/{cid}/observations | client_instance_id、epoch、1–16条稳定event_id/sequence及受限媒体事实 | 已实现；200完整确认，冲突整批拒绝；client_observed不能推进状态或证明用量，详见[观测契约](2026-10-18-connection-observations-api.md) |
+| GET /v1/practice-sessions/{sid}/connections/{cid}/observations | after_sequence、limit（1–32） | 已实现；本人原连接事实的只读快照分页，不接管或续租 |
 | PUT /v1/practice-sessions/{sid}/turns/{tid} | connection_id、epoch、revision、最终文字及播放证据 | 200 新版本或同版本原结果；同版本不同内容 409；拒绝封存后静默改写 |
 | POST /v1/practice-sessions/{sid}/end | 各连接最终水位、end_reason；Idempotency-Key | 202 ending/finalize 状态；重复返回同一任务；终态返回已有结果 |
 | GET /v1/practice-sessions | cursor、limit | 200 本人可见历史；游标稳定排序，不接受 user_id 筛选他人 |

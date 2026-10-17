@@ -7,10 +7,36 @@ import 'package:http/testing.dart';
 import 'package:simontalk_client/core/api_client.dart';
 import 'package:simontalk_client/features/practice/practice_repository.dart';
 import 'package:simontalk_client/features/realtime/practice_media_controller.dart';
+import 'package:simontalk_client/features/realtime/connection_observation_journal.dart';
 import 'package:simontalk_client/features/realtime/realtime_session_protocol.dart';
 import 'package:simontalk_client/features/realtime/realtime_transport.dart';
 
 import '../practice/practice_fixtures.dart';
+
+class TestObservationJournal implements RealtimeObservationJournal {
+  final events = <Map<String, String>>[];
+  int finishes = 0;
+  int aborts = 0;
+  void Function(String)? onRecord;
+  @override
+  int get pendingCount => 0;
+  @override
+  int get droppedCount => 0;
+  @override
+  String? get errorCode => null;
+  @override
+  void record(String code, {String? reason}) {
+    onRecord?.call(code);
+    events.add({'code': code, 'reason': ?reason});
+  }
+
+  @override
+  Future<void> retryPending() async {}
+  @override
+  void finish() => finishes++;
+  @override
+  void abort() => aborts++;
+}
 
 class TestSignaller implements RealtimeSignaller {
   int cancels = 0;

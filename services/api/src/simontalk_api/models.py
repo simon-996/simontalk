@@ -192,6 +192,9 @@ class RealtimeConnection(Base):
         ),
         UniqueConstraint("user_id", "creation_key", name="connection_creation_key"),
         UniqueConstraint("session_id", "epoch", name="connection_epoch"),
+        UniqueConstraint(
+            "id", "client_instance_id", "epoch", name="connection_observation_identity"
+        ),
         CheckConstraint("epoch > 0", name="positive_connection_epoch"),
         CheckConstraint(
             "status IN ('preparing','negotiating','configuring','ready',"
@@ -224,5 +227,52 @@ class RealtimeConnection(Base):
             "session_id",
             unique=True,
             postgresql_where=text("status NOT IN ('closed','failed')"),
+        ),
+    )
+
+
+class ConnectionObservation(Base):
+    __tablename__ = "connection_observations"
+    connection_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    event_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    client_instance_id: Mapped[uuid.UUID] = mapped_column()
+    epoch: Mapped[int] = mapped_column(Integer)
+    sequence: Mapped[int] = mapped_column(Integer)
+    code: Mapped[str] = mapped_column(String(32))
+    elapsed_ms: Mapped[int] = mapped_column(Integer)
+    reason: Mapped[str | None] = mapped_column(String(32))
+    event_digest: Mapped[str] = mapped_column(String(64))
+    source: Mapped[str] = mapped_column(String(16), server_default="client_observed")
+    received_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["connection_id", "client_instance_id", "epoch"],
+            [
+                "realtime_connections.id",
+                "realtime_connections.client_instance_id",
+                "realtime_connections.epoch",
+            ],
+            name="observation_connection_identity",
+            ondelete="CASCADE",
+        ),
+        UniqueConstraint("connection_id", "sequence", name="observation_sequence"),
+        CheckConstraint(
+            "sequence > 0 AND elapsed_ms BETWEEN 0 AND 86400000", name="observation_numeric_bounds"
+        ),
+        CheckConstraint("source = 'client_observed'", name="observation_source"),
+        CheckConstraint("event_digest ~ '^[a-f0-9]{64}$'", name="observation_digest"),
+        CheckConstraint(
+            "code IN ('requesting_microphone','negotiating','transport_connected',"
+            "'configuration_confirmed','microphone_active','playback_waiting','playback_blocked',"
+            "'playback_playing','playback_paused','muted','unmuted','local_closed')",
+            name="observation_code",
+        ),
+        CheckConstraint(
+            "reason IS NULL OR (code = 'local_closed' AND reason IN "
+            "('user_stop','background','disposed','account_changed','lease_expired',"
+            "'connection_failed','configuration_failed','other'))",
+            name="observation_reason",
         ),
     )

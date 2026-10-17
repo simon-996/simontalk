@@ -22,6 +22,9 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         accountRepositoryProvider.overrideWithValue(AccountRepository(h.api)),
+        realtimeObservationJournalFactoryProvider.overrideWithValue(
+          (_, _, _, _) => TestObservationJournal(),
+        ),
         accountControllerProvider.overrideWith(ScopedAccountController.new),
         realtimeTransportFactoryProvider.overrideWithValue(() {
           mediaCreates++;
@@ -50,6 +53,9 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           accountRepositoryProvider.overrideWithValue(AccountRepository(h.api)),
+          realtimeObservationJournalFactoryProvider.overrideWithValue(
+            (_, _, _, _) => TestObservationJournal(),
+          ),
           accountControllerProvider.overrideWith(ScopedAccountController.new),
           realtimeTransportFactoryProvider.overrideWithValue(() {
             mediaCreates++;
@@ -78,6 +84,9 @@ void main() {
       final container = ProviderContainer(
         overrides: [
           accountRepositoryProvider.overrideWithValue(AccountRepository(h.api)),
+          realtimeObservationJournalFactoryProvider.overrideWithValue(
+            (_, _, _, _) => TestObservationJournal(),
+          ),
           accountControllerProvider.overrideWith(ScopedAccountController.new),
           realtimeTransportFactoryProvider.overrideWithValue(() => h.transport),
           realtimeProtocolFactoryProvider.overrideWithValue(

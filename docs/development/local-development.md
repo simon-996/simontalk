@@ -38,7 +38,7 @@ uv run simontalk-admin cleanup-preparations --limit 100
 
 邀请单次 72 小时；重设凭证单次 15 分钟。凭证仅显示一次，不写入 Git。前台不自动发短信、邮件，也不提供远程管理员 API。更多身份与生产配置见 [API 说明](../../services/api/README.md)。
 
-更新后运行`uv run alembic upgrade head`，练习/连接准备均有持久表，当前head为`e19bd728ca41`（新增单次信令摘要、时间及证据约束）。API源码修改后须重启本地Uvicorn，启动命令未启用自动重载。真实运行的新练习/连接准入及信令网关固定关闭；测试策略仅用于独立测试库，不能通过环境变量开启没有接入的语音服务。正常API lifespan现每15秒自动执行一批连接租约和300秒闲置准备清理，间隔可由`SIMONTALK_PRACTICE_MAINTENANCE_INTERVAL_SECONDS`设为1–300秒；手动完整批次使用cleanup-preparations。未开始上游可安全终结，上游未知继续占用；进程关闭期间不调度，没有媒体终止能力。详见[准备登记验证](2026-10-17-practice-preparation-verification.md)、[连接租约验证](2026-10-17-connection-reservations-verification.md)、[恢复清理验证](2026-10-17-preparation-recovery-verification.md)与[单次信令验证](2026-10-17-guarded-signalling-verification.md)。
+更新后运行`uv run alembic upgrade head`，练习/连接准备均有持久表，当前head为`f80e9c1a24bd`（新增受限连接观测子表及原连接身份复合外键）。API源码修改后须重启本地Uvicorn，启动命令未启用自动重载。真实运行的新练习/连接准入及信令网关固定关闭；测试策略仅用于独立测试库，不能通过环境变量开启没有接入的语音服务。正常API lifespan现每15秒自动执行一批连接租约和300秒闲置准备清理，间隔可由`SIMONTALK_PRACTICE_MAINTENANCE_INTERVAL_SECONDS`设为1–300秒；手动完整批次使用cleanup-preparations。未开始上游可安全终结，上游未知继续占用；进程关闭期间不调度，没有媒体终止能力。详见[准备登记验证](2026-10-17-practice-preparation-verification.md)、[连接租约验证](2026-10-17-connection-reservations-verification.md)、[恢复清理验证](2026-10-17-preparation-recovery-verification.md)、[单次信令验证](2026-10-17-guarded-signalling-verification.md)与[受限观测验证](2026-10-18-connection-observations-verification.md)。
 
 ## Flutter Web
 
@@ -117,6 +117,8 @@ WebRTC生产传输底层与Dart桥接已实现，尚未接到练习页或供应�
 `lib/features/practice/`提供真实HTTP仓库和准备生命周期，按账号绑定原始幂等键、单调代次及业务续租，并可只读读取当前登记；后台/停止仅安全取消未开始信令的登记，失败需明确恢复，不自动重连。provider目前尚未被练习页面消费，创建作用域不自动请求API或麦克风；后端真实准入仍固定503。`flutter test test/features/practice`验证HTTP/时钟替身成功路径，不能作为真实模型或硬件证据。契约与限制见[客户端准备生命周期](../architecture/2026-10-17-client-preparation-lifecycle.md)、[准备验证](2026-10-17-client-preparation-verification.md)与[恢复清理验证](2026-10-17-preparation-recovery-verification.md)。
 
 `lib/features/realtime/api_realtime_signaller.dart`提供账号绑定的独立HTTP单次交换，取消/12秒总等待只关闭自己的客户端，不关闭共享账号API。服务端受限offer路由先持久unknown意图再调用网关，实际网关仍关闭。该适配现由独立PracticeMediaController组合；原准备控制器继续只管理信令前准备。媒体控制器管理配置等待、续租、后台/账号停止和本地释放，信令后不发送准备取消。provider读取不申请媒体，协议工厂默认Unavailable，尚无页面消费；成功配置/媒体路径只使用替身。详见[信令契约](../architecture/2026-10-17-guarded-signalling-api.md)、[媒体协调契约](../architecture/2026-10-17-practice-media-coordinator.md)与[验证](2026-10-17-practice-media-coordinator-verification.md)。
+
+`connection_observation_journal.dart`现接到媒体控制器，按账号/原连接/客户端/epoch记录受限client_observed事实。64条内存队列、16条串行批次、稳定事件身份及独立HTTP的8秒总截止；失败暂停，明确retryPending复用原事件，不写浏览器存储。停止先释放再尽力提交关闭事实，上报失败不影响媒体。API同连接路径的POST/GET observations支持追加及只读分页，8KiB/5秒接收、每连接256条；历史/unknown事实不改状态或终止。读取模型/恢复页面尚缺，真实准入关闭时不会创建journal或测试数据。契约与证据见[观测说明](../architecture/2026-10-18-connection-observations-api.md)及[验证](2026-10-18-connection-observations-verification.md)。
 
 组件预览位于 `lib/design/account_components.dart`，只展示品牌和按钮的深浅色，不连接服务、不申请媒体权限。品牌启动图标可以用 `uv run --with pillow scripts/generate_brand_icons.py` 重新生成，脚本与 Flutter 的绘制路径保持一致。
 
