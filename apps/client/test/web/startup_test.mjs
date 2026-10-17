@@ -161,3 +161,20 @@ test('optional microphone script failure is announced without blocking the app',
   page.frame();
   assert.equal(page.elements.get('startup').removed, true);
 });
+
+for (const failure of [
+  { target: { id: 'realtime-loader' } },
+  { filename: 'http://localhost/realtime_transport.js' },
+]) {
+  test('optional realtime failure announces unavailability without blocking accounts', () => {
+    const page = launch();
+    let announced = false;
+    page.window.addEventListener('simontalk-realtime-ready', () => { announced = true; });
+    page.window.dispatchEvent({ type: 'error', ...failure });
+    assert.equal(page.window.simontalkRealtimeFailed, true);
+    assert.equal(announced, true);
+    assert.equal(page.elements.get('startup-retry').hidden, true);
+    page.frame();
+    assert.equal(page.elements.get('startup').removed, true);
+  });
+}

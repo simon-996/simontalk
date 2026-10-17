@@ -12,25 +12,25 @@
 
 ## 2. 当前阶段与边界
 
-**第2阶段“工程底座与组件系统”，账号/偏好、Web首屏与本机麦克风检查已实现；同时推进阶段3的无付费前置准备。阶段2完整设备验收及阶段3真实媒体均未完成。**
+**第2阶段账号/偏好、Web首屏与本机麦克风检查已实现；第3阶段准备登记、WebRTC传输底层与Flutter桥接已实现，真实浏览器合成输入回环通过。阶段2完整设备验收、供应商真实语音与学习闭环均未完成。**
 
-用户已要求“开始吧”和多次“继续”，允许应用工程及本地验证。**2026-10-16最新指令：按文档持续推进，不停止、不询问常规工程选择。后续以Flutter Web为主，暂停Android构建和安装；新增Android资源已按要求清理。** 持续做授权内可独立推进的任务；不调用未授权付费模型、不推送远端、不对外部署。
+用户已要求“开始吧”和多次“继续”，允许应用工程及本地验证。**2026-10-17最新指令：按照建议路线持续开发，不逐项汇报和确认；需要本人确认或更改的部分先跳过，待后续补齐后再实施。以Flutter Web为主，暂停Android构建和安装。** 常规可逆工程选择直接执行，验证与边界持续写入本文件；未提供的模型账号与预算不能由持续开发授权推定，付费连接仍关闭，不推送远端、不对外部署。物理设备许可、账号/预算及真实手机条件暂缓，不反复提问，也不阻塞其他工程工作。
 
 | 项目 | 当前事实 |
 | --- | --- |
 | 仓库 | `/Users/simon/workplace/projects/simontalk`，origin为`https://github.com/simon-996/simontalk.git` |
 | Git | main保留文档基线`71ecbe0`；当前`feat/account-foundation`，核对最新日志/状态；未推送 |
-| 客户端 | `apps/client/`，Android/iOS/Web；真实注册、登录、重设、初始难度、偏好保存与退出 |
+| 客户端 | `apps/client/`，真实账号/偏好；Web麦克风检查和WebRTC传输/Dart桥接；原生工程保留 |
 | 后端 | `services/api/`，FastAPI、PostgreSQL17、Alembic；账号与CLI、准备登记/快照/幂等/并发；真实语音准入固定关闭 |
 | 本地数据 | Compose专用数据库127.0.0.1:54329；开发库`simontalk`、独立测试库`simontalk_test` |
 | 页面 | 深浅色、双弧线品牌、响应式表单、错误恢复；Web本机麦克风检查；没有练习占位页 |
-| 检查 | 本轮后端62项通过、准备定向20项及Ruff/Alembic通过；此前Flutter41项/Node26项、分析与Web release及字体验证通过 |
+| 检查 | 本轮Flutter41项/Node51项、分析、Web release、字体和真实浏览器合成回环通过；此前后端62项/准备20项及Ruff/Alembic通过，本轮未重跑后端 |
 | 原生 | Android曾因磁盘不足构建失败，没有APK；已暂停并清理本轮新增资源。Android/iOS工程保留，均无设备验收证据 |
 | CI | 已配置PostgreSQL/API检查、Flutter分析/测试/Web构建；APK步骤已移除，未推送、远端未运行 |
-| 语音/学习 | 实时语音、反馈、重练、记录、用量与成本控制未实现 |
+| 语音/学习 | Web媒体底层已实现但未接练习页；供应商语音、反馈、重练、记录、用量与成本控制未实现 |
 | 生产 | 没有线上服务；TLS、正式签名、备份恢复与运维待后续 |
 
-启动、维护与检查见[本地开发](docs/development/local-development.md)，最新进展见[准备登记验证](docs/development/2026-10-17-practice-preparation-verification.md)、[麦克风检查](docs/development/2026-10-17-microphone-check-verification.md)和[Web字体验证](docs/development/2026-10-16-web-font-verification.md)。账号基础、首屏/键盘和Android清理保留历史记录。
+启动、维护与检查见[本地开发](docs/development/local-development.md)，最新进展见[WebRTC传输验证](docs/development/2026-10-17-web-realtime-transport-verification.md)、[准备登记验证](docs/development/2026-10-17-practice-preparation-verification.md)和[麦克风检查](docs/development/2026-10-17-microphone-check-verification.md)。字体、账号基础、首屏/键盘和Android清理保留历史记录。
 
 ## 3. 已确认与工程采用
 
@@ -43,17 +43,17 @@
 | 邀请码+用户名/密码 | 已实现；移动opaque Bearer安全存储，Web HttpOnly Cookie+CSRF；服务器存token摘要，Argon2id存密码 |
 | 邀请72小时/重设15分钟/会话固定7天 | 工程参数，有事务并发与撤销测试 |
 | 字体与渲染 | 原生系统字体；Web完整Noto Sans SC WOFF2约7.8MB、保留30,890映射/可变字重，注册前校验摘要；本地Roboto/CanvasKit；HTTPS或可信loopback |
-| 实时语音 | flutter_webrtc+千问北京地域WebRTC为首轮候选，未集成或证明费用可控 |
+| 实时语音 | 千问北京地域WebRTC仍为首轮候选；Web工程采用浏览器原生WebRTC与Dart桥接，原生恢复时评估flutter_webrtc；未接供应商或证明费用可控 |
 | 音频/后台/删除 | 默认不保存原始音频、前台练习后台暂停、删除级联关联内容，仍按总纲建议状态推进 |
 
 工程选择是在开发授权内沿用既有方案，不冒充用户逐项审批。决策见[产品总纲](docs/superpowers/specs/2026-10-15-simontalk-mvp-design.md)和[基础决策](docs/architecture/2026-10-15-foundation-decisions.md)，当前API以[账号契约](docs/architecture/2026-10-15-account-api.md)为准。
 
 ## 4. 下一步
 
-1. 以Flutter Web持续推进：准备登记/快照/幂等/并发已实现，真实准入503且不写数据。后续围绕真实语音继续准备能力契约、事件/连接生命周期与验证方法；模型/预算不足时不接付费连接，不用替身证明真实语音。实际麦克风、手机/读屏/大陆网络仍待验收，不宣称阶段2全部完成。原生构建/下载/模拟器继续暂停。
+1. 以Flutter Web持续推进：准备登记与WebRTC传输底层已实现。后续按技术设计补受鉴权的连接尝试代次/租约、供应商能力/事件映射与持久观测；准入仍503，不用测试许可开放真实连接。模型/预算或设备条件不足的任务先跳过，继续不依赖它们的工程；原生构建/下载/模拟器继续暂停。
 2. 本地功能分支核对最新提交与干净状态，不擅自推送或部署；之后获推送授权时运行Web/API远端CI。
 3. 应用内浏览器预检后传输异常本轮再次出现一次；明确重试后安全凭证提示、再次提交登录及退出成功。根因未确定，未调整CORS/CSRF、不自动重放，继续观察。
-4. 模型账号/地域/预算明确后推进最小真实语音闭环，实测插话、断线、释放、上游终止与计量，有证据后增加练习页。
+4. 待用户后续补齐账号/地域/预算与设备条件，再做物理麦克风及最小供应商语音闭环，实测插话、断线、释放、上游终止与计量，有证据后增加练习页。当前不主动索要重复确认，不把这些暂缓项冒充完成。
 
 | 缺少输入或证据 | 影响 |
 | --- | --- |
@@ -67,7 +67,7 @@
 | --- | --- |
 | 1方案准备 | 工程前置落实；模型、费用与真机条件在对应任务前补齐 |
 | 2工程底座 | 账号/偏好、首屏恢复和键盘选择已实现；Web性能与完整浏览器验收未完成，原生暂停 |
-| 3真实语音 | 准备登记与默认拒绝已实现；真实媒体未接入，模型/预算/终止实测缺失 |
+| 3真实语音 | 准备登记、默认拒绝、Web传输底层及合成输入回环通过；供应商语音、模型事件、费用与终止实测缺失 |
 | 4学习闭环 | 未开始 |
 | 5可靠性/成本 | 未开始 |
 | 6Web交付与朋友试用 | 未开始；原生分发暂停 |
@@ -91,6 +91,6 @@
 
 本批见[实施计划](docs/superpowers/plans/2026-10-15-account-foundation.md)，后续对照[交互](docs/design/2026-10-15-screen-and-interaction-spec.md)、[视觉](docs/design/2026-10-15-visual-design-spec.md)和[验证](docs/validation/2026-10-15-validation-plan.md)。本机已安装Flutter响应式/预览/布局排查与UI/UX Pro Max，另有design-taste-frontend；它们不随Git克隆自动安装，也不构成产品验收。
 
-最近工作：准备登记的所有权、全量快照、UUID幂等、User锁/部分唯一索引、取消保护；62项后端与20项定向通过，Ruff/迁移检查通过，独立复核无P1/P2。开发库新增表迁移后API已重启，真实HTTP创建503无写入，仍1账号/0练习。此前Web麦克风检查41项Flutter/26项Node及浏览器准备/晚到就绪验证通过；未采集硬件。字体压缩56.2%保留全部覆盖。原生与Previewer限制仍有效；详见验证记录。
+最近工作：WebRTC传输与Dart桥接，配置确认前不上行、双方事件通道、静音/播放边界、超时/后台/晚到释放；Flutter41项、Node51项与分析/构建/字体检查通过。真实IAB双PeerConnection合成静音回环通过，未申请物理麦克风、未连接供应商。独立复核发现的待定播放阻塞激活P2已修复；最终22项定向通过，无剩余P1/P2。后端、开发库与真实503策略未改，本轮未重跑后端。原生与Previewer限制仍有效。当前功能分支本地保存，未推送/部署；详见[本轮验证](docs/development/2026-10-17-web-realtime-transport-verification.md)。
 
 后续交接更新完成内容/证据、剩余问题、可执行下一步、缺少输入和提交/推送/部署状态。用户最新指令优先，不沿用旧阶段边界。

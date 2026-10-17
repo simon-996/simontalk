@@ -9,6 +9,7 @@
 | 首批验证 | 2026-10-16用户更新为Flutter Web优先；Android构建与设备验收暂停，保留Android/iOS工程，后续恢复时单独验证 |
 | Flutter | 使用本机 stable 3.47.5 / Dart 3.13.4，不为本次开发升级全局 SDK |
 | 客户端 | Riverpod、go_router、http；移动端凭证使用 flutter_secure_storage，Web 使用 HttpOnly Cookie |
+| Web媒体底层 | 2026-10-17工程采用浏览器原生RTCPeerConnection，经dart:js_interop封装传输接口；不新增原生依赖。模型协议、供应商鉴权与物理设备验收仍待接入，原生恢复时另行评估flutter_webrtc |
 | 后端 | Python 3.13、uv、FastAPI、Pydantic、同步 SQLAlchemy、psycopg、Alembic |
 | 数据库 | PostgreSQL 17，开发环境使用独立 Docker Compose 服务，端口仅绑定本机 |
 | 身份 | 单次邀请码、用户名/密码；随机 opaque session、摘要存储、固定 7 天；密码 Argon2id |

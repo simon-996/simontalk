@@ -73,6 +73,8 @@
 
 阿里云文档明确区分 WebRTC 媒体轨道与 DataChannel，并要求 AppServer 参与 SDP 鉴权；它不提供专用 WebRTC SDK。[官方 WebRTC 接入说明](https://help.aliyun.com/zh/model-studio/realtime-webrtc-access)与 [flutter_webrtc 包说明](https://pub.dev/packages/flutter_webrtc)分别证明接口和组件能力，不能代替这两者在本项目三端上的集成验证。
 
+2026-10-17工程推进：当前Web优先阶段使用浏览器原生RTCPeerConnection和Dart JS interop，暂不增加原生依赖。已实现的是供应商无关的传输底层`RealtimeTransport`：一次信令、客户端/服务端事件通道、显式配置确认后的上行、静音、播放观察与本地关闭。`start`只表示传输及事件通道可用；供应商适配器收到配置确认后调用`activate`。激活完成与实际播放独立；`playback_waiting`/`playback_blocked`不冒充播放成功，`local_closed`不代表上游费用终止。完整领域`RealtimeSession`、供应商事件映射和业务连接代次仍待实现，不能把底层直接接到页面当成真实练习。[底层设计](../superpowers/specs/2026-10-17-web-realtime-transport-design.md)与[验证边界](../development/2026-10-17-web-realtime-transport-verification.md)。
+
 ### 3.2 开始一次练习
 
 1. 客户端说明麦克风用途，用户点击开始；申请权限并处理 Web 自动播放限制。尚未就绪时界面显示连接中，不显示正在听。

@@ -95,6 +95,13 @@
       window.addEventListener('error', (event) => {
         const optionalSource = event.filename || event.target?.src;
         const optionalUrl = optionalSource ? new URL(optionalSource, document.baseURI) : null;
+        if (event.target?.id === 'realtime-loader' ||
+            (optionalUrl?.origin === new URL(document.baseURI).origin &&
+             /\/realtime_transport\.js$/.test(optionalUrl.pathname))) {
+          window.simontalkRealtimeFailed = true;
+          window.dispatchEvent(new Event('simontalk-realtime-ready'));
+          return;
+        }
         if (event.target?.id === 'microphone-loader' ||
             (optionalUrl?.origin === new URL(document.baseURI).origin &&
              /\/microphone_probe\.js$/.test(optionalUrl.pathname))) {
@@ -114,6 +121,7 @@
     })();
   </script>
   <script id="microphone-loader" src="microphone_probe.js" defer></script>
+  <script id="realtime-loader" src="realtime_transport.js" defer></script>
   <script id="flutter-loader" src="flutter_bootstrap.js" async></script>
 </body>
 </html>

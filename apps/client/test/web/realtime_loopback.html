@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="zh-CN">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SimonTalk 本地 WebRTC 回环检查</title>
+<style>
+  body { max-width: 760px; margin: 40px auto; padding: 0 24px; font: 17px/1.7 system-ui; }
+  button { min-height: 48px; padding: 8px 20px; font: inherit; }
+  pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+</style>
+<h1>本地 WebRTC 回环检查</h1>
+<p>开发验收工具：执行生产传输脚本，使用合成静音输入代替麦克风。两端都在本页，不连接模型、不录音、不申请设备权限。这不代表真实硬件、供应商或费用验收。</p>
+<button id="run">运行本地检查</button>
+<pre id="result" role="status" aria-live="polite">尚未运行</pre>
+<script src="../../web/realtime_transport.js"></script>
+<script>
+  const run = document.getElementById('run');
+  const result = document.getElementById('result');
+  run.addEventListener('click', async () => {
+    run.disabled = true;
+    result.textContent = '检查中：本地合成静音输入，未申请麦克风。';
+    const originalCapture = navigator.mediaDevices.getUserMedia;
+    let context, oscillator, input, remote, transport, timeout;
+    let ending = false;
+    let finishWaiting;
+    const ended = new Promise((resolve) => { finishWaiting = resolve; });
+    const wait = async (promise) => {
+      const value = await Promise.race([promise, ended]);
+      if (ending) throw new Error('fixture_ended');
+      return value;
+    };
+    let acknowledged = false;
+    let earlyAudio = false;
+    let cancelled = 0;
+    let sentConfiguration = false;
+    let inbound;
+    const channels = [];
+    const observations = [];
+    let receivedAudio;
+    const audioReceived = new Promise((resolve) => { receivedAudio = resolve; });
+    let activated;
+    const activation = new Promise((resolve) => { activated = resolve; });
+    const require = (condition, code) => { if (!condition) throw new Error(code); };
+    function iceComplete(peer) {
+      return new Promise((resolve) => {
+        const check = () => {
+          if (peer.iceGatheringState === 'complete') {
+            peer.removeEventListener('icegatheringstatechange', check);
+            resolve();
+          }
+        };
+        peer.addEventListener('icegatheringstatechange', check);
+        check();
+      });
+    }
+    try {
+      const completed = (async () => {
+        context = new AudioContext();
+        await wait(context.resume());
+        const destination = context.createMediaStreamDestination();
+        oscillator = context.createConstantSource();
+        oscillator.offset.value = 0;
+        oscillator.connect(destination); // No connection to the hardware speaker destination.
+        oscillator.start();
+        input = destination.stream;
+        navigator.mediaDevices.getUserMedia = async (constraints) => {
+          require(constraints.video === false, 'unexpected_camera_request');
+          return input;
+        };
+        remote = new RTCPeerConnection({ iceServers: [] });
+        // Negotiate a silent remote sender too: play() may wait for its first packet.
+        remote.addTransceiver('audio', { direction: 'sendrecv' });
+        remote.addEventListener('track', ({ track }) => {
+          inbound = track;
+          track.addEventListener('unmute', () => {
+            if (!acknowledged) earlyAudio = true;
+            receivedAudio();
+          });
+        });
+        // Exercise a server-created control channel, alongside the client channel.
+        const control = remote.createDataChannel('server-events');
+        channels.push(control);
+        control.addEventListener('open', () => {
+          control.send(JSON.stringify({ type: 'session.created' }));
+        });
+        control.addEventListener('message', ({ data }) => {
+          const event = JSON.parse(data);
+          if (event.type === 'session.update') {
+            acknowledged = true;
+            control.send(JSON.stringify({ type: 'session.updated' }));
+          }
+        });
+        remote.addEventListener('datachannel', ({ channel }) => channels.push(channel));
+        transport = window.simontalkRealtime.create();
+        const started = transport.start(async (offer) => {
+          await wait(remote.setRemoteDescription({ type: 'offer', sdp: offer }));
+          const answer = await wait(remote.createAnswer());
+          await wait(remote.setLocalDescription(answer));
+          await wait(iceComplete(remote));
+          return remote.localDescription.sdp;
+        }, (code, detail) => {
+          observations.push({ code, detail });
+          if (code === 'transport_connected') sendConfiguration();
+        }, (json, id) => {
+          const event = JSON.parse(json);
+          if (event.type === 'session.created') {
+            control.idForTransport = id;
+            sendConfiguration();
+          } else if (event.type === 'session.updated') {
+            transport.activate(id).then(activated);
+          }
+        }, () => { cancelled++; });
+        function sendConfiguration() {
+          if (sentConfiguration || !control.idForTransport ||
+              !observations.some((event) => event.code === 'transport_connected')) return;
+          sentConfiguration = true;
+          const error = transport.send('{"type":"session.update"}', control.idForTransport);
+          if (error) activated(error);
+        }
+        require(await wait(started) === null, 'transport_start_failed');
+        require(await wait(activation) === null, 'activation_failed');
+        await wait(audioReceived);
+        require(inbound && !earlyAudio && acknowledged, 'audio_preceded_configuration');
+        transport.setMuted(true);
+        require(input.getAudioTracks()[0].enabled === false, 'mute_failed');
+        transport.setMuted(false);
+        require(input.getAudioTracks()[0].enabled === true, 'unmute_failed');
+        transport.stop(); transport.stop();
+        require(input.getTracks().every((track) => track.readyState === 'ended'), 'capture_not_released');
+        require(cancelled === 1, 'signalling_cancellation_not_idempotent');
+        require(observations.filter((event) => event.code === 'local_closed').length === 1, 'close_not_idempotent');
+        return '通过：真实浏览器 ICE/SDP、客户端及服务端 DataChannel、配置确认后合成音轨上行、静音恢复、本地关闭和信令取消。\n输入：合成静音；物理麦克风：未申请；供应商：未连接。';
+      })();
+      const bounded = new Promise((_, reject) => {
+        timeout = setTimeout(() => reject(new Error('loopback_timeout')), 15000);
+      });
+      result.textContent = await Promise.race([completed, bounded]);
+    } catch (error) {
+      // Codes are authored in this fixture; raw SDP, provider and device details are not displayed.
+      result.textContent = `未通过：${error.message === 'loopback_timeout' ? '本地连接超时' : '本地媒体或协议检查失败'}。需排查，不能算作验收成功。`;
+    } finally {
+      ending = true;
+      finishWaiting();
+      clearTimeout(timeout);
+      navigator.mediaDevices.getUserMedia = originalCapture;
+      transport?.stop();
+      input?.getTracks().forEach((track) => track.stop());
+      channels.forEach((channel) => channel.close());
+      remote?.close();
+      if (oscillator) { oscillator.stop(); oscillator.disconnect(); }
+      if (context) await context.close().catch(() => {});
+      run.disabled = false;
+    }
+  });
+</script>
+</html>

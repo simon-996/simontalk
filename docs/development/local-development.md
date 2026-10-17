@@ -110,6 +110,8 @@ Web字体完整性校验在仓库根目录运行`uv run scripts/check_web_fonts.
 
 Web偏好页的“麦克风检查”只在用户点击后申请音频，展示本机短时输入音量，最长30秒，不录音、不上传、不调用模型。取消/超时后的晚到授权也会释放，后台/退出/账号组件更换会停止；回前台需重新开始。真实麦克风、系统许可和手机浏览器仍待人工验收，不能用替身测试充当硬件证据。详见[本机检查验证](2026-10-17-microphone-check-verification.md)。
 
+WebRTC生产传输底层与Dart桥接已实现，尚未接到练习页或供应商。Node检查包含Dart→JS桥接编译；`test/web/realtime_loopback.html`可在独立本地开发服务中执行真实WebRTC回环，输入为合成静音，不申请物理麦克风、不调用模型。它不进入发布包，不作为真实语音或费用验收。步骤与边界见[传输层验证](2026-10-17-web-realtime-transport-verification.md)。
+
 组件预览位于 `lib/design/account_components.dart`，只展示品牌和按钮的深浅色，不连接服务、不申请媒体权限。品牌启动图标可以用 `uv run --with pillow scripts/generate_brand_icons.py` 重新生成，脚本与 Flutter 的绘制路径保持一致。
 
 另有标题/错误的浅深色320宽、200%字号预览定义。2026-10-16实际运行Previewer时，Web服务可启动但显示“No previews detected”；没有把它视为预览验收成功。详细现象见Web验证记录，未修改SDK或把临时生成目录提交到Git。独立预览工具尚待排查，页面可继续通过widget测试和正式Web产物验证。
