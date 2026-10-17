@@ -15,8 +15,13 @@ extension type _StartupEvent._(JSObject _) implements JSObject {
   external _StartupEvent(String type);
 }
 
-Future<void> loadAppFonts() async {
-  final data = await rootBundle.load('assets/fonts/NotoSansSC.woff2');
+Future<void> loadAppFonts({
+  String assetPrefix = '',
+  List<String> aliases = const [],
+}) async {
+  final data = await rootBundle.load(
+    '${assetPrefix}assets/fonts/NotoSansSC.woff2',
+  );
   final bytes = data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
   if (bytes.length != webFontLength) {
     throw StateError('Unexpected font length');
@@ -28,8 +33,10 @@ Future<void> loadAppFonts() async {
   if (digest != webFontSha256) {
     throw StateError('Unexpected font content');
   }
-  final loader = FontLoader('NotoSansSC')..addFont(Future.value(data));
-  await loader.load();
+  await Future.wait([
+    for (final family in {'NotoSansSC', ...aliases})
+      (FontLoader(family)..addFont(Future.value(data))).load(),
+  ]);
 }
 
 void reportStartupFailure() {

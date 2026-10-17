@@ -3,6 +3,7 @@ import 'package:flutter/widget_previews.dart';
 
 import '../../design/account_components.dart';
 import '../../design/app_theme.dart';
+import '../../design/preview_surface.dart';
 import 'microphone_check_controller.dart';
 import 'microphone_probe.dart';
 import 'microphone_probe_factory.dart';
@@ -156,7 +157,11 @@ class MicrophoneCheckView extends StatelessWidget {
   }
 }
 
-@Preview(name: '麦克风 · 许可失败 · 浅色', size: Size(320, 760))
+@Preview(
+  name: '麦克风 · 许可失败 · 浅色',
+  size: Size(320, 760),
+  wrapper: previewWithFonts,
+)
 Widget microphoneFailurePreview() => MaterialApp(
   theme: buildAppTheme(Brightness.light),
   home: const Scaffold(
@@ -169,7 +174,11 @@ Widget microphoneFailurePreview() => MaterialApp(
   ),
 );
 
-@Preview(name: '麦克风 · 等待 · 深色大字号', size: Size(320, 880))
+@Preview(
+  name: '麦克风 · 等待 · 深色大字号',
+  size: Size(320, 880),
+  wrapper: previewWithFonts,
+)
 Widget microphoneWaitingPreview() => MaterialApp(
   theme: buildAppTheme(Brightness.dark),
   home: const MediaQuery(

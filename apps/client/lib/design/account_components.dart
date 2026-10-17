@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 
 import 'app_theme.dart';
+import 'preview_surface.dart';
 
 class BrandMark extends StatelessWidget {
   const BrandMark({super.key, this.size = 64});
@@ -254,7 +255,7 @@ class PrimaryAction extends StatelessWidget {
   );
 }
 
-@Preview(name: '品牌与按钮 · 浅色', size: Size(390, 320))
+@Preview(name: '品牌与按钮 · 浅色', size: Size(390, 320), wrapper: previewWithFonts)
 Widget brandPreview() => MaterialApp(
   theme: buildAppTheme(Brightness.light),
   home: const AccountFrame(
@@ -269,7 +270,12 @@ Widget brandPreview() => MaterialApp(
   ),
 );
 
-@Preview(name: '品牌与按钮 · 深色', size: Size(390, 320), brightness: Brightness.dark)
+@Preview(
+  name: '品牌与按钮 · 深色',
+  size: Size(390, 320),
+  brightness: Brightness.dark,
+  wrapper: previewWithFonts,
+)
 Widget darkBrandPreview() => MaterialApp(
   theme: buildAppTheme(Brightness.dark),
   home: const AccountFrame(
@@ -284,13 +290,14 @@ Widget darkBrandPreview() => MaterialApp(
   ),
 );
 
-@Preview(name: '标题与错误 · 窄屏大字号', size: Size(320, 640))
+@Preview(name: '标题与错误 · 窄屏大字号', size: Size(320, 640), wrapper: previewWithFonts)
 Widget accessibleStatusPreview() => _statusPreview(Brightness.light);
 
 @Preview(
   name: '标题与错误 · 深色大字号',
   size: Size(320, 640),
   brightness: Brightness.dark,
+  wrapper: previewWithFonts,
 )
 Widget darkAccessibleStatusPreview() => _statusPreview(Brightness.dark);
 

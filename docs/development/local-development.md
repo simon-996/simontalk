@@ -114,6 +114,6 @@ WebRTC生产传输底层与Dart桥接已实现，尚未接到练习页或供应�
 
 组件预览位于 `lib/design/account_components.dart`，只展示品牌和按钮的深浅色，不连接服务、不申请媒体权限。品牌启动图标可以用 `uv run --with pillow scripts/generate_brand_icons.py` 重新生成，脚本与 Flutter 的绘制路径保持一致。
 
-另有标题/错误的浅深色320宽、200%字号预览定义。2026-10-16实际运行Previewer时，Web服务可启动但显示“No previews detected”；没有把它视为预览验收成功。详细现象见Web验证记录，未修改SDK或把临时生成目录提交到Git。独立预览工具尚待排查，页面可继续通过widget测试和正式Web产物验证。
+另有标题/错误及麦克风失败/等待的浅深色320宽、200%字号预览。2026-10-17默认Previewer实际发现6项，修复独立入口的包资产字体初始化后，卡片与外层标题中文均实际可见；此前空注册问题本轮未复现，不推定其根因。可运行`flutter widget-preview start --web-server --offline`并访问终端地址。连续更新时SDK热重载可能报错，字体缓存变化或报错后采用全局热重启/冷启动。未修改SDK或提交生成目录；证据与限制见[预览字体验证](2026-10-17-preview-font-verification.md)。
 
 GitHub Actions配置了独立PostgreSQL、API检查和Flutter分析/测试/Web构建。按当前Web优先方向，已移除APK自动构建步骤。未推送之前，只能声称工作流已配置，不能声称远端CI已通过。
