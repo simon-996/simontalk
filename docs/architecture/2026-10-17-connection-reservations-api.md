@@ -1,6 +1,6 @@
 # 连接尝试与业务租约契约
 
-日期：2026-10-17。实现范围是持久准备登记与业务失联检测，尚无供应商SDP代理、模型事件、媒体终止或费用结算。
+日期：2026-10-17。实现范围是持久准备登记与业务失联检测；后续已新增默认关闭的[单次信令边界](2026-10-17-guarded-signalling-api.md)，尚无供应商适配、模型事件、媒体终止或费用结算。
 
 ## 准入与身份
 
@@ -18,6 +18,7 @@
 | GET /{cid} | 无 | 200本人连接；他人、其他练习路径、不存在均404 |
 | POST /{cid}/renew-lease | client_instance_id、epoch(严格正整数) | 200更新业务租约；只有最新、未到期、非unknown/终态的连接可续租 |
 | POST /{cid}/cancel-preparation | client_instance_id、epoch | 200关闭尚未开始信令的准备；已终结not_started重放当前终态；已进入信令或上游未知409 |
+| POST /{cid}/offer | client_instance_id、epoch、offer | 受限单次交换；先提交negotiating/unknown，再调用网关，有效答案仅进入configuring；实际网关固定关闭，详见信令契约 |
 
 输出包括id、session_id、client_instance_id、epoch、configuration、status、termination_status、state_reason、last_seen_at、lease_expires_at、created_at、ended_at。configuration只有服务器公开配置标识，不含长期密钥或SDP。
 
@@ -33,7 +34,7 @@
 | negotiating/configuring/ready/closing + unknown | unknown、无结束时间、lease_expired | 是，不能声称已终止或零费用 |
 | unknown或已终态 | 扫描不重复修改 | unknown继续占用 |
 
-本批只能创建preparing/not_started、取消为closed/not_started、或安全到期为failed/not_started。其他媒体状态的处理用于未来集成边界及明确测试种子；未提供客户端设置状态/confirmed的入口。未来网关调用上游前，必须先事务性记录negotiating/unknown，不能在外部调用后才补写占用。
+登记可创建preparing/not_started、取消为closed/not_started、或安全到期为failed/not_started。受限信令用例另可将准备推进negotiating/unknown，成功进入configuring，失败保留unknown；真实运行的准入/网关仍关闭。未提供客户端设置状态/confirmed的入口，ready及可信终止仍待媒体集成；调用网关前必须先事务提交占用。
 
 安全取消/到期后，所有尝试均未启动上游的练习可回created；存在历史上游证据则回interrupted。原准备取消接口额外检查连接占用和上游历史，禁止将已建/未知媒体当作未开始准备取消。未知连接也独立阻止创建新练习，避免父状态错误解除占用。
 

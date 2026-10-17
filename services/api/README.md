@@ -8,6 +8,8 @@ Python 3.13+、uv、FastAPI、同步 SQLAlchemy/psycopg 与 PostgreSQL 17。账�
 
 另有`GET /v1/practice-sessions/current`按本人身份只读恢复当前登记；API正常lifespan每15秒自动执行一批连接租约及300秒闲置准备清理，未知/历史上游继续保留。详见[恢复与清理契约](../../docs/architecture/2026-10-17-preparation-recovery-and-cleanup.md)。
 
+受限`POST /v1/practice-sessions/{sid}/connections/{cid}/offer`已实现单次交换用例：先持久negotiating/unknown和摘要，再释放数据库锁调用异步网关；重复、超时及晚到结果均保守处理。实际网关与准入均固定关闭，没有供应商适配或调用；详见[信令契约](../../docs/architecture/2026-10-17-guarded-signalling-api.md)。
+
 ## 本地启动
 
 从仓库根目录启动专用开发数据库：
@@ -73,4 +75,4 @@ uv run alembic check
 
 测试覆盖邀请/偏好/重设的并发原子性、凭证摘要、用户隔离、过期/撤销/禁用、Cookie/CSRF/Origin、生产 Secure、持久限流容量与清理、敏感信息脱敏以及真实数据库断连时的 readiness。
 
-练习/连接准备测试另覆盖同/异幂等键并发、数据库所有权/唯一/证据组合约束、快照不变、跨应用实例重放、持锁期间撤销/禁用、旧代次与客户端、续租/扫描/取消竞争及真实扫描CLI。SDP网关、实际媒体终止、转写和费用尚未实现；取消准备不能用于关闭已建媒体。
+练习/连接准备测试另覆盖同/异幂等键并发、数据库所有权/唯一/证据组合约束、快照不变、跨应用实例重放、持锁期间撤销/禁用、旧代次与客户端、续租/扫描/取消竞争及真实扫描CLI。信令测试覆盖实际分块体积/时限、单次持久意图、外部交换期间释放锁、身份/租约变化和失败保留unknown；网关成功路径仅为独立测试替身。供应商适配、实际媒体终止、转写和费用尚未实现；取消准备不能用于关闭已建媒体。

@@ -169,7 +169,21 @@ class RealtimeConnection(Base):
     lease_expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     ended_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    offer_digest: Mapped[str | None] = mapped_column(String(64))
+    signalling_started_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    signalling_finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     __table_args__ = (
+        CheckConstraint(
+            "(offer_digest IS NULL) = (signalling_started_at IS NULL) AND "
+            "(offer_digest IS NULL OR offer_digest ~ '^[a-f0-9]{64}$') AND "
+            "(signalling_finished_at IS NULL OR (signalling_started_at IS NOT NULL "
+            "AND signalling_finished_at >= signalling_started_at))",
+            name="signalling_intent_evidence",
+        ),
+        CheckConstraint(
+            "offer_digest IS NULL OR termination_status <> 'not_started'",
+            name="signalling_termination_evidence",
+        ),
         ForeignKeyConstraint(
             ["session_id", "user_id"],
             ["practice_sessions.id", "practice_sessions.user_id"],

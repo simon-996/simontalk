@@ -15,10 +15,13 @@ from simontalk_api.config import Settings
 from simontalk_api.connection_routes import router as connection_router
 from simontalk_api.db import create_database
 from simontalk_api.errors import APIError
+from simontalk_api.offer_body_limit import OfferBodyLimitMiddleware
 from simontalk_api.practice import UnavailableAdmission
 from simontalk_api.practice_maintenance import PracticeMaintenanceRunner
 from simontalk_api.practice_routes import router as practice_router
 from simontalk_api.routes import router
+from simontalk_api.signalling import UnavailableSignallingGateway
+from simontalk_api.signalling_routes import router as signalling_router
 
 logger = logging.getLogger(__name__)
 
@@ -65,7 +68,9 @@ def create_app(settings: Settings | None = None):
     )
     app.state.settings = settings or Settings()
     app.state.practice_admission = UnavailableAdmission()
+    app.state.signalling_gateway = UnavailableSignallingGateway()
     app.state.engine, app.state.session_factory = create_database(app.state.settings.database_url)
+    app.add_middleware(OfferBodyLimitMiddleware)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=app.state.settings.allowed_origins,
@@ -140,4 +145,5 @@ def create_app(settings: Settings | None = None):
     app.include_router(router)
     app.include_router(practice_router)
     app.include_router(connection_router)
+    app.include_router(signalling_router)
     return app

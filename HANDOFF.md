@@ -12,7 +12,7 @@
 
 ## 2. 当前阶段与边界
 
-**第2阶段账号/偏好、Web首屏与本机麦克风检查已实现；第3阶段准备登记/只读恢复/自动清理、连接代次/业务租约、客户端准备生命周期、WebRTC传输底层与Flutter桥接已实现，真实浏览器合成输入回环通过。客户端准备/恢复入口尚未接到媒体协调器或练习页面；阶段2完整设备验收、供应商真实语音与学习闭环均未完成。**
+**第2阶段账号/偏好、Web首屏与本机麦克风检查已实现；第3阶段准备/恢复/自动清理、代次/租约、客户端准备生命周期、WebRTC底层/Flutter桥接及受限单次SDP信令/可取消HTTP适配已实现，真实浏览器合成输入回环通过。各模块尚未组合成媒体协调器或练习页面；实际准入与网关均关闭，阶段2完整设备验收、供应商真实语音与学习闭环均未完成。**
 
 用户已要求“开始吧”和多次“继续”，允许应用工程及本地验证。**2026-10-17最新指令：按照建议路线持续开发，不逐项汇报和确认；需要本人确认或更改的部分先跳过，待后续补齐后再实施。以Flutter Web为主，暂停Android构建和安装。** 常规可逆工程选择直接执行，验证与边界持续写入本文件；未提供的模型账号与预算不能由持续开发授权推定，付费连接仍关闭，不推送远端、不对外部署。物理设备许可、账号/预算及真实手机条件暂缓，不反复提问，也不阻塞其他工程工作。
 
@@ -20,17 +20,17 @@
 | --- | --- |
 | 仓库 | `/Users/simon/workplace/projects/simontalk`，origin为`https://github.com/simon-996/simontalk.git` |
 | Git | main保留文档基线`71ecbe0`；当前`feat/account-foundation`，核对最新日志/状态；未推送 |
-| 客户端 | `apps/client/`，真实账号/偏好；练习HTTP仓库/只读当前登记/信令前准备生命周期、Web麦克风检查和WebRTC传输/Dart桥接；原生工程保留 |
-| 后端 | `services/api/`，FastAPI/PostgreSQL17/Alembic；账号、练习/连接准备与只读恢复、代次、幂等/并发、周期清理与维护CLI；真实语音准入固定关闭 |
+| 客户端 | `apps/client/`，真实账号/偏好；准备HTTP仓库/只读恢复/信令前生命周期、Web麦克风与WebRTC/Dart桥接、独立单次HTTP signaller；原生工程保留 |
+| 后端 | `services/api/`，FastAPI/PostgreSQL17/Alembic；账号、准备/恢复、代次/租约、周期清理与CLI、持久单次信令用例；真实语音准入与网关固定关闭 |
 | 本地数据 | Compose专用数据库127.0.0.1:54329；开发库`simontalk`、独立测试库`simontalk_test` |
 | 页面 | 深浅色、双弧线品牌、响应式表单、错误恢复；Web本机麦克风检查；没有练习占位页 |
-| 检查 | 本轮后端133项、Flutter82项（准备39项）、Node51项、分析/格式、Ruff、开发/测试库Alembic、Web构建/字体及本地HTTP匿名401通过；此前六项预览与浏览器合成回环证据保留 |
+| 检查 | 本轮后端164项、Flutter99项（信令17项）、Node51项、分析/格式/Ruff、两库Alembic及Web构建/字体通过；本地readiness200/匿名offer401/超限413，独立审查1个P2已修复复核；此前预览与合成回环证据保留 |
 | 原生 | Android曾因磁盘不足构建失败，没有APK；已暂停并清理本轮新增资源。Android/iOS工程保留，均无设备验收证据 |
 | CI | 已配置PostgreSQL/API检查、Flutter分析/测试/Web构建；APK步骤已移除，未推送、远端未运行 |
-| 语音/学习 | 业务准备生命周期和Web媒体底层分别实现，尚未组合或接练习页；供应商语音、反馈、重练、记录、用量与成本控制未实现 |
+| 语音/学习 | 业务准备、单次HTTP信令及Web媒体底层分别实现，尚未组合或接练习页；供应商适配/语音、反馈、重练、记录、用量与成本控制未实现 |
 | 生产 | 没有线上服务；TLS、正式签名、备份恢复与运维待后续 |
 
-启动、维护与检查见[本地开发](docs/development/local-development.md)，最新进展见[恢复与自动清理验证](docs/development/2026-10-17-preparation-recovery-verification.md)、[客户端准备验证](docs/development/2026-10-17-client-preparation-verification.md)、[连接与租约验证](docs/development/2026-10-17-connection-reservations-verification.md)、[预览字体验证](docs/development/2026-10-17-preview-font-verification.md)、[WebRTC传输验证](docs/development/2026-10-17-web-realtime-transport-verification.md)、[准备登记验证](docs/development/2026-10-17-practice-preparation-verification.md)和[麦克风检查](docs/development/2026-10-17-microphone-check-verification.md)。账号基础、首屏/键盘和Android清理保留历史记录。
+启动、维护与检查见[本地开发](docs/development/local-development.md)，最新进展见[单次信令验证](docs/development/2026-10-17-guarded-signalling-verification.md)、[恢复与自动清理验证](docs/development/2026-10-17-preparation-recovery-verification.md)、[客户端准备验证](docs/development/2026-10-17-client-preparation-verification.md)、[连接与租约验证](docs/development/2026-10-17-connection-reservations-verification.md)、[预览字体验证](docs/development/2026-10-17-preview-font-verification.md)、[WebRTC传输验证](docs/development/2026-10-17-web-realtime-transport-verification.md)、[准备登记验证](docs/development/2026-10-17-practice-preparation-verification.md)和[麦克风检查](docs/development/2026-10-17-microphone-check-verification.md)。账号基础、首屏/键盘和Android清理保留历史记录。
 
 ## 3. 已确认与工程采用
 
@@ -50,7 +50,7 @@
 
 ## 4. 下一步
 
-1. 以Flutter Web持续推进：练习/连接登记、只读current恢复、自动安全清理、客户端准备与传输底层已分别实现。下一批组合业务与传输生命周期，落实受限SDP信令接口、连接代次隔离、配置确认、后台/业务失联媒体释放及持久观测。当前控制器只管理信令前准备，不能直接用于已发SDP连接；只读恢复尚无页面消费，不自动接管其他客户端，未知创建请求原key的持久恢复仍缺。准入仍503，不用测试许可开放真实连接；模型/预算/设备条件不足的任务先跳过，原生继续暂停。
+1. 以Flutter Web持续推进：准备/恢复/清理、单次受限信令与传输底层已分别实现。下一批实现媒体业务协调器，按账号和代次组合续租、HTTP信令、配置确认、后台/业务失联媒体释放及观测。当前准备控制器不能直接用于已发SDP连接；信令成功只到configuring，不能冒充ready。只读恢复尚无页面消费，不自动接管其他客户端；未知创建请求原key持久恢复及已交换丢失答案后的可信终止仍缺。准入/网关保持关闭；模型/预算/设备任务先跳过，原生继续暂停。
 2. 本地功能分支核对最新提交与干净状态，不擅自推送或部署；之后获推送授权时运行Web/API远端CI。
 3. 应用内浏览器预检后传输异常本轮再次出现一次；明确重试后安全凭证提示、再次提交登录及退出成功。根因未确定，未调整CORS/CSRF、不自动重放，继续观察。
 4. 待用户后续补齐账号/地域/预算与设备条件，再做物理麦克风及最小供应商语音闭环，实测插话、断线、释放、上游终止与计量，有证据后增加练习页。当前不主动索要重复确认，不把这些暂缓项冒充完成。
@@ -67,7 +67,7 @@
 | --- | --- |
 | 1方案准备 | 工程前置落实；模型、费用与真机条件在对应任务前补齐 |
 | 2工程底座 | 账号/偏好、首屏恢复、键盘选择与六项组件预览通过；Web性能与完整浏览器验收未完成，原生暂停 |
-| 3真实语音 | 练习/连接登记、只读恢复/周期清理、客户端准备生命周期、代次/业务租约、默认拒绝、Web传输底层及合成回环通过；媒体业务协调、供应商语音/事件、费用与终止实测缺失 |
+| 3真实语音 | 准备/恢复/清理、客户端准备、代次/租约、持久单次信令/可取消HTTP、Web底层及合成回环通过；实际网关关闭，媒体业务协调、供应商语音/事件、费用与终止实测缺失 |
 | 4学习闭环 | 未开始 |
 | 5可靠性/成本 | 未开始 |
 | 6Web交付与朋友试用 | 未开始；原生分发暂停 |
@@ -91,6 +91,6 @@
 
 本批见[实施计划](docs/superpowers/plans/2026-10-15-account-foundation.md)，后续对照[交互](docs/design/2026-10-15-screen-and-interaction-spec.md)、[视觉](docs/design/2026-10-15-visual-design-spec.md)和[验证](docs/validation/2026-10-15-validation-plan.md)。本机已安装Flutter响应式/预览/布局排查与UI/UX Pro Max，另有design-taste-frontend；它们不随Git克隆自动安装，也不构成产品验收。
 
-最近工作：GET current按本人身份只读恢复当前占用，异常父终态仍优先unknown；300秒安全闲置准备清理、API lifespan默认15秒周期批次、局部事务超时和完整维护CLI。原始行/创建key保留，未知或历史上游不自动释放。后端133项（本轮新增42）、Flutter82项（新增4）、Node51项、分析/格式/Ruff、两库Alembic及Web构建/字体通过；独立静态复核未发现确定P1/P2，未独立重跑测试。开发库headc43a7de028f1，仍1账号/0练习/0连接；本轮已启动API，真实readiness200/current匿名401、CLI处理0/0。只读恢复尚无页面消费/接管，进程关闭期间不调度且readiness只探数据库；媒体/供应商未接入。物理/模型验证暂缓；原生暂停，Previewer连续热重载SDK限制仍在。当前功能分支本地保存，未推送/部署。
+最近工作：受限POST offer先持久negotiating/unknown、摘要/时间，再释放数据库锁交换；每连接一次、8秒等待，完成重验身份/配置/租约，晚到和失败不释放占用。客户端独立HTTP signaller总等待12秒，跟随源账号身份、校验响应、取消只关自身；每请求中止信号覆盖响应头后的body。后端164项（新增31）、Flutter99项（新增17）、Node51项、分析/格式/Ruff、两库Alembic及Web构建/字体通过。独立静态审查发现响应体取消P2，先失败回归后修复，复核未见新增确定问题；审查未独立重跑测试。开发库添加性迁移至e19bd728ca41，仍1账号/0练习/0连接；本轮重启API，真实readiness200/匿名offer401/超限413，响应头检查通过。成功信令只用独立测试替身；实际准入/网关关闭，无答案缓存、页面/媒体协调或供应商接入。物理/模型验证暂缓，原生暂停。当前功能分支本地保存，未推送/部署。
 
 后续交接更新完成内容/证据、剩余问题、可执行下一步、缺少输入和提交/推送/部署状态。用户最新指令优先，不沿用旧阶段边界。

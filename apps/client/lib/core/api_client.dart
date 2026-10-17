@@ -22,6 +22,7 @@ class ApiClient {
     required this.tokenStore,
     required this._client,
     this.timeout = const Duration(seconds: 15),
+    this._accountIdentity,
   });
 
   final Uri baseUrl;
@@ -29,8 +30,30 @@ class ApiClient {
   final TokenStore tokenStore;
   final http.Client _client;
   final Duration timeout;
+  final String? Function()? _accountIdentity;
+  final _pendingRequests = <Completer<void>>{};
+  bool _closed = false;
   String? _csrf;
   String? expectedAccountId;
+
+  String? get _currentAccountId => _closed
+      ? null
+      : _accountIdentity != null
+      ? _accountIdentity()
+      : expectedAccountId;
+
+  /// Owns the supplied independent HTTP client while following this account scope.
+  ApiClient forkForAccount({
+    required String accountId,
+    required http.Client client,
+  }) => ApiClient(
+    baseUrl: baseUrl,
+    isWeb: isWeb,
+    tokenStore: tokenStore,
+    client: client,
+    timeout: timeout,
+    accountIdentity: () => _currentAccountId,
+  )..expectedAccountId = accountId;
 
   Future<Map<String, dynamic>> request(
     String method,
@@ -40,7 +63,7 @@ class ApiClient {
     String? idempotencyKey,
   }) async {
     void checkAccount() {
-      if (accountId != null && expectedAccountId != accountId) {
+      if (accountId != null && _currentAccountId != accountId) {
         throw const ApiException('account_changed', '当前账号已变化，请确认身份后再操作。');
       }
     }
@@ -70,8 +93,14 @@ class ApiClient {
       if (token != null) headers['Authorization'] = 'Bearer $token';
     }
     checkAccount();
+    final abort = Completer<void>();
+    _pendingRequests.add(abort);
     try {
-      final request = http.Request(method, baseUrl.resolve(path));
+      final request = http.AbortableRequest(
+        method,
+        baseUrl.resolve(path),
+        abortTrigger: abort.future,
+      );
       request.headers.addAll(headers);
       if (body != null) request.body = jsonEncode(body);
       final response = await (() async => http.Response.fromStream(
@@ -104,10 +133,23 @@ class ApiClient {
       throw const ApiException('network_error', '连接超时，请检查网络后重试。');
     } on http.ClientException {
       throw const ApiException('network_error', '暂时无法连接服务，请检查网络后重试。');
+    } finally {
+      // BrowserClient.close only covers requests still waiting for headers.
+      // The per-request signal also aborts an unfinished response body.
+      if (!abort.isCompleted) abort.complete();
+      _pendingRequests.remove(abort);
     }
   }
 
-  void close() => _client.close();
+  void close() {
+    if (_closed) return;
+    _closed = true;
+    for (final abort in _pendingRequests) {
+      if (!abort.isCompleted) abort.complete();
+    }
+    _pendingRequests.clear();
+    _client.close();
+  }
 
   static String _messageFor(String code) => switch (code) {
     'invite_invalid' => '邀请码无效、已使用或已过期，请向邀请人确认。',
