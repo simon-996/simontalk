@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../design/account_components.dart';
 import '../audio_check/microphone_check_panel.dart';
+import '../practice/practice_recovery_panel.dart';
 import 'account_controller.dart';
 import 'account_models.dart';
 
@@ -182,6 +183,10 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
             ),
           ],
           const Divider(),
+          if (!widget.onboarding) ...[
+            PracticeRecoveryPanel(key: ValueKey('recovery-${session.user.id}')),
+            const SizedBox(height: 24),
+          ],
           if (kIsWeb && !widget.onboarding) ...[
             MicrophoneCheckPanel(
               key: ValueKey('microphone-${session.user.id}'),

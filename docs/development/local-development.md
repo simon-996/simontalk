@@ -118,7 +118,9 @@ WebRTC生产传输底层与Dart桥接已实现，尚未接到练习页或供应�
 
 `lib/features/realtime/api_realtime_signaller.dart`提供账号绑定的独立HTTP单次交换，取消/12秒总等待只关闭自己的客户端，不关闭共享账号API。服务端受限offer路由先持久unknown意图再调用网关，实际网关仍关闭。该适配现由独立PracticeMediaController组合；原准备控制器继续只管理信令前准备。媒体控制器管理配置等待、续租、后台/账号停止和本地释放，信令后不发送准备取消。provider读取不申请媒体，协议工厂默认Unavailable，尚无页面消费；成功配置/媒体路径只使用替身。详见[信令契约](../architecture/2026-10-17-guarded-signalling-api.md)、[媒体协调契约](../architecture/2026-10-17-practice-media-coordinator.md)与[验证](2026-10-17-practice-media-coordinator-verification.md)。
 
-`connection_observation_journal.dart`现接到媒体控制器，按账号/原连接/客户端/epoch记录受限client_observed事实。64条内存队列、16条串行批次、稳定事件身份及独立HTTP的8秒总截止；失败暂停，明确retryPending复用原事件，不写浏览器存储。停止先释放再尽力提交关闭事实，上报失败不影响媒体。API同连接路径的POST/GET observations支持追加及只读分页，8KiB/5秒接收、每连接256条；历史/unknown事实不改状态或终止。读取模型/恢复页面尚缺，真实准入关闭时不会创建journal或测试数据。契约与证据见[观测说明](../architecture/2026-10-18-connection-observations-api.md)及[验证](2026-10-18-connection-observations-verification.md)。
+`connection_observation_journal.dart`现接到媒体控制器，按账号/原连接/客户端/epoch记录受限client_observed事实。64条内存队列、16条串行批次、稳定事件身份及独立HTTP的8秒总截止；失败暂停，明确retryPending复用原事件，不写浏览器存储。停止先释放再尽力提交关闭事实，上报失败不影响媒体。API同连接路径的POST/GET observations支持追加及只读分页，8KiB/5秒接收、每连接256条；历史/unknown事实不改状态或终止。真实准入关闭时不会创建journal或测试数据。契约与证据见[观测说明](../architecture/2026-10-18-connection-observations-api.md)及[验证](2026-10-18-connection-observations-verification.md)。
+
+2026-10-18偏好页新增“未结束练习”：点击才GET current，再明确查看连接记录；按原连接身份分页，每页32条。刷新清空旧快照，失败原游标重试；独立HTTP的8秒总截止、账号变化/401清空和作用域销毁保护迟到结果。只读入口不创建、续租、取消、重连或开麦，unknown与客户端本地关闭记录分别显示；没有记录时显示真实空状态。无原创建key或未提交事件的跨进程恢复。详见[只读恢复契约](../architecture/2026-10-18-readonly-recovery-client.md)与[验证](2026-10-18-readonly-recovery-verification.md)。
 
 组件预览位于 `lib/design/account_components.dart`，只展示品牌和按钮的深浅色，不连接服务、不申请媒体权限。品牌启动图标可以用 `uv run --with pillow scripts/generate_brand_icons.py` 重新生成，脚本与 Flutter 的绘制路径保持一致。
 

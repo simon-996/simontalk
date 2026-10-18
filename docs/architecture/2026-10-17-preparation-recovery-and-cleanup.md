@@ -8,7 +8,7 @@ GET `/v1/practice-sessions/current`需现有认证，客户端同时传X-Account
 
 查询通过单条SQL联查本人未终结练习和最新连接；仍占用的连接优先，即使其父练习被错误标记终结，避免隐藏unknown。只读结果是查询时的快照，后续控制仍须服务器重新鉴权、加锁与核对epoch。最新安全终结连接可随仍未终结的练习返回；已终结且没有占用的练习不作为current返回。
 
-Flutter的PracticeRepository.loadCurrentPreparation与PracticeRecovery解析此契约，核对连接归属、公开配置和代次；其他客户端实例可以被看见，读取不转移控制权、不自动接管、续租或取消。尚未接入练习页面，不能声称刷新后已自动恢复练习或原创建请求。
+Flutter的PracticeRepository.loadCurrentPreparation与PracticeRecovery解析此契约，核对连接归属、公开配置和代次；其他客户端实例可以被看见，读取不转移控制权、不自动接管、续租或取消。2026-10-18已接到偏好页的[只读查看入口](2026-10-18-readonly-recovery-client.md)，按明确操作读取当前登记和原连接观测；没有自动恢复媒体或原创建请求。
 
 ## 准备清理资格
 

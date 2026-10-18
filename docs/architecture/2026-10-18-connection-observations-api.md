@@ -37,6 +37,6 @@ ConnectionObservationJournal绑定源账号和原连接身份。最多64条内�
 
 finish不再接收新事实，尽力完成剩余队列，失败仍需明确重试；abort立即取消在途等待并清空队列。没有后台自动重放或浏览器存储。进程退出、断网、账号改变或队列/服务端上限都可能使最终关闭事实未送达。
 
-媒体控制器按本地传输连接、协议确认与activate完成分别记录事实；播放/显式静音独立。停止先释放媒体，再记录唯一local_closed并finish；账号已变则abort。观测工厂或上报失败只影响observationErrorCode和待确认计数，不阻塞媒体与安全清理。provider仍不自动登记或申请媒体，默认503不创建journal。尚无恢复页面或持久操作恢复；查询API和journal不代表供应商语音验收。
+媒体控制器按本地传输连接、协议确认与activate完成分别记录事实；播放/显式静音独立。停止先释放媒体，再记录唯一local_closed并finish；账号已变则abort。观测工厂或上报失败只影响observationErrorCode和待确认计数，不阻塞媒体与安全清理。provider仍不自动登记或申请媒体，默认503不创建journal。后续已提供偏好页的[只读恢复消费](2026-10-18-readonly-recovery-client.md)，读取不控制连接；尚无持久操作恢复或正式练习页，查询API和journal不代表供应商语音验收。
 
 证据见[本轮验证](../development/2026-10-18-connection-observations-verification.md)。

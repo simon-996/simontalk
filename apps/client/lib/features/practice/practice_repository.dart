@@ -1,5 +1,6 @@
 import '../../core/api_client.dart';
 import '../account/account_models.dart';
+import 'connection_observation_models.dart';
 import 'practice_models.dart';
 
 /// An immutable account scope; never reuse this repository after an identity change.
@@ -71,6 +72,33 @@ class PracticeRepository {
       );
   Future<PracticePreparation> cancelPractice(String id) =>
       _practice('POST', id, '/cancel-preparation');
+
+  Future<ConnectionObservationPage> loadConnectionObservations(
+    ConnectionReservation connection, {
+    int afterSequence = 0,
+    int limit = 32,
+  }) async {
+    if (afterSequence < 0 ||
+        afterSequence > 2147483647 ||
+        limit < 1 ||
+        limit > 32) {
+      throw const ApiException('invalid_request', '记录查询范围无效。');
+    }
+    return _read<ConnectionObservationPage>(
+      await _request(
+        'GET',
+        '/v1/practice-sessions/${connection.sessionId}/connections/${connection.id}/observations?after_sequence=$afterSequence&limit=$limit',
+      ),
+      (json) => ConnectionObservationPage.fromJson(
+        json,
+        connection: connection,
+        afterSequence: afterSequence,
+        limit: limit,
+      ),
+      (_) => true,
+    );
+  }
+
   Future<PracticePreparation> _practice(
     String method,
     String id, [

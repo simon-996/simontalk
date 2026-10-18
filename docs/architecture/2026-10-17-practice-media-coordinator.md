@@ -53,4 +53,4 @@ connection属性保留最近一次业务HTTP快照，信令后在下次读取/�
 
 2026-10-18已接入可选journal工厂：登记成功后才创建，传输、配置确认、激活、播放及显式静音分别记录client_observed事实；停止先释放媒体，再记录一次local_closed并finish，账号已变则abort。工厂和上报错误只影响观测错误/队列，不阻塞媒体安全清理。默认503不创建journal；构造provider仍无API或媒体副作用。后端持久化及只读分页均不改变连接/租约/终止，不能用客户端关闭事实释放unknown。详见[观测契约](2026-10-18-connection-observations-api.md)。
 
-原协调验证见[记录](../development/2026-10-17-practice-media-coordinator-verification.md)，新增组合证据见[观测验证](../development/2026-10-18-connection-observations-verification.md)。供应商协议、可信终止、转写/用量、跨进程恢复和页面仍未实现；不把端口和替身结果称为真实语音闭环。
+原协调验证见[记录](../development/2026-10-17-practice-media-coordinator-verification.md)，新增组合证据见[观测验证](../development/2026-10-18-connection-observations-verification.md)。另有偏好页[只读恢复查看](2026-10-18-readonly-recovery-client.md)，不控制此协调器。供应商协议、可信终止、转写/用量、跨进程恢复和正式练习页仍未实现；不把端口和替身结果称为真实语音闭环。

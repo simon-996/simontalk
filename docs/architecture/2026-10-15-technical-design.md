@@ -73,7 +73,7 @@
 
 阿里云文档明确区分 WebRTC 媒体轨道与 DataChannel，并要求 AppServer 参与 SDP 鉴权；它不提供专用 WebRTC SDK。[官方 WebRTC 接入说明](https://help.aliyun.com/zh/model-studio/realtime-webrtc-access)与 [flutter_webrtc 包说明](https://pub.dev/packages/flutter_webrtc)分别证明接口和组件能力，不能代替这两者在本项目三端上的集成验证。
 
-2026-10-18工程进展：当前Web优先阶段使用浏览器原生RTCPeerConnection和Dart JS interop，暂不增加原生依赖。已实现供应商无关的`RealtimeTransport`、后端[连接登记/代次与租约](2026-10-17-connection-reservations-api.md)、[受限单次信令](2026-10-17-guarded-signalling-api.md)、独立[媒体业务协调器](2026-10-17-practice-media-coordinator.md)及[受限持久观测](2026-10-18-connection-observations-api.md)。信令先持久unknown意图再调用网关；协调器组合准备、信令、续租、配置确认门槛、本地释放和有界观测journal。实际准入、网关与客户端协议工厂均固定关闭，成功媒体状态只用替身验证，没有页面或供应商调用。底层`start`仅表示传输及通道可用，协议确认后`activate`；激活与播放观察独立，`local_closed`不代表上游终止。完整领域话语/响应/播放上下文、供应商协议/网关、恢复消费和可信终止仍待实现，不能把底层直接接到页面当成真实练习。[底层设计](../superpowers/specs/2026-10-17-web-realtime-transport-design.md)与[验证边界](../development/2026-10-17-web-realtime-transport-verification.md)。
+2026-10-18工程进展：当前Web优先阶段使用浏览器原生RTCPeerConnection和Dart JS interop，暂不增加原生依赖。已实现供应商无关的`RealtimeTransport`、后端[连接登记/代次与租约](2026-10-17-connection-reservations-api.md)、[受限单次信令](2026-10-17-guarded-signalling-api.md)、独立[媒体业务协调器](2026-10-17-practice-media-coordinator.md)及[受限持久观测](2026-10-18-connection-observations-api.md)。信令先持久unknown意图再调用网关；协调器组合准备、信令、续租、配置确认门槛、本地释放和有界观测journal。实际准入、网关与客户端协议工厂均固定关闭，成功媒体状态只用替身验证，没有正式练习页面或供应商调用。底层`start`仅表示传输及通道可用，协议确认后`activate`；激活与播放观察独立，`local_closed`不代表上游终止。完整领域话语/响应/播放上下文、供应商协议/网关、媒体恢复和可信终止仍待实现，不能把底层直接接到页面当成真实练习。[底层设计](../superpowers/specs/2026-10-17-web-realtime-transport-design.md)与[验证边界](../development/2026-10-17-web-realtime-transport-verification.md)。
 
 ### 3.2 开始一次练习
 
@@ -141,7 +141,7 @@
 
 客户端信令前准备生命周期已实现：固定账号的HTTP仓库、两个原始创建键、单调时间保守截止、15秒串行续租和后台安全取消。停止后的明确重试只恢复曾发送的未知登记并清理，不推进新连接。独立媒体控制器另已组合WebRTC和配置确认端口；真实协议尚未实现，账号作用域provider尚未由页面消费。[准备契约](2026-10-17-client-preparation-lifecycle.md)与[媒体契约](2026-10-17-practice-media-coordinator.md)。
 
-受限观测已按原连接/客户端/epoch持久化，来源固定client_observed；历史或unknown可接收迟到事实，但不能改变练习/连接状态、租约、终止或占用。客户端仅用有界内存journal，稳定事件ID/序号、串行确认、显式重试、账号隔离；停止先释放媒体，上报失败不阻塞。记录可能有缺口，不包含话语、音频或用量；只读分页API已有，恢复消费尚缺。当前配置确认也只是客户端观测，不将其升级为服务端ready或可信上游证据。[观测契约](2026-10-18-connection-observations-api.md)。
+受限观测已按原连接/客户端/epoch持久化，来源固定client_observed；历史或unknown可接收迟到事实，但不能改变练习/连接状态、租约、终止或占用。客户端仅用有界内存journal，稳定事件ID/序号、串行确认、显式重试、账号隔离；停止先释放媒体，上报失败不阻塞。记录可能有缺口，不包含话语、音频或用量。偏好页已提供current及原连接分页的[只读恢复入口](2026-10-18-readonly-recovery-client.md)，明确点击才查询，不恢复媒体或接管连接。当前配置确认也只是客户端观测，不将其升级为服务端ready或可信上游证据。[观测契约](2026-10-18-connection-observations-api.md)。
 
 ### 5.2 用户轮次和 AI 已播放文字
 
