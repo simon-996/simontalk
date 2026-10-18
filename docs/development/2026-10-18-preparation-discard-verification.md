@@ -36,7 +36,7 @@
 3. 用正常API和测试准入再建立准备，追加一条client_observed local_closed；打开弹窗后，在独立测试库明确种入unknown/信令意图模拟并发变化（不是实际供应商调用）。旧确认POST返回409；页面显示拒绝及刷新入口。刷新后unknown保留且无清理按钮，查看记录实际GET到该条观测；“远端是否结束尚未确认”和“客户端报告本地已关闭”同时显示。
 4. 发现首次退出403后追踪到独立HTTP轮换了共享CSRF Cookie，而账号缓存仍旧。修改同一ApiClient家族共享令牌/pending及迟到拒绝保护，未修改服务端保护规则。重建release并重建本批夹具，重走登录→current→确认清理200→刷新空current→首次退出：POST logout为204，页面回到登录页。全程只有一次CSRF GET，没有自动重放或第二次退出。
 
-![独立测试库中的清理成功提示](screenshots/preparation-discard-confirmed.png)
+![独立测试库中的清理成功提示](screenshots/preparation-discard-confirmed.jpg)
 
 临时8001 API、7358静态服务与浏览器均已关闭；仅删除本批保存ID和邀请码摘要对应的夹具，账号级联清理，剩余discard_qa为0。开发API8000使用默认关闭的准入/网关并保持运行；真实HTTP ready200，匿名清理401 unauthorized，有request-id和no-store；允许来源预检200且credentials=true。开发库只读事务核对1账号、0练习、0连接、0观测，head f80e9c1a24bd；没有开发练习种子。
 

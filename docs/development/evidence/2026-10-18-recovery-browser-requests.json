@@ -1,0 +1,335 @@
+{
+  "date": "2026-10-18",
+  "baseline": "a6b7eab",
+  "environment": "local simontalk_test only",
+  "notes": [
+    "Generated from actual temporary API audit; resource UUIDs replaced by stable test labels.",
+    "Entries 13–19 are mobile API fixture preparation between browser cases.",
+    "The stopped-server read has no API entry; no request bodies, credentials, Cookie or CSRF values recorded.",
+    "Status 200 on the delayed discard is server-side completion; browser discarded the response at its deadline."
+  ],
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401,
+      "account_binding": null,
+      "sequence": 1,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200,
+      "account_binding": null,
+      "sequence": 2,
+      "source": "browser"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "account_binding": null,
+      "sequence": 3,
+      "source": "browser"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "account_binding": null,
+      "sequence": 4,
+      "source": "browser"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "account_binding": null,
+      "sequence": 5,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "account_binding": "a",
+      "sequence": 6,
+      "source": "browser"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/practice-sessions/current",
+      "status": 200,
+      "account_binding": null,
+      "sequence": 7,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "status": 200,
+      "account_binding": "a",
+      "sequence": 8,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "status": 200,
+      "account_binding": "a",
+      "sequence": 9,
+      "source": "browser"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/practice-sessions/<practice-a-previous>/discard-preparation",
+      "status": 200,
+      "account_binding": null,
+      "sequence": 10,
+      "source": "browser"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/<practice-a-previous>/discard-preparation",
+      "status": 200,
+      "account_binding": "a",
+      "sequence": 11,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "status": 200,
+      "account_binding": "a",
+      "sequence": 12,
+      "source": "browser"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "account_binding": null,
+      "sequence": 13,
+      "source": "fixture_setup"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "status": 200,
+      "account_binding": "a",
+      "sequence": 14,
+      "source": "fixture_setup"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions",
+      "status": 201,
+      "account_binding": "a",
+      "sequence": 15,
+      "source": "fixture_setup"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "account_binding": null,
+      "sequence": 16,
+      "source": "fixture_setup"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "status": 200,
+      "account_binding": "b",
+      "sequence": 17,
+      "source": "fixture_setup"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/<practice-b-previous>/discard-preparation",
+      "status": 200,
+      "account_binding": "b",
+      "sequence": 18,
+      "source": "fixture_setup"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions",
+      "status": 201,
+      "account_binding": "b",
+      "sequence": 19,
+      "source": "fixture_setup"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "status": 200,
+      "account_binding": "a",
+      "sequence": 20,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 200,
+      "account_binding": null,
+      "sequence": 21,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "account_binding": "a",
+      "sequence": 22,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200,
+      "account_binding": null,
+      "sequence": 23,
+      "source": "browser"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/auth/logout",
+      "status": 200,
+      "account_binding": null,
+      "sequence": 24,
+      "source": "browser"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/logout",
+      "status": 204,
+      "account_binding": "a",
+      "sequence": 25,
+      "source": "browser"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "account_binding": null,
+      "sequence": 26,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "account_binding": "b",
+      "sequence": 27,
+      "source": "browser"
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/practice-sessions/<practice-a-current>/discard-preparation",
+      "status": 200,
+      "account_binding": null,
+      "sequence": 28,
+      "source": "browser"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/<practice-a-current>/discard-preparation",
+      "status": 403,
+      "account_binding": "a",
+      "sequence": 29,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "status": 409,
+      "account_binding": "a",
+      "sequence": 30,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 200,
+      "account_binding": null,
+      "sequence": 31,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "account_binding": "b",
+      "sequence": 32,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "status": 200,
+      "account_binding": "b",
+      "sequence": 33,
+      "source": "browser"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/logout",
+      "status": 204,
+      "account_binding": "b",
+      "sequence": 34,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "status": 401,
+      "account_binding": "b",
+      "sequence": 35,
+      "source": "browser"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401,
+      "account_binding": null,
+      "sequence": 36,
+      "source": "browser"
+    }
+  ],
+  "database_checks": {
+    "after_delayed_discard": {
+      "account": "a",
+      "target": "previous",
+      "status": "cancelled",
+      "state_reason": "cancelled_before_signalling",
+      "ended": true
+    },
+    "after_stale_confirmation_and_before_cleanup": {
+      "a": {
+        "target": "current",
+        "status": "created",
+        "ended": false
+      },
+      "b": {
+        "target": "current",
+        "status": "created",
+        "ended": false
+      }
+    },
+    "development_read_only": {
+      "users": 1,
+      "practices": 0,
+      "connections": 0,
+      "observations": 0,
+      "alembic_head": "f80e9c1a24bd"
+    },
+    "owned_fixture_cleanup": {
+      "invites_removed": 2,
+      "accounts_removed": 2,
+      "remaining_fixture_accounts": 0
+    },
+    "default_api_readiness": 200
+  }
+}

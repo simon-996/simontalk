@@ -124,6 +124,8 @@ WebRTC生产传输底层与Dart桥接已实现，尚未接到练习页或供应�
 
 恢复面板另有明确确认后的未开始准备清理：POST discard-preparation绑定原id/epoch，后端锁后重查完整历史，unknown或历史信令拒绝；前端成功/拒绝/结果未确认分别显示，不自动重放。账号HTTP家族共享CSRF缓存，独立操作不再轮换Cookie破坏首次退出。默认准入仍关闭；本批非空真实浏览器验收只用独立simontalk_test和测试准入，无供应商调用、无开发库种子。详见[契约](../architecture/2026-10-18-preparation-discard-api.md)与[验证](2026-10-18-preparation-discard-verification.md)。
 
+后续已用独立测试库真实浏览器补验断连、真实提交后延迟响应、双标签账号切换与共享会话退出；没有发现确定业务缺陷，未修改生产代码。受控手工步骤、脱敏请求记录和截图见[失败/身份验收](2026-10-18-recovery-browser-failures-verification.md)。临时故障/测试准入不属于默认开发API，不能在实际库照搬测试种子或故障注入。
+
 组件预览位于 `lib/design/account_components.dart`，只展示品牌和按钮的深浅色，不连接服务、不申请媒体权限。品牌启动图标可以用 `uv run --with pillow scripts/generate_brand_icons.py` 重新生成，脚本与 Flutter 的绘制路径保持一致。
 
 另有标题/错误及麦克风失败/等待的浅深色320宽、200%字号预览。2026-10-17默认Previewer实际发现6项，修复独立入口的包资产字体初始化后，卡片与外层标题中文均实际可见；此前空注册问题本轮未复现，不推定其根因。可运行`flutter widget-preview start --web-server --offline`并访问终端地址。连续更新时SDK热重载可能报错，字体缓存变化或报错后采用全局热重启/冷启动。未修改SDK或提交生成目录；证据与限制见[预览字体验证](2026-10-17-preview-font-verification.md)。
