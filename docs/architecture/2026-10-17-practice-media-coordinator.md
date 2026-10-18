@@ -11,9 +11,12 @@
 | realtime_session_protocol.dart | 供应商协议端口和受保护send/confirmConfigured/fail回调；实际默认Unavailable |
 | practice_media_providers.dart | 随signedIn账号创建/销毁作用域，读取不自动登记或申请媒体 |
 | connection_observation_journal.dart | 2026-10-18新增；原账号/连接/代次绑定的受限媒体观测队列与独立HTTP确认 |
+| ../conversation/conversation_models.dart / conversation_projection.dart | 2026-10-18新增；原账号/连接作用域的有界文字/播放投影，归一化回调消费，不向观测journal写正文 |
 | core/random_uuid.dart | 原准备与新媒体控制器共用的安全随机v4 UUID |
 
 原PracticePreparationController继续只管理信令前流程，不传递在途租约给新控制器。每个媒体控制器保存自己的clientInstanceId、practiceKey、connectionKey，直接调用已有登记契约；业务后端仍强制单用户占用，不能因为本地有两个provider就并行建连。
+
+后续新增`callbacks.emitConversation(update, channelId)`：只在传输可用、配置已确认的同一通道消费归一化事实，允许activate等待期间接收。投影不把生成完成或播放观察当作已播放文本；conversation getter绑定账号，正常stop封存，账号变化/销毁清空。冲突/容量失败关闭本地媒体并保留已接受内容，默认协议/准入仍关闭。详见[对话投影契约](2026-10-18-conversation-projection.md)，不等于供应商事件、持久最终文字或自然打断已接通。
 
 `begin(difficulty: ...)`只启动一次；重复调用共享等待，完成于本地active或localClosed。没有自动重试、恢复或重连；原key仅在当前实例内存保留，跨进程未知请求恢复另行实现。默认503直接结束，不构造协议、信令或媒体。
 

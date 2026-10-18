@@ -126,6 +126,8 @@ WebRTC生产传输底层与Dart桥接已实现，尚未接到练习页或供应�
 
 后续已用独立测试库真实浏览器补验断连、真实提交后延迟响应、双标签账号切换与共享会话退出；没有发现确定业务缺陷，未修改生产代码。受控手工步骤、脱敏请求记录和截图见[失败/身份验收](2026-10-18-recovery-browser-failures-verification.md)。临时故障/测试准入不属于默认开发API，不能在实际库照搬测试种子或故障注入。
 
+`lib/features/conversation/`提供有界内存投影，现由媒体控制器的归一化协议回调消费；`flutter test test/features/conversation test/features/realtime/practice_media_conversation_test.dart`验证文字修订、播放证据和生命周期。正文不写观测journal或浏览器存储，默认协议仍Unavailable，当前没有正式练习页或文字HTTP持久化。契约见[对话投影](../architecture/2026-10-18-conversation-projection.md)，实际测试与集成边界见[验证](2026-10-18-conversation-projection-verification.md)。
+
 组件预览位于 `lib/design/account_components.dart`，只展示品牌和按钮的深浅色，不连接服务、不申请媒体权限。品牌启动图标可以用 `uv run --with pillow scripts/generate_brand_icons.py` 重新生成，脚本与 Flutter 的绘制路径保持一致。
 
 另有标题/错误及麦克风失败/等待的浅深色320宽、200%字号预览。2026-10-17默认Previewer实际发现6项，修复独立入口的包资产字体初始化后，卡片与外层标题中文均实际可见；此前空注册问题本轮未复现，不推定其根因。可运行`flutter widget-preview start --web-server --offline`并访问终端地址。连续更新时SDK热重载可能报错，字体缓存变化或报错后采用全局热重启/冷启动。未修改SDK或提交生成目录；证据与限制见[预览字体验证](2026-10-17-preview-font-verification.md)。

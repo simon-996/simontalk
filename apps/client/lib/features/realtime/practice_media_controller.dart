@@ -6,6 +6,8 @@ import 'package:flutter/widgets.dart';
 import '../../core/api_client.dart';
 import '../../core/random_uuid.dart';
 import '../account/account_models.dart';
+import '../conversation/conversation_models.dart';
+import '../conversation/conversation_projection.dart';
 import '../practice/practice_models.dart';
 import '../practice/practice_repository.dart';
 import 'connection_lease_watchdog.dart';
@@ -86,6 +88,16 @@ class PracticeMediaController extends ChangeNotifier
   PracticePreparation? get practice => _practice;
   ConnectionReservation? _connection;
   ConnectionReservation? get connection => _connection;
+  ConversationProjection? _conversation;
+  ConversationSnapshot? get conversation {
+    if (_disposed) return null;
+    if (!repository.hasCurrentAccount) {
+      _conversation?.clear();
+      return null;
+    }
+    return _conversation?.snapshot;
+  }
+
   bool _practiceRequested = false;
   bool _connectionRequested = false;
   bool _creating = false;
@@ -186,6 +198,15 @@ class PracticeMediaController extends ChangeNotifier
       if (!_lease.arm(started, _connection!)) {
         throw const RealtimeFailure('local_lease_expired');
       }
+      _conversation = ConversationProjection(
+        ConversationScope(
+          accountId: repository.accountId,
+          sessionId: _connection!.sessionId,
+          connectionId: _connection!.id,
+          clientInstanceId: clientInstanceId,
+          epoch: _connection!.epoch,
+        ),
+      );
       _creating = false;
       if (observationJournalFactory != null) {
         try {
@@ -209,6 +230,7 @@ class PracticeMediaController extends ChangeNotifier
           send: _send,
           confirmConfigured: _confirmConfigured,
           fail: (code) => unawaited(stop(reason: _safeCode(code))),
+          emitConversation: _acceptConversation,
         ),
       );
       if (!_guard()) {
@@ -354,6 +376,29 @@ class PracticeMediaController extends ChangeNotifier
     }
   }
 
+  void _acceptConversation(ConversationUpdate update, String channelId) {
+    if (!_guard()) return;
+    if (!_transportReady ||
+        channelId != _confirmedChannel ||
+        !_channels.contains(channelId) ||
+        _conversation == null) {
+      unawaited(stop(reason: 'conversation_invalid'));
+      return;
+    }
+    try {
+      final result = _conversation!.apply(update);
+      if (result == ConversationApplyResult.closed) {
+        unawaited(stop(reason: 'conversation_closed'));
+      } else if (result == ConversationApplyResult.applied && _guard()) {
+        _publish(_phase);
+      }
+    } on ConversationFailure catch (error) {
+      unawaited(stop(reason: error.code));
+    } on Object {
+      unawaited(stop(reason: 'conversation_invalid'));
+    }
+  }
+
   void _send(String json, String channelId) {
     if (!_guard()) return;
     if (!_transportReady || !_channels.contains(channelId)) {
@@ -486,6 +531,13 @@ class PracticeMediaController extends ChangeNotifier
 
   /// Releases local resources synchronously; API cleanup is separate evidence.
   Future<void> stop({String reason = 'stopped'}) {
+    if (_disposed ||
+        !repository.hasCurrentAccount ||
+        reason == 'account_changed') {
+      _conversation?.clear();
+    } else {
+      _conversation?.seal();
+    }
     if (_closed) return _creating ? Future.value() : _cleanup();
     _closed = true;
     _errorCode = _safeCode(reason);
@@ -575,6 +627,7 @@ class PracticeMediaController extends ChangeNotifier
   void dispose() {
     if (_disposed) return;
     _disposed = true;
+    _conversation?.clear();
     WidgetsBinding.instance.removeObserver(this);
     unawaited(stop(reason: 'disposed'));
     super.dispose();

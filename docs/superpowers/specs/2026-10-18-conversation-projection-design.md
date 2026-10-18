@@ -1,0 +1,29 @@
+# 账号与原连接绑定的内存对话投影
+
+日期：2026-10-18；基线0e55781。沿用户持续开发授权推进常规工程选择，保持现有功能分支，不额外创建工作树、推送、部署或请求模型/硬件权限。
+
+## 范围与选择
+
+只建立数据模型会留下未接入的接口；现在完整建立转写HTTP/持久化/反馈会扩大尚无协议来源的范围。本批采用有界纯Dart投影，并接到现有媒体控制器的受保护协议回调。它消费将来适配器明确归一化的事实，不解释原始供应商JSON，不生成示例对话、历史或评分；默认协议工厂仍拒绝。
+
+## 模型与规则
+
+ConversationScope绑定account/session/connection/client_instance UUID与正epoch，只由媒体控制器使用已登记连接建立。ConversationUpdate是TranscriptUpdate或PlaybackUpdate，携带适配器映射的稳定业务turnId；TranscriptUpdate明确turnIndex、role、正revision、完整当前text、isFinal，以及assistant所需responseId和可选providerItemId。索引决定显示次序，允许缺口和乱序到达；不能按到达顺序制造新轮次。元数据首次建立后不能变，索引不重复。临时更新也是完整替换快照，不拼接重发delta。
+
+文字同revision同内容幂等，不同内容冲突；旧revision忽略，新final允许修订，final后不得退回临时。空final可保留“无文字”事实但不进入上下文。AI生成final不等于播放；每个assistant投影独立保存生成文字与播放状态unknown/notPlayed/partial/played。PlaybackUpdate绑定turnId、responseId、transcriptRevision和自己的正revision；来源只有unknown或deviceOutputAligned。unknown必须无前缀/位置；notPlayed须空前缀和0位置；partial须非空严格前缀及正毫秒；played须生成final且非空全文相同及正毫秒。已知状态必须明确deviceOutputAligned，表示适配器确有输出与文字对齐依据，不允许按毫秒/字符比例推算。该来源仍是客户端报告，不能证明人听懂、服务端可信或供应商终止。
+
+播放证据先于对应文字或指向未来文字版本时返回awaitingTranscript，不采信、不缓存；适配器可在匹配文字到达后明确再发。旧文字版本的播放忽略。当前版本播放不可倒退或改写已确认前缀，unknown不能覆盖已知事实，played/notPlayed是生成final后的交付终态，不能改成另一状态；notPlayed不是暂时尚未播放。新文字revision使原播放证据失效，须对新版本重新上报。同播放revision重放必须一致。
+
+snapshot/turns/context均不可变；上下文按索引只取用户非空final、AI非空final且有partial/played证据的前缀。保留原角色/turnId/revision和作用域，不将最终转写声明为准确识别或反馈资格。hasUnfinalizedText/hasUnconfirmedPlayback分别表示当前缺口，不能作为持久转写已完整的证明。
+
+每连接最多256轮，单条文字/播放前缀各最多8192 UTF-8字节，当前文字与播放前缀合计最多256KiB。超过限制或非法冲突原子拒绝；不逐出旧已确认文字腾位置。只保存每轮最新版本，没有无界事件历史、音频或浏览器存储。本批不实现完整持久领域事件信封/最终提交日志。
+
+## 接入与停止
+
+RealtimeProtocolCallbacks新增emitConversation(update, channelId)。媒体控制器在建立连接后持有投影；只接受传输可用、配置已确认的同一通道，允许音轨activate尚在等待时接收最终文字。通过原guard核对账号、前台、单调截止/租约；其他通道或就绪前事实导致安全本地停止。原始传输playback_playing和response完成均不会自动产生播放文本。
+
+正常停止同步seal，保留已接受快照供后续正式结束流程使用，不再接受迟到回调；账号变化和dispose清空文字并封存，外部通过控制器读取时也核对身份，旧快照对象不会在新账号重新发出。已经交给外部的不可变快照不能远程抹除，消费者必须跟随账号provider销毁、不得跨账号缓存。投影错误使用固定业务码并关闭本地媒体，不把原话/供应商ID写入错误或观测。继续区分本地关闭与上游终止，观测journal不接收正文。
+
+## 验证
+
+先失败的纯模型/投影测试覆盖临时/最终/修订、稳定索引/角色/响应、重放/旧版本/冲突、播放四态与错配、生成完成不代表播放、新文字使旧证据失效、前缀/进度不可倒退、先到播放、不可变/容量/原子拒绝/seal。媒体组合测试覆盖受保护通道、激活等待、传输观察不造文字、停止迟到、账号变化、销毁清空和默认拒绝。执行全量Flutter、分析/格式、Node、Web发布/字体及独立只读审查；后端无改动不重复冒充新跑。没有UI变化，不增加预览或浏览器演示。
