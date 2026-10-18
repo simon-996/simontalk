@@ -32,7 +32,7 @@ void main() {
     });
     owned = TrackedClient((request) async {
       if (request.url.path.endsWith('/csrf')) {
-        return response({'csrf_token': 'owned-csrf'});
+        fail('The signaller must reuse the account family CSRF token.');
       }
       offerRequests.add(request);
       return answer(request);
@@ -74,7 +74,7 @@ void main() {
       expect(offerRequests.length, 1);
       final request = offerRequests.single;
       expect(request.headers['X-Account-ID'], accountId);
-      expect(request.headers['X-CSRF-Token'], 'owned-csrf');
+      expect(request.headers['X-CSRF-Token'], 'test-csrf');
       expect(jsonDecode(request.body), {
         'client_instance_id': h.instance,
         'epoch': 1,

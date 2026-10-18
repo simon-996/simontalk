@@ -182,6 +182,23 @@ class PracticeRecovery {
   });
   final PracticePreparation? practice;
   final ConnectionReservation? connection;
+
+  /// A UI candidate only. The server checks the complete locked history again.
+  bool get canDiscardPreparation {
+    final original = practice;
+    if (original == null) return false;
+    final latest = connection;
+    if (latest == null) {
+      return original.status == PracticeStatus.created &&
+          original.connectionEpoch == 0;
+    }
+    if (latest.epoch != original.connectionEpoch ||
+        latest.terminationStatus != TerminationStatus.notStarted) {
+      return false;
+    }
+    return (original.status == PracticeStatus.connecting && latest.canCancel) ||
+        (original.status == PracticeStatus.created && latest.safelyEnded);
+  }
 }
 
 class ConnectionReservation {

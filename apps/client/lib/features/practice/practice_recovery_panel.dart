@@ -9,9 +9,30 @@ import '../account/account_controller.dart';
 import 'connection_observation_models.dart';
 import 'practice_models.dart';
 import 'practice_providers.dart';
+import 'practice_recovery_controller.dart';
+import 'preparation_discard_dialog.dart';
 
 class PracticeRecoveryPanel extends ConsumerWidget {
   const PracticeRecoveryPanel({super.key});
+
+  Future<void> _confirmDiscard(
+    BuildContext context,
+    PracticeRecoveryController controller,
+  ) async {
+    final original = controller.recovery?.practice;
+    if (original == null ||
+        controller.busy ||
+        !(controller.recovery?.canDiscardPreparation ?? false)) {
+      return;
+    }
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => const PreparationDiscardDialog(),
+    );
+    if (confirmed == true && context.mounted) {
+      await controller.discardPreparation(original);
+    }
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,8 +47,10 @@ class PracticeRecoveryPanel extends ConsumerWidget {
         events: controller.events,
         errorCode: controller.errorCode,
         observationErrorCode: controller.observationErrorCode,
+        cleanupStatus: controller.cleanupStatus,
         onRefresh: controller.refresh,
         onLoadObservations: controller.loadObservations,
+        onDiscard: () => _confirmDiscard(context, controller),
         onConfirmAccount: () =>
             ref.read(accountControllerProvider.notifier).restore(),
       ),
@@ -44,9 +67,11 @@ class PracticeRecoveryView extends StatelessWidget {
     this.events = const [],
     this.errorCode,
     this.observationErrorCode,
+    this.cleanupStatus = PreparationCleanupStatus.idle,
     this.onRefresh,
     this.onLoadObservations,
     this.onConfirmAccount,
+    this.onDiscard,
   });
 
   final bool busy;
@@ -55,9 +80,11 @@ class PracticeRecoveryView extends StatelessWidget {
   final List<ConnectionObservation> events;
   final String? errorCode;
   final String? observationErrorCode;
+  final PreparationCleanupStatus cleanupStatus;
   final VoidCallback? onRefresh;
   final VoidCallback? onLoadObservations;
   final VoidCallback? onConfirmAccount;
+  final VoidCallback? onDiscard;
 
   @override
   Widget build(BuildContext context) {
@@ -88,6 +115,17 @@ class PracticeRecoveryView extends StatelessWidget {
               const SizedBox(height: 20),
               if (errorCode != null)
                 StatusMessage(_errorMessage(errorCode!))
+              else if (cleanupStatus == PreparationCleanupStatus.working)
+                Semantics(liveRegion: true, child: const Text('正在清理准备…'))
+              else if (cleanupStatus == PreparationCleanupStatus.succeeded)
+                Semantics(
+                  liveRegion: true,
+                  child: const Text('这项准备已清理。请刷新查看当前状态。'),
+                )
+              else if (cleanupStatus == PreparationCleanupStatus.unconfirmed)
+                const StatusMessage('清理结果尚未确认，请刷新核实。不会自动重试清理。')
+              else if (cleanupStatus == PreparationCleanupStatus.refused)
+                const StatusMessage('准备状态可能已变化，暂不能安全清理。请刷新后重新确认。')
               else if (busy && recovery == null)
                 Semantics(liveRegion: true, child: const Text('正在读取状态…'))
               else if (recovery == null)
@@ -177,6 +215,18 @@ class PracticeRecoveryView extends StatelessWidget {
                     ),
                   ],
                 ],
+                if (recovery!.canDiscardPreparation) ...[
+                  const Divider(height: 32),
+                  Text(
+                    '可尝试清理未开始的准备，服务端会再次核验完整记录。',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                  const SizedBox(height: 12),
+                  OutlinedButton(
+                    onPressed: busy ? null : onDiscard,
+                    child: const Text('清理未开始的准备'),
+                  ),
+                ],
               ],
               const SizedBox(height: 20),
               if (identityError)
@@ -188,7 +238,11 @@ class PracticeRecoveryView extends StatelessWidget {
                 OutlinedButton(
                   onPressed: busy ? null : onRefresh,
                   child: Text(
-                    recovery == null && errorCode == null ? '查看未结束练习' : '刷新状态',
+                    recovery == null &&
+                            errorCode == null &&
+                            cleanupStatus == PreparationCleanupStatus.idle
+                        ? '查看未结束练习'
+                        : '刷新状态',
                   ),
                 ),
             ],

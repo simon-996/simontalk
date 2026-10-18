@@ -9,7 +9,11 @@ import 'connection_observation_models.dart';
 import 'practice_models.dart';
 import 'practice_repository.dart';
 
-/// Read-only snapshots. This controller never obtains or controls a media lease.
+enum PreparationCleanupStatus { idle, working, succeeded, unconfirmed, refused }
+
+enum _RecoveryOperation { refresh, observations, discard }
+
+/// Read snapshots and explicitly discard never-started preparation; never obtain media.
 class PracticeRecoveryController extends ChangeNotifier {
   PracticeRecoveryController({
     required ApiClient api,
@@ -37,17 +41,32 @@ class PracticeRecoveryController extends ChangeNotifier {
   String? get errorCode => _errorCode;
   String? _observationErrorCode;
   String? get observationErrorCode => _observationErrorCode;
+  PreparationCleanupStatus _cleanupStatus = PreparationCleanupStatus.idle;
+  PreparationCleanupStatus get cleanupStatus => _cleanupStatus;
+  String? _cleanupErrorCode;
+  String? get cleanupErrorCode => _cleanupErrorCode;
   Completer<void>? _inFlight;
   Completer<void>? _cancel;
   ApiClient? _ownedApi;
 
-  Future<void> refresh() => _start(observations: false);
-  Future<void> loadObservations() => _start(observations: true);
+  Future<void> refresh() => _start(_RecoveryOperation.refresh);
+  Future<void> loadObservations() => _start(_RecoveryOperation.observations);
+  Future<void> discardPreparation(PracticePreparation original) =>
+      _start(_RecoveryOperation.discard, original: original);
 
-  Future<void> _start({required bool observations}) {
+  Future<void> _start(
+    _RecoveryOperation operation, {
+    PracticePreparation? original,
+  }) {
     if (_disposed) return Future.value();
     if (_inFlight != null) return _inFlight!.future;
-    if (observations &&
+    if (operation == _RecoveryOperation.discard &&
+        (original == null ||
+            !identical(original, _recovery?.practice) ||
+            !(_recovery?.canDiscardPreparation ?? false))) {
+      return Future.value();
+    }
+    if (operation == _RecoveryOperation.observations &&
         (_recovery?.connection == null || (_page != null && !_page!.hasMore))) {
       return Future.value();
     }
@@ -57,9 +76,13 @@ class PracticeRecoveryController extends ChangeNotifier {
     _busy = true;
     _errorCode = null;
     _observationErrorCode = null;
-    if (!observations) _clearData();
+    _cleanupErrorCode = null;
+    _cleanupStatus = operation == _RecoveryOperation.discard
+        ? PreparationCleanupStatus.working
+        : PreparationCleanupStatus.idle;
+    if (operation == _RecoveryOperation.refresh) _clearData();
     notifyListeners();
-    unawaited(_perform(observations, completion));
+    unawaited(_perform(operation, completion, original));
     return completion.future;
   }
 
@@ -69,9 +92,18 @@ class PracticeRecoveryController extends ChangeNotifier {
     _events = const [];
   }
 
-  Future<void> _perform(bool observations, Completer<void> completion) async {
+  Future<void> _perform(
+    _RecoveryOperation operation,
+    Completer<void> completion,
+    PracticePreparation? original,
+  ) async {
     try {
-      if (observations) {
+      if (operation == _RecoveryOperation.discard) {
+        await _read((repo) => repo.discardPreparation(original!));
+        _checkAccount();
+        _clearData();
+        _cleanupStatus = PreparationCleanupStatus.succeeded;
+      } else if (operation == _RecoveryOperation.observations) {
         final connection = _recovery!.connection!;
         final next = await _read(
           (repo) => repo.loadConnectionObservations(
@@ -111,13 +143,29 @@ class PracticeRecoveryController extends ChangeNotifier {
                     'network_error',
                     'service_unavailable',
                     'rate_limited',
+                    'preparation_changed',
+                    'preparation_not_discardable',
+                    'practice_not_found',
+                    'csrf_invalid',
+                    'origin_forbidden',
                   }.contains(error.code)
             ? error.code
             : 'recovery_unavailable';
         if (code == 'account_changed' || code == 'unauthorized') {
           _clearData();
+          _cleanupStatus = PreparationCleanupStatus.idle;
           _errorCode = code;
-        } else if (observations) {
+        } else if (operation == _RecoveryOperation.discard) {
+          _clearData();
+          _cleanupErrorCode = code;
+          _cleanupStatus =
+              error is ApiException &&
+                  error.statusCode != null &&
+                  error.statusCode! >= 400 &&
+                  error.statusCode! < 500
+              ? PreparationCleanupStatus.refused
+              : PreparationCleanupStatus.unconfirmed;
+        } else if (operation == _RecoveryOperation.observations) {
           _observationErrorCode = code;
         } else {
           _errorCode = code;
@@ -176,6 +224,8 @@ class PracticeRecoveryController extends ChangeNotifier {
     if (_disposed) return;
     _disposed = true;
     _clearData();
+    _cleanupStatus = PreparationCleanupStatus.idle;
+    _cleanupErrorCode = null;
     if (_cancel != null && !_cancel!.isCompleted) _cancel!.complete();
     _ownedApi?.close();
     _ownedApi = null;

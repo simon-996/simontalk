@@ -10,6 +10,7 @@
 - Web 仅 Cookie 身份，HttpOnly、SameSite=Lax；生产必须 Secure。本地开发允许明确的 HTTP 环境。移动端使用 Bearer token，安全存储；Web 不把业务 token 存 localStorage。
 - 客户端从注册/登录或 GET me 得到本人ID后，对偏好GET/PATCH及退出携带 `X-Account-ID`。服务端将其与实际凭证身份比较；Web已认证的PATCH/退出必须提供，缺失或不匹配返回 `409 account_changed`，不执行原动作。失效身份退出仍幂等204。客户端重新识别当前账号，按用户ID重置草稿并提示确认，不自动重放旧操作，防多标签共享Cookie串改设置。
 - Web 先 GET /v1/auth/csrf，得到 csrf_token JSON 和配对 Cookie；状态改变请求使用 X-CSRF-Token。服务端校验 Cookie/header 和允许的 Origin。跨来源默认拒绝，开发仅允许配置的 localhost/127.0.0.1 Web 来源；移动 Bearer 无需浏览器 CSRF。
+- 同一客户端及其账号作用域HTTP分支共享CSRF缓存与进行中的获取，避免轮换共享Cookie使兄弟请求使用旧令牌；各分支仍独立取消。csrf_invalid只清除仍匹配该请求令牌的缓存，不自动重放。不同页面的轮换仍可能导致拒绝，由本人明确重试。
 - 本地 API 127.0.0.1:8000，Web 开发端口 7357。Android 模拟器 API 地址用 10.0.2.2:8000，真机地址通过非密钥构建参数配置。
 
 ## 数据形状

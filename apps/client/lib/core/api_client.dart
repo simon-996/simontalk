@@ -33,7 +33,7 @@ class ApiClient {
   final String? Function()? _accountIdentity;
   final _pendingRequests = <Completer<void>>{};
   bool _closed = false;
-  String? _csrf;
+  _CsrfState _csrf = _CsrfState();
   String? expectedAccountId;
 
   bool hasCurrentAccount(String accountId) => _currentAccountId == accountId;
@@ -48,14 +48,17 @@ class ApiClient {
   ApiClient forkForAccount({
     required String accountId,
     required http.Client client,
-  }) => ApiClient(
-    baseUrl: baseUrl,
-    isWeb: isWeb,
-    tokenStore: tokenStore,
-    client: client,
-    timeout: timeout,
-    accountIdentity: () => _currentAccountId,
-  )..expectedAccountId = accountId;
+  }) =>
+      ApiClient(
+          baseUrl: baseUrl,
+          isWeb: isWeb,
+          tokenStore: tokenStore,
+          client: client,
+          timeout: timeout,
+          accountIdentity: () => _currentAccountId,
+        )
+        ..expectedAccountId = accountId
+        .._csrf = _csrf;
 
   Future<Map<String, dynamic>> request(
     String method,
@@ -72,13 +75,7 @@ class ApiClient {
 
     checkAccount();
     final mutating = method != 'GET';
-    if (isWeb && mutating && _csrf == null) {
-      final response = await request('GET', '/v1/auth/csrf');
-      _csrf = response['csrf_token'] as String?;
-      if (_csrf == null || _csrf!.isEmpty) {
-        throw const ApiException('invalid_response', '服务响应异常，请稍后重试。');
-      }
-    }
+    final csrfToken = isWeb && mutating ? await _csrfToken() : null;
     checkAccount();
     final headers = <String, String>{'Accept': 'application/json'};
     if (accountId != null) {
@@ -89,7 +86,7 @@ class ApiClient {
     }
     if (idempotencyKey != null) headers['Idempotency-Key'] = idempotencyKey;
     if (body != null) headers['Content-Type'] = 'application/json';
-    if (isWeb && mutating) headers['X-CSRF-Token'] = _csrf!;
+    if (csrfToken != null) headers['X-CSRF-Token'] = csrfToken;
     if (!isWeb) {
       final token = await tokenStore.read();
       if (token != null) headers['Authorization'] = 'Bearer $token';
@@ -123,7 +120,9 @@ class ApiClient {
       }
       if (response.statusCode < 200 || response.statusCode >= 300) {
         final code = data['code'] as String? ?? 'service_unavailable';
-        if (code == 'csrf_invalid') _csrf = null;
+        if (code == 'csrf_invalid' && _csrf.token == csrfToken) {
+          _csrf.token = null;
+        }
         throw ApiException(
           code,
           _messageFor(code),
@@ -153,6 +152,32 @@ class ApiClient {
     _client.close();
   }
 
+  Future<String> _csrfToken() {
+    final state = _csrf;
+    if (state.token != null) return Future.value(state.token!);
+    if (state.pending != null) return state.pending!;
+    final completion = Completer<String>();
+    state.pending = completion.future;
+    // Sibling clients share cookie state, but still own their HTTP cancellation.
+    // Publish pending before sending to prevent reentrant double issuance.
+    unawaited(() async {
+      try {
+        final response = await request('GET', '/v1/auth/csrf');
+        final token = response['csrf_token'];
+        if (token is! String || token.isEmpty || token.length > 256) {
+          throw const ApiException('invalid_response', '服务响应异常，请稍后重试。');
+        }
+        state.token = token;
+        completion.complete(token);
+      } on Object catch (error, stack) {
+        completion.completeError(error, stack);
+      } finally {
+        if (identical(state.pending, completion.future)) state.pending = null;
+      }
+    }());
+    return completion.future;
+  }
+
   static String _messageFor(String code) => switch (code) {
     'invite_invalid' => '邀请码无效、已使用或已过期，请向邀请人确认。',
     'registration_failed' => '无法创建这个账号，请检查用户名和邀请码后重试。',
@@ -172,4 +197,9 @@ class ApiClient {
     'practice_configuration_changed' => '语音配置已更改，请重新准备练习。',
     _ => '服务暂时不可用，请稍后重试。',
   };
+}
+
+class _CsrfState {
+  String? token;
+  Future<String>? pending;
 }

@@ -143,6 +143,8 @@
 
 受限观测已按原连接/客户端/epoch持久化，来源固定client_observed；历史或unknown可接收迟到事实，但不能改变练习/连接状态、租约、终止或占用。客户端仅用有界内存journal，稳定事件ID/序号、串行确认、显式重试、账号隔离；停止先释放媒体，上报失败不阻塞。记录可能有缺口，不包含话语、音频或用量。偏好页已提供current及原连接分页的[只读恢复入口](2026-10-18-readonly-recovery-client.md)，明确点击才查询，不恢复媒体或接管连接。当前配置确认也只是客户端观测，不将其升级为服务端ready或可信上游证据。[观测契约](2026-10-18-connection-observations-api.md)。
 
+偏好页另提供[未开始准备的明确清理](2026-10-18-preparation-discard-api.md)：弹窗捕获原快照，确认后POST expected_epoch；服务端锁后核对完整代次历史全部未调用上游，原子关闭最新preparing并取消父行。unknown、历史信令或缺行均拒绝；不删除历史，不采纳他人租约。成功仅确认原准备，需刷新查看当前状态；超时不自动重试。同一账号HTTP家族共享CSRF签发状态，保持独立取消。
+
 ### 5.2 用户轮次和 AI 已播放文字
 
 VAD 起止、ASR 最终文本和 AI 回复可能乱序到达。适配器使用供应商 item/response 标识关联，不以消息抵达顺序拼接成新话语。一个用户轮次可有临时结果和多次 final 修订；只有最终文本进入历史。无识别结果的轮次记录状态，不编造用户原话。
@@ -244,6 +246,7 @@ User → 多个 PracticeSession → 多个 RealtimeConnection / Turn；PracticeS
 | GET /v1/topics | 可选分页/类别 | 200 可用的日常主题，不接受自定义上游提示词 |
 | POST /v1/practice-sessions | topic_id 或 free_chat、可选难度覆盖；Idempotency-Key | 201 session_id、快照、准入结果；同 key 返回原练习 |
 | POST /v1/practice-sessions/{sid}/connections | client_instance_id、expected_epoch；Idempotency-Key | 201连接准备对象、epoch及公开配置；真实准入仍关闭；旧连接未知时拒绝新建，详见实际契约 |
+| POST /v1/practice-sessions/{sid}/discard-preparation | expected_epoch | 已实现；锁后验证完整历史未开始上游，原子取消整项准备；unknown拒绝，不调用供应商 |
 | POST /v1/practice-sessions/{sid}/connections/{cid}/offer | client_instance_id、epoch、offer；单次受限JSON | 已实现；200 JSON answer，仅进入configuring；失败/重复保持可信边界，网关实际关闭，详见[信令契约](2026-10-17-guarded-signalling-api.md) |
 | POST /v1/practice-sessions/{sid}/connections/{cid}/observations | client_instance_id、epoch、1–16条稳定event_id/sequence及受限媒体事实 | 已实现；200完整确认，冲突整批拒绝；client_observed不能推进状态或证明用量，详见[观测契约](2026-10-18-connection-observations-api.md) |
 | GET /v1/practice-sessions/{sid}/connections/{cid}/observations | after_sequence、limit（1–32） | 已实现；本人原连接事实的只读快照分页，不接管或续租 |

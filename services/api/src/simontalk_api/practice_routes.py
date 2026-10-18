@@ -14,6 +14,7 @@ from simontalk_api.practice import (
     own_preparation,
 )
 from simontalk_api.practice_recovery import PracticeRecoveryOutput, current_preparation
+from simontalk_api.preparation_discard import DiscardPreparationInput, discard_preparation
 from simontalk_api.security import protect_mutation, session_identity
 
 router = APIRouter(prefix="/v1/practice-sessions")
@@ -57,3 +58,15 @@ def cancel(session_id: UUID, request: Request, db: Session = Depends(database_se
     protect_mutation(request)
     user = locked_identity(request, db)
     return cancel_preparation(db, user.id, session_id)
+
+
+@router.post("/{session_id}/discard-preparation", response_model=PracticeOutput)
+def discard(
+    session_id: UUID,
+    payload: DiscardPreparationInput,
+    request: Request,
+    db: Session = Depends(database_session),
+):
+    protect_mutation(request)
+    user = locked_identity(request, db)
+    return discard_preparation(db, user.id, session_id, payload)

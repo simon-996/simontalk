@@ -73,6 +73,32 @@ class PracticeRepository {
   Future<PracticePreparation> cancelPractice(String id) =>
       _practice('POST', id, '/cancel-preparation');
 
+  Future<PracticePreparation> discardPreparation(
+    PracticePreparation original,
+  ) async => _read<PracticePreparation>(
+    await _request(
+      'POST',
+      '/v1/practice-sessions/${original.id}/discard-preparation',
+      body: {'expected_epoch': original.connectionEpoch},
+    ),
+    PracticePreparation.fromJson,
+    (p) =>
+        p.id == original.id &&
+        p.connectionEpoch == original.connectionEpoch &&
+        p.status == PracticeStatus.cancelled &&
+        p.endedAt != null &&
+        !p.endedAt!.isBefore(p.createdAt) &&
+        p.createdAt == original.createdAt &&
+        p.configuration.provider.matches(original.configuration.provider) &&
+        p.configuration.effectiveDifficulty ==
+            original.configuration.effectiveDifficulty &&
+        p.configuration.preferences.version ==
+            original.configuration.preferences.version &&
+        p.configuration.preferences.sameValues(
+          original.configuration.preferences,
+        ),
+  );
+
   Future<ConnectionObservationPage> loadConnectionObservations(
     ConnectionReservation connection, {
     int afterSequence = 0,
