@@ -126,7 +126,9 @@ WebRTC生产传输底层与Dart桥接已实现，尚未接到练习页或供应�
 
 后续已用独立测试库真实浏览器补验断连、真实提交后延迟响应、双标签账号切换与共享会话退出；没有发现确定业务缺陷，未修改生产代码。受控手工步骤、脱敏请求记录和截图见[失败/身份验收](2026-10-18-recovery-browser-failures-verification.md)。临时故障/测试准入不属于默认开发API，不能在实际库照搬测试种子或故障注入。
 
-`lib/features/conversation/`提供有界内存投影，现由媒体控制器的归一化协议回调消费；`flutter test test/features/conversation test/features/realtime/practice_media_conversation_test.dart`验证文字修订、播放证据和生命周期。正文不写观测journal或浏览器存储，默认协议仍Unavailable，当前没有正式练习页或文字HTTP持久化。契约见[对话投影](../architecture/2026-10-18-conversation-projection.md)，实际测试与集成边界见[验证](2026-10-18-conversation-projection-verification.md)。
+`lib/features/conversation/`提供有界内存投影，现由媒体控制器的归一化协议回调消费；`flutter test test/features/conversation test/features/realtime/practice_media_conversation_test.dart`验证文字修订、播放证据和生命周期。正文不写观测journal或浏览器存储，默认协议仍Unavailable，当前没有正式练习页。契约见[对话投影](../architecture/2026-10-18-conversation-projection.md)，实际测试与集成边界见[验证](2026-10-18-conversation-projection-verification.md)。
+
+2026-10-20已增加原连接最终文字追加/精确确认与客户端分页读取：媒体只将已接受的final修订放入有界内存journal，偏好页“未结束练习”可明确查看/翻页/刷新已保存文字。独立不可变读取模型核验原账号/连接、修订及预算，空修订覆盖旧原话；AI生成文本始终标播放未知，不形成会话固化或反馈资格。此入口只读，实际准入/网关/协议保持关闭。测试`flutter test --no-pub test/features/conversation test/features/practice/final_transcript_recovery_test.dart test/features/practice/final_transcript_panel_test.dart`；真实浏览器使用独立测试库的临时账号，未给默认开发库写假练习。详见[文字存储](../architecture/2026-10-20-final-transcript-storage.md)、[读取契约](../architecture/2026-10-20-final-transcript-read.md)与[本轮验证](2026-10-20-final-transcript-read-verification.md)。新增文字组件深浅色/空态预览同样只用样例；使用既有镜像依赖缓存启动时加`PUB_HOSTED_URL=https://pub.flutter-io.cn`，预览生成目录异常先使用官方`flutter widget-preview clean`，不修改SDK。
 
 组件预览位于 `lib/design/account_components.dart`，只展示品牌和按钮的深浅色，不连接服务、不申请媒体权限。品牌启动图标可以用 `uv run --with pillow scripts/generate_brand_icons.py` 重新生成，脚本与 Flutter 的绘制路径保持一致。
 

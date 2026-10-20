@@ -6,6 +6,8 @@ import '../../design/account_components.dart';
 import '../../design/app_theme.dart';
 import '../../design/preview_surface.dart';
 import '../account/account_controller.dart';
+import '../conversation/final_transcript_read_models.dart';
+import '../conversation/final_transcript_read_view.dart';
 import 'connection_observation_models.dart';
 import 'practice_models.dart';
 import 'practice_providers.dart';
@@ -47,9 +49,14 @@ class PracticeRecoveryPanel extends ConsumerWidget {
         events: controller.events,
         errorCode: controller.errorCode,
         observationErrorCode: controller.observationErrorCode,
+        transcripts: controller.transcripts,
+        transcriptErrorCode: controller.transcriptErrorCode,
+        loadingTranscripts: controller.loadingTranscripts,
         cleanupStatus: controller.cleanupStatus,
         onRefresh: controller.refresh,
         onLoadObservations: controller.loadObservations,
+        onLoadTranscripts: controller.loadTranscripts,
+        onRefreshTranscripts: () => controller.loadTranscripts(refresh: true),
         onDiscard: () => _confirmDiscard(context, controller),
         onConfirmAccount: () =>
             ref.read(accountControllerProvider.notifier).restore(),
@@ -67,9 +74,14 @@ class PracticeRecoveryView extends StatelessWidget {
     this.events = const [],
     this.errorCode,
     this.observationErrorCode,
+    this.transcripts,
+    this.transcriptErrorCode,
+    this.loadingTranscripts = false,
     this.cleanupStatus = PreparationCleanupStatus.idle,
     this.onRefresh,
     this.onLoadObservations,
+    this.onLoadTranscripts,
+    this.onRefreshTranscripts,
     this.onConfirmAccount,
     this.onDiscard,
   });
@@ -80,9 +92,14 @@ class PracticeRecoveryView extends StatelessWidget {
   final List<ConnectionObservation> events;
   final String? errorCode;
   final String? observationErrorCode;
+  final FinalTranscriptHistory? transcripts;
+  final String? transcriptErrorCode;
+  final bool loadingTranscripts;
   final PreparationCleanupStatus cleanupStatus;
   final VoidCallback? onRefresh;
   final VoidCallback? onLoadObservations;
+  final VoidCallback? onLoadTranscripts;
+  final VoidCallback? onRefreshTranscripts;
   final VoidCallback? onConfirmAccount;
   final VoidCallback? onDiscard;
 
@@ -197,7 +214,7 @@ class PracticeRecoveryView extends StatelessWidget {
                   ],
                   if (observationErrorCode != null)
                     StatusMessage(_errorMessage(observationErrorCode!)),
-                  if (busy) ...[
+                  if (busy && !loadingTranscripts) ...[
                     const SizedBox(height: 12),
                     Semantics(liveRegion: true, child: const Text('正在读取连接记录…')),
                   ],
@@ -214,6 +231,14 @@ class PracticeRecoveryView extends StatelessWidget {
                       ),
                     ),
                   ],
+                  const Divider(height: 32),
+                  FinalTranscriptReadView(
+                    history: transcripts,
+                    busy: loadingTranscripts,
+                    errorCode: transcriptErrorCode,
+                    onLoad: busy ? null : onLoadTranscripts,
+                    onRefresh: busy ? null : onRefreshTranscripts,
+                  ),
                 ],
                 if (recovery!.canDiscardPreparation) ...[
                   const Divider(height: 32),
@@ -257,6 +282,7 @@ String _errorMessage(String code) => switch (code) {
   'account_changed' => '当前账号已变化，请重新确认账号后查看。',
   'unauthorized' => '登录已失效，请重新确认账号。',
   'invalid_response' => '服务端状态响应异常，请刷新后重试。',
+  'practice_not_found' || 'connection_not_found' => '这条记录已不可用，请刷新查看当前状态。',
   _ => '暂时无法读取记录，请检查网络后重试。当前登录仍保留。',
 };
 

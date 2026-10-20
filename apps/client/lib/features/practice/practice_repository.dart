@@ -1,5 +1,7 @@
 import '../../core/api_client.dart';
 import '../account/account_models.dart';
+import '../conversation/conversation_models.dart';
+import '../conversation/final_transcript_read_models.dart';
 import 'connection_observation_models.dart';
 import 'practice_models.dart';
 
@@ -118,6 +120,40 @@ class PracticeRepository {
       (json) => ConnectionObservationPage.fromJson(
         json,
         connection: connection,
+        afterSequence: afterSequence,
+        limit: limit,
+      ),
+      (_) => true,
+    );
+  }
+
+  Future<FinalTranscriptPage> loadFinalTranscripts(
+    ConnectionReservation connection, {
+    int afterSequence = 0,
+    int limit = 32,
+  }) async {
+    _uuid(accountId);
+    if (afterSequence < 0 ||
+        afterSequence > 2147483647 ||
+        limit < 1 ||
+        limit > 32) {
+      throw const ApiException('invalid_request', '文字查询范围无效。');
+    }
+    final scope = ConversationScope(
+      accountId: accountId,
+      sessionId: connection.sessionId,
+      connectionId: connection.id,
+      clientInstanceId: connection.clientInstanceId,
+      epoch: connection.epoch,
+    );
+    return _read<FinalTranscriptPage>(
+      await _request(
+        'GET',
+        '/v1/practice-sessions/${connection.sessionId}/connections/${connection.id}/transcripts?after_sequence=$afterSequence&limit=$limit',
+      ),
+      (json) => FinalTranscriptPage.fromJson(
+        json,
+        scope: scope,
         afterSequence: afterSequence,
         limit: limit,
       ),

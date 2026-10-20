@@ -1,0 +1,221 @@
+{
+  "browser_requests": [
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "query": "",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/auth/login",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/me/preferences",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/practice-sessions/current",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/practice-sessions/practice_1/connections/connection_1/transcripts",
+      "query": "after_sequence=0&limit=32",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/practice_1/connections/connection_1/transcripts",
+      "query": "after_sequence=0&limit=32",
+      "status": 200
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/practice-sessions/practice_1/connections/connection_1/transcripts",
+      "query": "after_sequence=32&limit=32",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/practice_1/connections/connection_1/transcripts",
+      "query": "after_sequence=32&limit=32",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/practice_1/connections/connection_1/transcripts",
+      "query": "after_sequence=0&limit=32",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/practice_1/connections/connection_1/transcripts",
+      "query": "after_sequence=0&limit=32",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/me/preferences",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/auth/logout",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/logout",
+      "query": "",
+      "status": 204
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/auth/login",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/practice_1/connections/connection_1/transcripts",
+      "query": "after_sequence=32&limit=32",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/practice-sessions/current",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "query": "",
+      "status": 200
+    },
+    {
+      "method": "OPTIONS",
+      "path": "/v1/practice-sessions/practice_2/connections/connection_2/transcripts",
+      "query": "after_sequence=0&limit=32",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/practice_2/connections/connection_2/transcripts",
+      "query": "after_sequence=0&limit=32",
+      "status": 200
+    }
+  ],
+  "database_before_cleanup": [
+    {
+      "account": "transcript_read_qa_a",
+      "events": 34,
+      "bytes": 6101,
+      "status": "unknown",
+      "termination_status": "unknown",
+      "signalling_started": false
+    },
+    {
+      "account": "transcript_read_qa_b",
+      "events": 2,
+      "bytes": 76,
+      "status": "unknown",
+      "termination_status": "unknown",
+      "signalling_started": false
+    }
+  ],
+  "cleanup": "Only two fixture users, their consumed invites and cascaded records removed."
+}

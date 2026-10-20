@@ -12,7 +12,7 @@
 
 ## 2. 当前阶段与边界
 
-**第2阶段账号/偏好、Web首屏与本机麦克风检查已实现；第3阶段准备/恢复/清理、代次/租约、WebRTC/Flutter桥接、单次信令、媒体协调、持久观测及内存文字/播放投影已有。本批新增原连接绑定的最终文字修订追加/分页读取API及客户端精确确认队列，默认账号媒体provider已装配；丢失成功响应后的实际本机Dart→API→PostgreSQL重放验收通过。提交仅为client_reported，AI持久播放状态unknown，不改变终止/租约/占用。实际准入/网关/协议继续关闭，媒体/归一化来源仍为替身；正式练习页、供应商语音、服务端固化、播放持久证据和学习闭环未实现。**
+**第2阶段账号/偏好、Web首屏与本机麦克风检查已实现；第3阶段准备/恢复/清理、代次/租约、WebRTC/Flutter桥接、单次信令、媒体协调、持久观测、内存文字/播放和最终文字追加/精确确认已有。本批新增账号/原连接绑定的客户端分页读取与不可变修订重建，接入现有未结束练习的只读查看；实际Dart→API→PostgreSQL和浏览器分页/网络失败/跨标签身份隔离通过。来源仅client_reported，AI持久播放状态unknown，不改变终止/租约/占用。准入/网关/协议继续关闭，媒体来源仍为替身；正式练习页、供应商语音、有界正常收尾、播放持久证据、服务端固化与学习闭环未实现。**
 
 用户已要求“开始吧”和多次“继续”，允许应用工程及本地验证。**2026-10-17最新指令：按照建议路线持续开发，不逐项汇报和确认；需要本人确认或更改的部分先跳过，待后续补齐后再实施。以Flutter Web为主，暂停Android构建和安装。** 常规可逆工程选择直接执行，验证与边界持续写入本文件；未提供的模型账号与预算不能由持续开发授权推定，付费连接仍关闭，不推送远端、不对外部署。物理设备许可、账号/预算及真实手机条件暂缓，不反复提问，也不阻塞其他工程工作。
 
@@ -20,17 +20,17 @@
 | --- | --- |
 | 仓库 | `/Users/simon/workplace/projects/simontalk`，origin为`https://github.com/simon-996/simontalk.git` |
 | Git | main保留文档基线`71ecbe0`；当前`feat/account-foundation`，核对最新日志/状态；未推送 |
-| 客户端 | `apps/client/`，真实账号/偏好；准备/信令/媒体协调、有界观测及最终文字确认journal、内存文字/播放投影；偏好页明确读取/分页及确认后清理；HTTP家族共享CSRF，原生工程保留 |
+| 客户端 | `apps/client/`，真实账号/偏好；准备/信令/媒体协调、有界观测及最终文字确认journal、内存文字/播放投影；原连接文字分页/修订重建和只读查看，偏好页明确查询/翻页及确认后清理；HTTP家族共享CSRF，原生工程保留 |
 | 后端 | `services/api/`，FastAPI/PostgreSQL17/Alembic；账号、准备/恢复、代次/租约、周期/明确清理、单次信令、受限观测及最终文字修订追加/分页，head b97d2a641e30；真实语音准入与网关固定关闭 |
 | 本地数据 | Compose专用数据库127.0.0.1:54329；开发库`simontalk`、独立测试库`simontalk_test` |
-| 页面 | 深浅色、双弧线品牌、响应式表单、错误恢复；Web本机麦克风检查、未结束练习/客户端记录与未开始准备确认清理；没有练习占位页 |
-| 检查 | 本批后端276项、Flutter311项、Node51及实际HTTP1项通过；分析/78 Dart格式、Ruff/51 Python格式、迁移降升/check通过，Web release32.1秒/发布字体通过。模型约束归属错误经失败回归修复，双独立静态复查无剩余确定问题。默认API ready200；开发库1账号/0练习/连接/观测/文字。无UI变化，未新增浏览器/预览验收 |
+| 页面 | 深浅色、双弧线品牌、响应式表单、错误恢复；Web本机麦克风检查、未结束练习/客户端记录/已保存文字与未开始准备确认清理；文字独立有界滚动/选择、未知播放和修订提示；没有练习占位页或完整历史页 |
+| 检查 | 本批Flutter435项、Node51及实际HTTP1项通过；分析/87 Dart格式通过，最终Web release34.5秒/发布字体通过，真实浏览器分页/断网刷新/跨标签账号隔离与深浅色/空态预览通过。选择焦点问题先失败后修复并独立复查。后端无变更，276项沿用前批证据。默认API ready200；开发库1账号/0练习/连接/观测/文字，临时测试数据/服务已清理 |
 | 原生 | Android曾因磁盘不足构建失败，没有APK；已暂停并清理本轮新增资源。Android/iOS工程保留，均无设备验收证据 |
 | CI | 已配置PostgreSQL/API检查、Flutter分析/测试/Web构建；APK步骤已移除，未推送、远端未运行 |
-| 语音/学习 | 协调器/观测/内存投影/最终文字持久追加及恢复入口已有；协议默认拒绝、无正式练习页；供应商语音/事件、播放证据持久化、服务端最终固化、媒体恢复、反馈、重练、学习记录、用量与成本控制未实现 |
+| 语音/学习 | 协调器/观测/内存投影/最终文字持久追加、分页重建及恢复入口已有；协议默认拒绝、无正式练习页；有界收尾、供应商语音/事件、播放证据持久化、服务端最终固化、媒体恢复、反馈、重练、学习记录、用量与成本控制未实现 |
 | 生产 | 没有线上服务；TLS、正式签名、备份恢复与运维待后续 |
 
-启动、维护与检查见[本地开发](docs/development/local-development.md)，最新进展见[最终文字持久提交验证](docs/development/2026-10-20-final-transcript-storage-verification.md)、[内存对话投影验证](docs/development/2026-10-18-conversation-projection-verification.md)、[恢复入口失败/身份浏览器验收](docs/development/2026-10-18-recovery-browser-failures-verification.md)、[明确准备清理验证](docs/development/2026-10-18-preparation-discard-verification.md)、[只读恢复验证](docs/development/2026-10-18-readonly-recovery-verification.md)、[受限观测验证](docs/development/2026-10-18-connection-observations-verification.md)、[媒体协调验证](docs/development/2026-10-17-practice-media-coordinator-verification.md)、[单次信令验证](docs/development/2026-10-17-guarded-signalling-verification.md)、[恢复与自动清理验证](docs/development/2026-10-17-preparation-recovery-verification.md)、[客户端准备验证](docs/development/2026-10-17-client-preparation-verification.md)、[连接与租约验证](docs/development/2026-10-17-connection-reservations-verification.md)、[预览字体验证](docs/development/2026-10-17-preview-font-verification.md)、[WebRTC传输验证](docs/development/2026-10-17-web-realtime-transport-verification.md)、[准备登记验证](docs/development/2026-10-17-practice-preparation-verification.md)和[麦克风检查](docs/development/2026-10-17-microphone-check-verification.md)。账号基础、首屏/键盘和Android清理保留历史记录。
+启动、维护与检查见[本地开发](docs/development/local-development.md)，最新进展见[文字读取与浏览器验证](docs/development/2026-10-20-final-transcript-read-verification.md)、[最终文字持久提交验证](docs/development/2026-10-20-final-transcript-storage-verification.md)、[内存对话投影验证](docs/development/2026-10-18-conversation-projection-verification.md)、[恢复入口失败/身份浏览器验收](docs/development/2026-10-18-recovery-browser-failures-verification.md)、[明确准备清理验证](docs/development/2026-10-18-preparation-discard-verification.md)、[只读恢复验证](docs/development/2026-10-18-readonly-recovery-verification.md)、[受限观测验证](docs/development/2026-10-18-connection-observations-verification.md)、[媒体协调验证](docs/development/2026-10-17-practice-media-coordinator-verification.md)、[单次信令验证](docs/development/2026-10-17-guarded-signalling-verification.md)、[恢复与自动清理验证](docs/development/2026-10-17-preparation-recovery-verification.md)、[客户端准备验证](docs/development/2026-10-17-client-preparation-verification.md)、[连接与租约验证](docs/development/2026-10-17-connection-reservations-verification.md)、[预览字体验证](docs/development/2026-10-17-preview-font-verification.md)、[WebRTC传输验证](docs/development/2026-10-17-web-realtime-transport-verification.md)、[准备登记验证](docs/development/2026-10-17-practice-preparation-verification.md)和[麦克风检查](docs/development/2026-10-17-microphone-check-verification.md)。账号基础、首屏/键盘和Android清理保留历史记录。
 
 ## 3. 已确认与工程采用
 
@@ -50,9 +50,9 @@
 
 ## 4. 下一步
 
-1. 以Flutter Web持续推进：最终文字追加/读取API与确认队列已实现，下一批建立账号/原连接作用域的客户端分页读取仓库和当前版本重建，明确修订/缺口/未知播放状态，随后在现有真实记录入口接入只读查看；不编造练习或反馈。播放证据持久提交/服务端结束固化另列可验证单元，不把生成文本当已播放。当前恢复入口刷新仍只读，明确准备清理核验完整历史；local_closed不是confirmed终止。真实协议未实现，信令成功仍只到configuring，替身active/deviceOutputAligned不代表供应商/物理证据。未知创建key跨进程恢复与丢失答案可信终止仍缺。准入/网关/协议保持关闭；模型/预算/设备任务跳过，原生暂停。
+1. 以Flutter Web持续推进：最终文字追加/读取API、确认队列、账号/原连接分页仓库与当前修订只读查看已实现。下一单元按最新收尾规则先实现正常end的固定截止收尾和版本绑定的中断输出前缀，保留异常stop/dispose立即释放；为播放证据持久化和服务端结束固化建立可验证输入。读取快照不作为固化或反馈资格证据，不把AI生成文字当已播放。当前恢复入口刷新仍只读，明确准备清理核验完整历史；local_closed不是confirmed终止。真实协议未实现，信令成功仍只到configuring，替身active/deviceOutputAligned不代表供应商/物理证据。未知创建key跨进程恢复与丢失答案可信终止仍缺。准入/网关/协议保持关闭；模型/预算/设备任务跳过，原生暂停。
 2. 本地功能分支核对最新提交与干净状态，不擅自推送或部署；之后获推送授权时运行Web/API远端CI。
-3. a6b7eab已修复“清理后首次退出403”：同一家族共享CSRF签发，旧拒绝不抹去新令牌、不自动重放。不同标签仍可轮换共享Cookie，旧写被拒绝后须明确刷新/确认；本批实际旧写403、随后身份GET409均未误改数据。此前预检后传输异常未自然复现、仍未定因，不能用本批主动停止API的网络失败解释它；保留Origin/CSRF规则。
+3. a6b7eab已修复“清理后首次退出403”：同一家族共享CSRF签发，旧拒绝不抹去新令牌、不自动重放。不同标签仍可轮换共享Cookie，旧写被拒绝后须明确刷新/确认；此前清理/身份验收实际旧写403、随后身份GET409均未误改数据。此前预检后传输异常未自然复现、仍未定因，不能用本批主动停止API的网络失败解释它；保留Origin/CSRF规则。
 4. 待用户后续补齐账号/地域/预算与设备条件，再做物理麦克风及最小供应商语音闭环，实测插话、断线、释放、上游终止与计量，有证据后增加练习页。当前不主动索要重复确认，不把这些暂缓项冒充完成。
 
 | 缺少输入或证据 | 影响 |
@@ -67,7 +67,7 @@
 | --- | --- |
 | 1方案准备 | 工程前置落实；模型、费用与真机条件在对应任务前补齐 |
 | 2工程底座 | 账号/偏好、首屏恢复、键盘选择与组件预览通过；本批补验恢复入口的指定网络/身份场景，完整浏览器和性能验收未完成，原生暂停 |
-| 3真实语音 | 准备/恢复/清理、代次/租约、信令、Web底层、媒体协调、观测/恢复入口、内存文字/播放与最终文字追加/读取/确认已有；本机文字HTTP重放验收通过，归一化语音仍为替身；协议/网关关闭，正式练习页、供应商事件、服务端固化、费用和终止实测缺失 |
+| 3真实语音 | 准备/恢复/清理、代次/租约、信令、Web底层、媒体协调、观测/恢复入口、内存文字/播放与最终文字追加/确认/客户端分页重建和只读查看已有；实际文字HTTP及浏览器隔离验收通过，归一化语音仍为替身；协议/网关关闭，正式练习页、有界收尾、供应商事件、服务端固化、费用和终止实测缺失 |
 | 4学习闭环 | 未开始 |
 | 5可靠性/成本 | 未开始 |
 | 6Web交付与朋友试用 | 未开始；原生分发暂停 |
@@ -89,8 +89,8 @@
 
 先读[AGENTS.md](AGENTS.md)与本文件，检查`git status --short`、`git log -3 --oneline`。没有`.codegraph/`时跳过CodeGraph，不擅自索引。
 
-本批见[实施计划](docs/superpowers/plans/2026-10-15-account-foundation.md)，后续对照[交互](docs/design/2026-10-15-screen-and-interaction-spec.md)、[视觉](docs/design/2026-10-15-visual-design-spec.md)和[验证](docs/validation/2026-10-15-validation-plan.md)。本机已安装Flutter响应式/预览/布局排查与UI/UX Pro Max，另有design-taste-frontend；它们不随Git克隆自动安装，也不构成产品验收。
+本批见[文字读取实施计划](docs/superpowers/plans/2026-10-20-final-transcript-read.md)，后续对照[交互](docs/design/2026-10-15-screen-and-interaction-spec.md)、[视觉](docs/design/2026-10-15-visual-design-spec.md)和[验证](docs/validation/2026-10-15-validation-plan.md)。本机已安装Flutter响应式/预览/布局排查与UI/UX Pro Max，另有design-taste-frontend；它们不随Git克隆自动安装，也不构成产品验收。
 
-最近工作：按[最终文字计划](docs/superpowers/plans/2026-10-20-final-transcript-storage.md)实现final_transcripts复合身份外键/追加修订、严格版本/映射/预算、精确ACK与sequence分页；客户端有界内存journal及媒体/provider装配，失败暂停保留原事件，明确重试、8秒总截止、账号变化/销毁清空。先失败测试，独立审查和Alembic check抓到模型约束归属错误，补失败回归后修复；最终后端276、Flutter311、Node51、分析/格式/Ruff/迁移通过，Web release32.1秒。实际Dart→回环测试API→独立PostgreSQL验证“服务器提交后丢失响应→明确重放不重复→追加修订可分页”，夹具与临时API均清理。默认开发API8000已启动、准入/网关仍关闭，开发库head b97d2a641e30、1账号/0练习/连接/观测/文字。无UI变化、未新增浏览器/媒体验收，AI持久播放状态unknown；下一批做受账号保护的客户端读取与只读展示。未推送/部署，模型/预算/设备继续跳过，原生暂停。
+最近工作：按[文字读取计划](docs/superpowers/plans/2026-10-20-final-transcript-read.md)实现独立严格分页模型、原连接GET仓库、不可变当前修订重建和恢复控制器串行/8秒/账号清理，接入真实偏好页只读入口；空修订覆盖旧原话、跨页冲突原子拒绝、AI播放未知，文字可滚动/选择。独立审查后用真实鼠标回归发现并修复双击/三击焦点抢占。最终Flutter435、Node51、实际HTTP1、分析/87格式通过，最终Web release34.5秒及完整字体通过。浏览器实际32+2分页、断网刷新清空与明确重试、跨标签GET409清除旧内容及B账号2段隔离通过，组件深浅色/空态预览可见；临时测试账号/邀请及关联数据、API/Web/预览服务与标签均清理。后端无变更，前批276项证据保留；开发API8000默认关闭准入/网关，开发库head b97d2a641e30、1账号/0练习/连接/观测/文字。一次构建误触发依赖解析后已恢复原锁文件/缓存配置，按原依赖复验，无依赖升级。并行文档完善内容保留，独立提交本批代码与证据；未推送/部署，下一单元补有界正常收尾与中断事实，模型/预算/设备继续跳过，原生暂停。
 
 后续交接更新完成内容/证据、剩余问题、可执行下一步、缺少输入和提交/推送/部署状态。用户最新指令优先，不沿用旧阶段边界。
