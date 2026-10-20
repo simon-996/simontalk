@@ -8,6 +8,7 @@ import '../../core/random_uuid.dart';
 import '../account/account_models.dart';
 import '../conversation/conversation_models.dart';
 import '../conversation/conversation_projection.dart';
+import '../conversation/final_transcript_journal.dart';
 import '../practice/practice_models.dart';
 import '../practice/practice_repository.dart';
 import 'connection_lease_watchdog.dart';
@@ -42,6 +43,7 @@ class PracticeMediaController extends ChangeNotifier
     required this.signallerFactory,
     this.protocolFactory = unavailableRealtimeProtocol,
     this.observationJournalFactory,
+    this.transcriptJournalFactory,
     Duration Function()? elapsed,
   }) : _elapsed = elapsed ?? _clock() {
     _lease = ConnectionLeaseWatchdog(
@@ -60,6 +62,7 @@ class PracticeMediaController extends ChangeNotifier
   final RealtimeSignallerFactory signallerFactory;
   final RealtimeProtocolFactory protocolFactory;
   final ObservationJournalFactory? observationJournalFactory;
+  final TranscriptJournalFactory? transcriptJournalFactory;
   final Duration Function() _elapsed;
   late final ConnectionLeaseWatchdog _lease;
   final String clientInstanceId = randomUuid();
@@ -80,6 +83,18 @@ class PracticeMediaController extends ChangeNotifier
   RealtimeObservationJournal? get observationJournal => _observationJournal;
   String? get observationErrorCode =>
       _observationError ?? _observationJournal?.errorCode;
+  RealtimeTranscriptJournal? _transcriptJournal;
+  String? _transcriptError;
+  bool _transcriptAborted = false;
+  RealtimeTranscriptJournal? get transcriptJournal {
+    if (!repository.hasCurrentAccount) _abortTranscripts();
+    return _transcriptJournal;
+  }
+
+  int get transcriptPendingCount => transcriptJournal?.pendingCount ?? 0;
+  int get transcriptRejectedCount => transcriptJournal?.rejectedCount ?? 0;
+  String? get transcriptErrorCode =>
+      _transcriptError ?? transcriptJournal?.errorCode;
   bool _muted = false;
   bool get muted => _muted;
   bool _signallingAttempted = false;
@@ -93,6 +108,7 @@ class PracticeMediaController extends ChangeNotifier
     if (_disposed) return null;
     if (!repository.hasCurrentAccount) {
       _conversation?.clear();
+      _abortTranscripts();
       return null;
     }
     return _conversation?.snapshot;
@@ -208,6 +224,18 @@ class PracticeMediaController extends ChangeNotifier
         ),
       );
       _creating = false;
+      if (transcriptJournalFactory != null) {
+        try {
+          final journal = transcriptJournalFactory!(_conversation!.scope);
+          if (!_guard()) {
+            journal.abort();
+            return;
+          }
+          _transcriptJournal = journal;
+        } on Object {
+          _transcriptError = 'transcript_unavailable';
+        }
+      }
       if (observationJournalFactory != null) {
         try {
           final journal = observationJournalFactory!(
@@ -390,7 +418,16 @@ class PracticeMediaController extends ChangeNotifier
       if (result == ConversationApplyResult.closed) {
         unawaited(stop(reason: 'conversation_closed'));
       } else if (result == ConversationApplyResult.applied && _guard()) {
-        _publish(_phase);
+        if (update is TranscriptUpdate && update.isFinal) {
+          try {
+            _transcriptJournal?.record(update);
+          } on Object {
+            _transcriptError = 'transcript_unavailable';
+            _abortTranscripts();
+            _transcriptJournal = null;
+          }
+        }
+        if (_guard()) _publish(_phase);
       }
     } on ConversationFailure catch (error) {
       unawaited(stop(reason: error.code));
@@ -529,12 +566,33 @@ class PracticeMediaController extends ChangeNotifier
     }
   }
 
+  void _abortTranscripts() {
+    if (_transcriptAborted || _transcriptJournal == null) return;
+    _transcriptAborted = true;
+    try {
+      _transcriptJournal!.abort();
+    } on Object {
+      _transcriptError = 'transcript_unavailable';
+    }
+  }
+
+  void _finishTranscripts() {
+    if (_transcriptJournal == null || _transcriptAborted) return;
+    try {
+      _transcriptJournal!.finish();
+    } on Object {
+      _transcriptError = 'transcript_unavailable';
+      _abortTranscripts();
+    }
+  }
+
   /// Releases local resources synchronously; API cleanup is separate evidence.
   Future<void> stop({String reason = 'stopped'}) {
     if (_disposed ||
         !repository.hasCurrentAccount ||
         reason == 'account_changed') {
       _conversation?.clear();
+      _abortTranscripts();
     } else {
       _conversation?.seal();
     }
@@ -562,6 +620,7 @@ class PracticeMediaController extends ChangeNotifier
       }
     }
     _finishObservations(_errorCode!);
+    _finishTranscripts();
     _releaseStatus = !_practiceRequested
         ? MediaReleaseStatus.notNeeded
         : _signallingAttempted

@@ -246,6 +246,7 @@ class ConnectionObservation(Base):
     received_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
     )
+
     __table_args__ = (
         ForeignKeyConstraint(
             ["connection_id", "client_instance_id", "epoch"],
@@ -274,5 +275,55 @@ class ConnectionObservation(Base):
             "('user_stop','background','disposed','account_changed','lease_expired',"
             "'connection_failed','configuration_failed','other'))",
             name="observation_reason",
+        ),
+    )
+
+
+class FinalTranscript(Base):
+    __tablename__ = "final_transcripts"
+    connection_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    event_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    client_instance_id: Mapped[uuid.UUID] = mapped_column()
+    epoch: Mapped[int] = mapped_column(Integer)
+    sequence: Mapped[int] = mapped_column(Integer)
+    turn_id: Mapped[uuid.UUID] = mapped_column()
+    turn_index: Mapped[int] = mapped_column(Integer)
+    role: Mapped[str] = mapped_column(String(16))
+    revision: Mapped[int] = mapped_column(Integer)
+    text: Mapped[str] = mapped_column(Text)
+    response_id: Mapped[uuid.UUID | None] = mapped_column()
+    provider_item_id: Mapped[str | None] = mapped_column(String(256))
+    event_digest: Mapped[str] = mapped_column(String(64))
+    source: Mapped[str] = mapped_column(String(16), server_default="client_reported")
+    received_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["connection_id", "client_instance_id", "epoch"],
+            [
+                "realtime_connections.id",
+                "realtime_connections.client_instance_id",
+                "realtime_connections.epoch",
+            ],
+            name="transcript_connection_identity",
+            ondelete="CASCADE",
+        ),
+        UniqueConstraint("connection_id", "sequence", name="transcript_sequence"),
+        UniqueConstraint("connection_id", "turn_id", "revision", name="transcript_turn_revision"),
+        CheckConstraint(
+            "sequence > 0 AND turn_index > 0 AND revision > 0", name="transcript_numeric_bounds"
+        ),
+        CheckConstraint("source = 'client_reported'", name="transcript_source"),
+        CheckConstraint("event_digest ~ '^[a-f0-9]{64}$'", name="transcript_digest"),
+        CheckConstraint("octet_length(text) <= 8192", name="transcript_text_bytes"),
+        CheckConstraint(
+            "provider_item_id IS NULL OR length(provider_item_id) BETWEEN 1 AND 256",
+            name="transcript_provider_item",
+        ),
+        CheckConstraint(
+            "(role = 'user' AND response_id IS NULL) OR "
+            "(role = 'assistant' AND response_id IS NOT NULL)",
+            name="transcript_role_response",
         ),
     )

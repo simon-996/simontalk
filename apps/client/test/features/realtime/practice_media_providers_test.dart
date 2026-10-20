@@ -11,6 +11,7 @@ import '../practice/practice_fixtures.dart';
 import '../practice/practice_providers_test.dart'
     show ScopedAccountController, signedIn;
 import 'media_fixtures.dart';
+import 'practice_media_transcripts_test.dart' show TestTranscriptJournal;
 
 void main() {
   testWidgets('default account scope is lazy and 503 never creates media', (
@@ -35,6 +36,8 @@ void main() {
     final subscription = container.listen(practiceMediaProvider, (_, _) {});
     final controller = container.read(practiceMediaProvider)!;
     expect(h.requests, isEmpty);
+    expect(controller.transcriptJournalFactory, isNotNull);
+    expect(controller.transcriptJournal, isNull);
     await controller.begin();
     expect(controller.phase, PracticeMediaPhase.localClosed);
     expect(controller.errorCode, 'realtime_unavailable');
@@ -49,12 +52,16 @@ void main() {
     'unavailable protocol rejects admitted fixture before media creation',
     (tester) async {
       final h = MediaHarness(tester);
+      final journal = TestTranscriptJournal();
       var mediaCreates = 0;
       final container = ProviderContainer(
         overrides: [
           accountRepositoryProvider.overrideWithValue(AccountRepository(h.api)),
           realtimeObservationJournalFactoryProvider.overrideWithValue(
             (_, _, _, _) => TestObservationJournal(),
+          ),
+          realtimeTranscriptJournalFactoryProvider.overrideWithValue(
+            (_, _) => journal,
           ),
           accountControllerProvider.overrideWith(ScopedAccountController.new),
           realtimeTransportFactoryProvider.overrideWithValue(() {
@@ -81,11 +88,15 @@ void main() {
     'identity change disposes connecting media and busy updates keep scope',
     (tester) async {
       final h = MediaHarness(tester);
+      final journal = TestTranscriptJournal();
       final container = ProviderContainer(
         overrides: [
           accountRepositoryProvider.overrideWithValue(AccountRepository(h.api)),
           realtimeObservationJournalFactoryProvider.overrideWithValue(
             (_, _, _, _) => TestObservationJournal(),
+          ),
+          realtimeTranscriptJournalFactoryProvider.overrideWithValue(
+            (_, _) => journal,
           ),
           accountControllerProvider.overrideWith(ScopedAccountController.new),
           realtimeTransportFactoryProvider.overrideWithValue(() => h.transport),
@@ -105,11 +116,13 @@ void main() {
       unawaited(initial.begin());
       await tester.pump();
       expect(initial.phase, PracticeMediaPhase.connecting);
+      expect(initial.transcriptJournal, same(journal));
       h.api.expectedAccountId = requestKey;
       account.change(signedIn(requestKey));
       await tester.pump();
       expect(h.transport.stops, 1);
       expect(initial.phase, PracticeMediaPhase.localClosed);
+      expect(journal.aborts, 1);
       final next = container.read(practiceMediaProvider)!;
       expect(next, isNot(same(initial)));
       expect(h.requests.length, 2);

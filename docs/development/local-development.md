@@ -38,7 +38,7 @@ uv run simontalk-admin cleanup-preparations --limit 100
 
 邀请单次 72 小时；重设凭证单次 15 分钟。凭证仅显示一次，不写入 Git。前台不自动发短信、邮件，也不提供远程管理员 API。更多身份与生产配置见 [API 说明](../../services/api/README.md)。
 
-更新后运行`uv run alembic upgrade head`，练习/连接准备均有持久表，当前head为`f80e9c1a24bd`（新增受限连接观测子表及原连接身份复合外键）。API源码修改后须重启本地Uvicorn，启动命令未启用自动重载。真实运行的新练习/连接准入及信令网关固定关闭；测试策略仅用于独立测试库，不能通过环境变量开启没有接入的语音服务。正常API lifespan现每15秒自动执行一批连接租约和300秒闲置准备清理，间隔可由`SIMONTALK_PRACTICE_MAINTENANCE_INTERVAL_SECONDS`设为1–300秒；手动完整批次使用cleanup-preparations。未开始上游可安全终结，上游未知继续占用；进程关闭期间不调度，没有媒体终止能力。详见[准备登记验证](2026-10-17-practice-preparation-verification.md)、[连接租约验证](2026-10-17-connection-reservations-verification.md)、[恢复清理验证](2026-10-17-preparation-recovery-verification.md)、[单次信令验证](2026-10-17-guarded-signalling-verification.md)与[受限观测验证](2026-10-18-connection-observations-verification.md)。
+更新后运行`uv run alembic upgrade head`，当前head为`b97d2a641e30`（新增原连接身份绑定的最终文字修订子表；前一版f80e9c1a24bd为受限观测）。API源码修改后须重启本地Uvicorn，启动命令未启用自动重载。真实运行的新练习/连接准入及信令网关固定关闭；测试策略仅用于独立测试库，不能通过环境变量开启没有接入的语音服务。正常API lifespan现每15秒自动执行一批连接租约和300秒闲置准备清理，间隔可由`SIMONTALK_PRACTICE_MAINTENANCE_INTERVAL_SECONDS`设为1–300秒；手动完整批次使用cleanup-preparations。未开始上游可安全终结，上游未知继续占用；进程关闭期间不调度，没有媒体终止能力。详见[准备登记验证](2026-10-17-practice-preparation-verification.md)、[连接租约验证](2026-10-17-connection-reservations-verification.md)、[恢复清理验证](2026-10-17-preparation-recovery-verification.md)、[单次信令验证](2026-10-17-guarded-signalling-verification.md)、[受限观测验证](2026-10-18-connection-observations-verification.md)及[最终文字验证](2026-10-20-final-transcript-storage-verification.md)。
 
 ## Flutter Web
 

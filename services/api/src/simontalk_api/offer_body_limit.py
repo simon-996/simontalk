@@ -5,6 +5,7 @@ from starlette.responses import JSONResponse
 
 MAX_OFFER_BODY_BYTES = 96 * 1024
 MAX_OBSERVATION_BODY_BYTES = 8 * 1024
+MAX_TRANSCRIPT_BODY_BYTES = 256 * 1024
 BODY_TIMEOUT_SECONDS = 5
 
 
@@ -21,13 +22,15 @@ class ConnectionBodyLimitMiddleware:
             and scope.get("method") == "POST"
             and path.startswith("/v1/practice-sessions/")
             and "/connections/" in path
-            and path.endswith(("/offer", "/observations"))
+            and path.endswith(("/offer", "/observations", "/transcripts"))
         ):
             await self.app(scope, receive, send)
             return
-        maximum = (
-            MAX_OBSERVATION_BODY_BYTES if path.endswith("/observations") else MAX_OFFER_BODY_BYTES
-        )
+        maximum = {
+            "observations": MAX_OBSERVATION_BODY_BYTES,
+            "transcripts": MAX_TRANSCRIPT_BODY_BYTES,
+            "offer": MAX_OFFER_BODY_BYTES,
+        }[path.rsplit("/", 1)[-1]]
 
         async def reject(status, code):
             request_id = scope.get("state", {}).get("request_id") or str(uuid.uuid4())

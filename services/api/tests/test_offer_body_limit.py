@@ -130,11 +130,11 @@ def test_observation_body_receipt_has_the_same_total_deadline(monkeypatch):
     assert consumed == []
 
 
-@pytest.mark.parametrize("suffix", ["offer", "observations"])
+@pytest.mark.parametrize("suffix", ["offer", "observations", "transcripts"])
 def test_http_size_error_keeps_cors_request_id_and_never_echoes_body(client, suffix):
     response = client.post(
         f"/v1/practice-sessions/p/connections/c/{suffix}",
-        content=b"private-body" * 10000,
+        content=b"private-body" * 25000,
         headers={"Origin": "http://localhost:7357", "Content-Type": "application/json"},
     )
     assert response.status_code == 413
@@ -142,3 +142,28 @@ def test_http_size_error_keeps_cors_request_id_and_never_echoes_body(client, suf
     assert response.headers["Cache-Control"] == "no-store"
     assert response.json()["request_id"] == response.headers["X-Request-ID"]
     assert "private-body" not in response.text
+
+
+def test_transcript_stream_has_independent_256_kibibyte_limit():
+    status, result, consumed = invoke(
+        [
+            {"type": "http.request", "body": b"x" * (256 * 1024), "more_body": True},
+            {"type": "http.request", "body": b"y", "more_body": False},
+        ],
+        path="/v1/practice-sessions/p/connections/c/transcripts",
+    )
+    assert status == 413 and result["code"] == "request_too_large"
+    assert consumed == []
+
+
+def test_transcript_body_receipt_has_total_deadline(monkeypatch):
+    from simontalk_api import offer_body_limit
+
+    monkeypatch.setattr(offer_body_limit, "BODY_TIMEOUT_SECONDS", 0.01)
+    status, result, consumed = invoke(
+        [{"type": "http.request", "body": b"x"}],
+        path="/v1/practice-sessions/p/connections/c/transcripts",
+        delay=0.1,
+    )
+    assert status == 408 and result["code"] == "request_timeout"
+    assert consumed == []

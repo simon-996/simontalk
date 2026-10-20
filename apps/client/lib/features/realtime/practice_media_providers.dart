@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../account/account_controller.dart';
+import '../conversation/final_transcript_journal.dart';
 import '../practice/practice_repository.dart';
 import 'api_realtime_signaller.dart';
 import 'connection_observation_journal.dart';
@@ -26,6 +27,11 @@ final realtimeObservationJournalFactoryProvider =
                 clientInstanceId: clientInstanceId,
               ),
     );
+final realtimeTranscriptJournalFactoryProvider =
+    Provider<TranscriptJournalCreator>(
+      (ref) =>
+          (api, scope) => FinalTranscriptJournal(accountApi: api, scope: scope),
+    );
 
 /// An account-owned scope. Reading it never starts practice, signalling or capture.
 final practiceMediaProvider = Provider.autoDispose<PracticeMediaController?>((
@@ -40,12 +46,16 @@ final practiceMediaProvider = Provider.autoDispose<PracticeMediaController?>((
   if (accountId == null) return null;
   final api = ref.watch(accountRepositoryProvider).api;
   final createJournal = ref.watch(realtimeObservationJournalFactoryProvider);
+  final createTranscriptJournal = ref.watch(
+    realtimeTranscriptJournalFactoryProvider,
+  );
   final controller = PracticeMediaController(
     repository: PracticeRepository(api, accountId: accountId),
     transportFactory: ref.watch(realtimeTransportFactoryProvider),
     protocolFactory: ref.watch(realtimeProtocolFactoryProvider),
     observationJournalFactory: (connection, clientInstanceId) =>
         createJournal(api, accountId, connection, clientInstanceId),
+    transcriptJournalFactory: (scope) => createTranscriptJournal(api, scope),
     signallerFactory: (connection, clientInstanceId) => ApiRealtimeSignaller(
       accountApi: api,
       accountId: accountId,

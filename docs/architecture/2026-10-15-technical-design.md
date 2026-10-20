@@ -153,7 +153,7 @@ AI 的 generated_text 与 played_text 分开：前者是模型完成的转写，
 
 response.done 或音频生成完成不等于扬声器缓冲已播放完成。没有可靠字词/音频对齐时，不按字符比例从毫秒数推算“精确听到的句子”。打断后的未知后缀在历史中标明，反馈和重建上下文不将其作为已交流的事实；客户端可展示带“未播完”标记的生成文本。
 
-2026-10-18已实现[客户端内存对话投影](2026-10-18-conversation-projection.md)，通过媒体控制器受保护的归一化协议回调消费明确文字/播放事实。按账号/原连接/代次绑定，临时/最终文字、生成/已对齐播放前缀分离，严格修订与容量限制；正常stop封存，账号变化/销毁清空。来源固定client_reported，原始传输播放事件不制造文本，默认协议仍Unavailable。尚无真实供应商事件、文字持久化、最终提交或反馈资格验证；后文Turn数据库实体仍待实现。
+2026-10-18已实现[客户端内存对话投影](2026-10-18-conversation-projection.md)，通过媒体控制器受保护的归一化协议回调消费明确文字/播放事实。按账号/原连接/代次绑定，临时/最终文字、生成/已对齐播放前缀分离，严格修订与容量限制；正常stop封存，账号变化/销毁清空。来源固定client_reported，原始传输播放事件不制造文本，默认协议仍Unavailable。2026-10-20新增[最终文字追加/读取与确认队列](2026-10-20-final-transcript-storage.md)，按原连接保留最终修订而非覆盖；AI生成文本的持久读取保持delivery_status=unknown，播放证据本批不持久化。尚无真实供应商事件、服务端最终固化或反馈资格验证；后文完整Turn实体仍待实现。
 
 ### 5.3 打断必须同时解决三件事
 
@@ -252,7 +252,8 @@ User → 多个 PracticeSession → 多个 RealtimeConnection / Turn；PracticeS
 | POST /v1/practice-sessions/{sid}/connections/{cid}/offer | client_instance_id、epoch、offer；单次受限JSON | 已实现；200 JSON answer，仅进入configuring；失败/重复保持可信边界，网关实际关闭，详见[信令契约](2026-10-17-guarded-signalling-api.md) |
 | POST /v1/practice-sessions/{sid}/connections/{cid}/observations | client_instance_id、epoch、1–16条稳定event_id/sequence及受限媒体事实 | 已实现；200完整确认，冲突整批拒绝；client_observed不能推进状态或证明用量，详见[观测契约](2026-10-18-connection-observations-api.md) |
 | GET /v1/practice-sessions/{sid}/connections/{cid}/observations | after_sequence、limit（1–32） | 已实现；本人原连接事实的只读快照分页，不接管或续租 |
-| PUT /v1/practice-sessions/{sid}/turns/{tid} | connection_id、epoch、revision、最终文字及播放证据 | 200 新版本或同版本原结果；同版本不同内容 409；拒绝封存后静默改写 |
+| POST/GET /v1/practice-sessions/{sid}/connections/{cid}/transcripts | client_instance_id、epoch、最终文字修订事件；GET为sequence分页 | 已实现受限追加/读取与精确event确认，source=client_reported，AI播放状态unknown；不代表服务端固化 |
+| PUT /v1/practice-sessions/{sid}/turns/{tid} | connection_id、epoch、revision、最终文字及播放证据 | 后续完整Turn建议契约，尚未实现；需协调追加事件与封存语义 |
 | POST /v1/practice-sessions/{sid}/end | 各连接最终水位、end_reason；Idempotency-Key | 202 ending/finalize 状态；重复返回同一任务；终态返回已有结果 |
 | GET /v1/practice-sessions | cursor、limit | 200 本人可见历史；游标稳定排序，不接受 user_id 筛选他人 |
 | GET /v1/practice-sessions/{sid} | 无 | 200 快照、连接摘要、最终话语、反馈状态；不返回临时凭证或 SDP |
@@ -273,7 +274,7 @@ User → 多个 PracticeSession → 多个 RealtimeConnection / Turn；PracticeS
 
 幂等键由客户端在用户动作开始时生成，重试保持同一键；后端按用户和操作保存 request_hash 及对应资源。超时后先查询原结果，不因一次 HTTP 重试再开一条供应商连接、再建一条练习或再生成一份反馈。SDP 重试只复用同一 connection attempt 的结果；Offer 改变需显式新尝试，不能拿旧 Answer 应答新 Offer。
 
-Turn 使用稳定 turn_id 与单调 revision：同版本同内容是成功重放，旧版本返回当前水位，同版本不同内容冲突。最终文字和播放观测提交使用客户端 outbox，服务器确认后再移除。事件 sequence 只在对应连接内排序；重复、缺口和乱序分别处理，不拿客户端时钟决定唯一顺序。
+完整Turn建议使用稳定 turn_id 与单调 revision；其旧版本返回当前水位的语义尚未实现。当前transcripts追加端点使用精确event_id重放确认，新的旧/同revision事件明确409，避免“收到”与“当前版本”混淆。最终文字队列确认后移除，播放证据仍仅内存；移动保护存储和服务端封存待实现。事件 sequence 只在对应连接内排序；允许缺口，不拿客户端时钟决定对话顺序。
 
 业务事务不能覆盖外部模型调用。因此采用至少一次任务执行、结果幂等落库：调用之前记录任务和尝试，之后检查输入版本、租约和删除状态再提交；供应商若无幂等支持，崩溃窗口可能重复付费调用，必须在用量中保留未知尝试并限制重试，不能承诺外部 exactly-once。
 

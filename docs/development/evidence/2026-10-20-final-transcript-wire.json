@@ -1,0 +1,40 @@
+{
+  "date": "2026-10-20",
+  "transport": "real loopback HTTP, Dart ApiClient + FinalTranscriptJournal -> FastAPI -> PostgreSQL simontalk_test",
+  "admission": "test-only injected admission; provider gateway unavailable",
+  "fault": "client discards first successful committed HTTP response, explicitly retries unchanged journal events",
+  "verified_steps": [
+    "first response loss: pending=2, error=network_error, server total_events=2",
+    "explicit retry: pending=0, error=null, server total_events=2",
+    "user final revision 2: total_events=3, after_sequence=2 returns original turn revision2",
+    "assistant delivery_status=unknown",
+    "connection status/termination/lease unchanged",
+    "finish does not create an event from further input"
+  ],
+  "records_without_text": [
+    {
+      "sequence": 1,
+      "revision": 1,
+      "role": "user",
+      "source": "client_reported"
+    },
+    {
+      "sequence": 2,
+      "revision": 1,
+      "role": "assistant",
+      "source": "client_reported"
+    },
+    {
+      "sequence": 3,
+      "revision": 2,
+      "role": "user",
+      "source": "client_reported"
+    }
+  ],
+  "connection_at_fixture_cleanup": {
+    "status": "failed",
+    "termination_status": "not_started"
+  },
+  "cleanup_state_note": "The real HTTP test first asserted preparing/not_started and unchanged lease immediately after submission; the test-only maintenance loop subsequently expired the never-started lease before fixture cleanup. No transcript append changes lifecycle state.",
+  "fixture_cleanup": "account, consumed invite and cascading practice/connection/transcript children removed"
+}
