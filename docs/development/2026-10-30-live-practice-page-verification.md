@@ -34,7 +34,7 @@ flutter build web --release --no-web-resources-cdn --dart-define=API_BASE_URL=ht
 
 本轮新增 20 项自动测试：视图 10 项（状态文案、静音、播报、阻塞播放、收尾、结束、保存失败重试、320 宽 125% 字号、深色）、屏幕 3 项（只启动一次尝试、静音与结束转发到协调器、结束后的唯一收尾路径）、预览 5 项，以及入口屏幕 2 项（直接访问被重定向、交接顺序为“先取消预检再进入”）。
 
-后端未改代码，仍按既有契约运行；本轮只在 `services/api` 复核了此前报错的 4 项集成测试（沙箱临时目录权限导致 `FileExistsError`，改用 `--basetemp` 后通过），复跑结果见下节说明。
+后端未改代码，仍按既有契约运行。本轮在 `services/api` 复跑全量：`uv run pytest -q --basetemp=/tmp/simontalk_pytest_full` 得 1172 通过、2 项 skip。首跑时不带 `--basetemp` 出现 107 项 `FileExistsError`，原因是受限沙箱下 pytest 的临时目录创建被拦截，属于运行环境问题；同一批用例换可写临时目录后通过，未据此修改任何源码。
 
 ## 4. 边界与未完成
 
