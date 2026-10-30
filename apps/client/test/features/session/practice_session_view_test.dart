@@ -55,6 +55,7 @@ void main() {
     VoidCallback? onLeave,
     VoidCallback? onViewRecord,
     VoidCallback? onRetryCompletion,
+    VoidCallback? onCancelAttempt,
     bool completionPending = false,
     String? completionErrorCode,
   }) => PracticeSessionView(
@@ -72,14 +73,22 @@ void main() {
     onLeave: onLeave,
     onViewRecord: onViewRecord,
     onRetryCompletion: onRetryCompletion,
+    onCancelAttempt: onCancelAttempt,
   );
 
   testWidgets('an active call shows listening only when it is really active', (
     tester,
   ) async {
-    await pump(tester, view(phase: PracticeMediaPhase.configuring));
+    await pump(
+      tester,
+      view(phase: PracticeMediaPhase.configuring, onCancelAttempt: () {}),
+    );
     expect(find.text('正在听你说'), findsNothing);
     expect(find.text('正在确认语音配置，尚未开始收音…'), findsOneWidget);
+    expect(find.text('连接确认前不会采集或播放音频。'), findsOneWidget);
+    expect(find.text('取消这次尝试'), findsOneWidget);
+    expect(find.text('关闭'), findsOneWidget);
+    expect(find.text('正在收尾：麦克风与播报已停止，请稍候。'), findsNothing);
 
     await pump(tester, view());
     expect(find.text('正在听你说'), findsOneWidget);

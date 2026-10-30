@@ -23,6 +23,7 @@ class PracticeSessionScreen extends ConsumerStatefulWidget {
 class _PracticeSessionScreenState extends ConsumerState<PracticeSessionScreen> {
   bool _started = false;
   bool _leaving = false;
+  bool _cancelling = false;
 
   @override
   void initState() {
@@ -62,18 +63,63 @@ class _PracticeSessionScreenState extends ConsumerState<PracticeSessionScreen> {
   void _leave() {
     if (_leaving || !mounted) return;
     _leaving = true;
-    if (context.canPop()) {
+    // The product always runs under GoRouter; the plain Navigator branch keeps
+    // the page testable without a router and behaves the same way.
+    final router = GoRouter.maybeOf(context);
+    if (router == null) {
+      Navigator.of(context).maybePop();
+      return;
+    }
+    if (router.canPop()) {
       context.pop();
     } else {
       context.go('/practice');
     }
   }
 
+  /// Cancelling before the first confirmed media is not "ending a practice":
+  /// it stops the attempt, and only then leaves the page.
+  Future<void> _cancelAttempt(PracticeMediaController controller) async {
+    if (_cancelling || !_canAct(controller)) return;
+    _cancelling = true;
+    try {
+      await controller.stop(reason: 'user_cancelled');
+    } finally {
+      _cancelling = false;
+    }
+    if (mounted) _leave();
+  }
+
   @override
   Widget build(BuildContext context) {
     final account = ref.watch(accountControllerProvider);
     final controller = ref.watch(practiceMediaProvider);
-    if (controller == null) return const SizedBox.shrink();
+    if (controller == null) {
+      return Scaffold(
+        body: SafeArea(
+          child: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '当前登录已变化，这次练习无法继续。',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                  const SizedBox(height: 16),
+                  FilledButton(
+                    onPressed: () => context.go('/practice'),
+                    child: const Text('返回练习'),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     final difficulty =
         account.session?.preferences.difficulty ??
         controller.practice?.configuration.effectiveDifficulty;
@@ -117,6 +163,9 @@ class _PracticeSessionScreenState extends ConsumerState<PracticeSessionScreen> {
                 }
               : null,
           onLeave: closed ? _leave : null,
+          onCancelAttempt: _cancelling
+              ? null
+              : () => unawaited(_cancelAttempt(controller)),
         );
       },
     );

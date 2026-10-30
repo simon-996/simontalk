@@ -31,6 +31,7 @@ class PracticeSessionView extends StatelessWidget {
     this.onRetryCompletion,
     this.onViewRecord,
     this.onLeave,
+    this.onCancelAttempt,
   });
 
   final Difficulty difficulty;
@@ -48,9 +49,19 @@ class PracticeSessionView extends StatelessWidget {
   final VoidCallback? onRetryCompletion;
   final VoidCallback? onViewRecord;
   final VoidCallback? onLeave;
+  final VoidCallback? onCancelAttempt;
 
   bool get _closed => phase == PracticeMediaPhase.localClosed;
   bool get _live => phase == PracticeMediaPhase.active;
+  bool get _draining => phase == PracticeMediaPhase.draining;
+
+  /// Phases before the first confirmed media: there is no call to end, only an
+  /// attempt to cancel, and the media coordinator still owns the release.
+  bool get _starting =>
+      phase == PracticeMediaPhase.idle ||
+      phase == PracticeMediaPhase.preparing ||
+      phase == PracticeMediaPhase.connecting ||
+      phase == PracticeMediaPhase.configuring;
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +73,8 @@ class PracticeSessionView extends StatelessWidget {
         actions: [
           if (_closed && onLeave != null)
             TextButton(onPressed: onLeave, child: const Text('返回练习')),
+          if (_starting && onCancelAttempt != null)
+            TextButton(onPressed: onCancelAttempt, child: const Text('关闭')),
         ],
       ),
       body: SafeArea(
@@ -123,11 +136,22 @@ class PracticeSessionView extends StatelessWidget {
                           ),
                         ],
                       )
-                    else
+                    else if (_draining)
                       Text(
                         '正在收尾：麦克风与播报已停止，请稍候。',
                         style: Theme.of(context).textTheme.bodySmall,
+                      )
+                    else if (_starting) ...[
+                      Text(
+                        '连接确认前不会采集或播放音频。',
+                        style: Theme.of(context).textTheme.bodySmall,
                       ),
+                      const SizedBox(height: 8),
+                      OutlinedButton(
+                        onPressed: onCancelAttempt,
+                        child: const Text('取消这次尝试'),
+                      ),
+                    ],
                   ],
                 ],
               ),

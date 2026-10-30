@@ -29,10 +29,23 @@ void main() {
         container: container,
         child: MaterialApp(
           theme: buildAppTheme(Brightness.light),
-          home: const PracticeSessionScreen(),
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => const PracticeSessionScreen(),
+                  ),
+                ),
+                child: const Text('打开通话'),
+              ),
+            ),
+          ),
         ),
       ),
     );
+    await tester.tap(find.text('打开通话'));
+    await tester.pumpAndSettle();
     await tester.pump();
   }
 
@@ -90,6 +103,22 @@ void main() {
     expect(find.text('本次练习已结束'), findsOneWidget);
     expect(find.text('返回练习'), findsOneWidget);
     expect(find.text('静音麦克风'), findsNothing);
+    await close(tester);
+  });
+
+  testWidgets('an attempt that never connected can be cancelled and closed', (
+    tester,
+  ) async {
+    await open(tester);
+    expect(harness.controller.phase, PracticeMediaPhase.connecting);
+    expect(find.text('连接确认前不会采集或播放音频。'), findsOneWidget);
+    expect(find.text('正在收尾：麦克风与播报已停止，请稍候。'), findsNothing);
+
+    await tester.tap(find.text('取消这次尝试'));
+    await tester.pump();
+    await tester.pump();
+    expect(harness.controller.phase, PracticeMediaPhase.localClosed);
+    expect(find.text('打开通话'), findsOneWidget);
     await close(tester);
   });
 }
