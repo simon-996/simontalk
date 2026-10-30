@@ -49,6 +49,7 @@ Widget _example({
   bool muted = false,
   String? errorCode,
   bool completionPending = false,
+  bool subtitles = true,
 }) => MaterialApp(
   theme: buildAppTheme(brightness),
   builder: (context, child) => MediaQuery(
@@ -64,11 +65,13 @@ Widget _example({
     muted: muted,
     errorCode: errorCode,
     turns: _turns,
+    subtitlesVisible: subtitles,
     completionPending: completionPending,
     onToggleMute: practiceSessionPreviewNoop,
     onResumePlayback: practiceSessionPreviewNoop,
     onEnd: practiceSessionPreviewNoop,
     onLeave: practiceSessionPreviewNoop,
+    onToggleSubtitles: practiceSessionPreviewNoop,
     onViewRecord: practiceSessionPreviewNoop,
   ),
 );
@@ -120,3 +123,12 @@ Widget practiceSessionUnavailablePreview() => _example(
   phase: PracticeMediaPhase.localClosed,
   errorCode: 'realtime_unavailable',
 );
+
+@Preview(
+  name: '通话 · 字幕关闭',
+  group: '通话中',
+  size: Size(760, 900),
+  wrapper: previewWithFonts,
+)
+Widget practiceSessionNoSubtitlesPreview() =>
+    _example(subtitles: false, playback: MediaPlayback.playing);

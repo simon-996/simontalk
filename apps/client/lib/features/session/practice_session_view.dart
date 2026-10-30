@@ -22,6 +22,7 @@ class PracticeSessionView extends StatelessWidget {
     required this.muted,
     this.errorCode,
     this.turns = const [],
+    this.subtitlesVisible = true,
     this.completion,
     this.completionPending = false,
     this.completionErrorCode,
@@ -32,6 +33,7 @@ class PracticeSessionView extends StatelessWidget {
     this.onViewRecord,
     this.onLeave,
     this.onCancelAttempt,
+    this.onToggleSubtitles,
   });
 
   final Difficulty difficulty;
@@ -40,6 +42,7 @@ class PracticeSessionView extends StatelessWidget {
   final bool muted;
   final String? errorCode;
   final List<ConversationTurn> turns;
+  final bool subtitlesVisible;
   final PracticeCompletionSummary? completion;
   final bool completionPending;
   final String? completionErrorCode;
@@ -50,6 +53,7 @@ class PracticeSessionView extends StatelessWidget {
   final VoidCallback? onViewRecord;
   final VoidCallback? onLeave;
   final VoidCallback? onCancelAttempt;
+  final VoidCallback? onToggleSubtitles;
 
   bool get _closed => phase == PracticeMediaPhase.localClosed;
   bool get _live => phase == PracticeMediaPhase.active;
@@ -75,6 +79,11 @@ class PracticeSessionView extends StatelessWidget {
             TextButton(onPressed: onLeave, child: const Text('返回练习')),
           if (_starting && onCancelAttempt != null)
             TextButton(onPressed: onCancelAttempt, child: const Text('关闭')),
+          if (!_closed && !_starting && onToggleSubtitles != null)
+            TextButton(
+              onPressed: onToggleSubtitles,
+              child: Text(subtitlesVisible ? '字幕：开' : '字幕：关'),
+            ),
         ],
       ),
       body: SafeArea(
@@ -107,7 +116,9 @@ class PracticeSessionView extends StatelessWidget {
                             onRetry: onRetryCompletion,
                             onViewRecord: onViewRecord,
                           )
-                        : _TranscriptList(turns: turns, phase: phase),
+                        : subtitlesVisible
+                        ? _TranscriptList(turns: turns, phase: phase)
+                        : const _SubtitlesHidden(),
                   ),
                   if (playback == MediaPlayback.blocked && _live) ...[
                     const SizedBox(height: 12),
@@ -245,6 +256,22 @@ class _TranscriptList extends StatelessWidget {
         final turn = visible[visible.length - 1 - index];
         return _TurnBubble(turn: turn);
       },
+    );
+  }
+}
+
+class _SubtitlesHidden extends StatelessWidget {
+  const _SubtitlesHidden();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Center(
+      child: Text(
+        '字幕已关闭，可随时在右上角打开。',
+        style: theme.textTheme.bodySmall,
+        textAlign: TextAlign.center,
+      ),
     );
   }
 }

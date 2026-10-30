@@ -3,24 +3,50 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:simontalk_client/design/app_theme.dart';
 import 'package:simontalk_client/features/account/account_controller.dart';
+import 'package:simontalk_client/features/account/account_models.dart';
 import 'package:simontalk_client/features/realtime/practice_media_controller.dart';
 import 'package:simontalk_client/features/realtime/practice_media_providers.dart';
 import 'package:simontalk_client/features/session/practice_session_screen.dart';
 
+import '../practice/practice_fixtures.dart';
 import '../practice/practice_providers_test.dart' show ScopedAccountController;
 import '../realtime/media_fixtures.dart';
+
+AccountState _noSubtitles(String id) => AccountState(
+  phase: SessionPhase.signedIn,
+  session: AccountSession(
+    AccountUser(id: id, username: 'test-only', displayName: 'Test'),
+    const AccountPreferences(
+      difficulty: Difficulty.beginner,
+      speechPace: 'normal',
+      subtitleDefault: false,
+      chineseHintsEnabled: true,
+      version: 1,
+    ),
+  ),
+);
+
+class NoSubtitlesAccountController extends AccountController {
+  @override
+  AccountState build() => _noSubtitles(accountId);
+}
 
 void main() {
   late MediaHarness harness;
   late ProviderContainer container;
 
-  Future<void> open(WidgetTester tester) async {
+  Future<void> open(
+    WidgetTester tester, {
+    AccountController Function()? account,
+  }) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     harness = MediaHarness(tester);
     container = ProviderContainer(
       overrides: [
-        accountControllerProvider.overrideWith(ScopedAccountController.new),
+        accountControllerProvider.overrideWith(
+          account ?? ScopedAccountController.new,
+        ),
         practiceMediaProvider.overrideWith((ref) => harness.controller),
       ],
     );
@@ -89,6 +115,22 @@ void main() {
     expect(find.text('静音麦克风'), findsNothing);
     await close(tester);
   });
+
+  testWidgets(
+    'subtitles start from the stored preference and toggle in place',
+    (tester) async {
+      await open(tester, account: NoSubtitlesAccountController.new);
+      await harness.configured();
+      await tester.pump();
+      expect(find.text('字幕：关'), findsOneWidget);
+      expect(find.text('字幕已关闭，可随时在右上角打开。'), findsOneWidget);
+      await tester.tap(find.text('字幕：关'));
+      await tester.pump();
+      expect(find.text('字幕：开'), findsOneWidget);
+      expect(find.text('字幕已关闭，可随时在右上角打开。'), findsNothing);
+      await close(tester);
+    },
+  );
 
   testWidgets('a stopped attempt keeps only the real close path', (
     tester,

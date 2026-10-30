@@ -56,6 +56,8 @@ void main() {
     VoidCallback? onViewRecord,
     VoidCallback? onRetryCompletion,
     VoidCallback? onCancelAttempt,
+    VoidCallback? onToggleSubtitles,
+    bool subtitlesVisible = true,
     bool completionPending = false,
     String? completionErrorCode,
   }) => PracticeSessionView(
@@ -74,6 +76,8 @@ void main() {
     onViewRecord: onViewRecord,
     onRetryCompletion: onRetryCompletion,
     onCancelAttempt: onCancelAttempt,
+    onToggleSubtitles: onToggleSubtitles,
+    subtitlesVisible: subtitlesVisible,
   );
 
   testWidgets('an active call shows listening only when it is really active', (
@@ -222,6 +226,52 @@ void main() {
     expect(find.text('I went to the park.'), findsOneWidget);
     expect(find.text('Nice, was it busy?'), findsOneWidget);
   });
+
+  testWidgets(
+    'subtitles follow the preference and toggle without page reload',
+    (tester) async {
+      var toggles = 0;
+      await pump(
+        tester,
+        view(
+          turns: [
+            turn(
+              role: ConversationRole.assistant,
+              text: 'Nice, was it busy?',
+              index: 2,
+            ),
+          ],
+          onToggleSubtitles: () => toggles++,
+        ),
+      );
+      expect(find.text('Nice, was it busy?'), findsOneWidget);
+      expect(find.text('字幕：开'), findsOneWidget);
+      expect(find.text('字幕已关闭，可随时在右上角打开。'), findsNothing);
+      await tester.tap(find.text('字幕：开'));
+      expect(toggles, 1);
+
+      await pump(
+        tester,
+        view(
+          turns: [
+            turn(
+              role: ConversationRole.assistant,
+              text: 'Nice, was it busy?',
+              index: 2,
+            ),
+          ],
+          subtitlesVisible: false,
+          onToggleSubtitles: () {},
+        ),
+      );
+      expect(find.text('Nice, was it busy?'), findsNothing);
+      expect(find.text('字幕已关闭，可随时在右上角打开。'), findsOneWidget);
+      expect(find.text('字幕：关'), findsOneWidget);
+      // Hiding text never hides the call controls.
+      expect(find.text('结束并复盘'), findsOneWidget);
+      expect(find.text('静音麦克风'), findsOneWidget);
+    },
+  );
 
   testWidgets('dark theme keeps the same real labels', (tester) async {
     await pump(tester, view(muted: true), brightness: Brightness.dark);

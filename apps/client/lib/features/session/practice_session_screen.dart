@@ -24,10 +24,20 @@ class _PracticeSessionScreenState extends ConsumerState<PracticeSessionScreen> {
   bool _started = false;
   bool _leaving = false;
   bool _cancelling = false;
+  late bool _subtitlesVisible;
 
   @override
   void initState() {
     super.initState();
+    // The stored preference only seeds the initial state; the in-call toggle is
+    // session-scoped and never writes back to the account.
+    _subtitlesVisible =
+        ref
+            .read(accountControllerProvider)
+            .session
+            ?.preferences
+            .subtitleDefault ??
+        true;
     WidgetsBinding.instance.addPostFrameCallback((_) => _beginIfIdle());
   }
 
@@ -137,6 +147,7 @@ class _PracticeSessionScreenState extends ConsumerState<PracticeSessionScreen> {
           muted: controller.muted,
           errorCode: controller.errorCode,
           turns: controller.conversation?.turns ?? const [],
+          subtitlesVisible: _subtitlesVisible,
           completion: completion?.summary,
           completionPending: controller.completionHasPendingWork,
           completionErrorCode: controller.completionErrorCode,
@@ -166,6 +177,11 @@ class _PracticeSessionScreenState extends ConsumerState<PracticeSessionScreen> {
           onCancelAttempt: _cancelling
               ? null
               : () => unawaited(_cancelAttempt(controller)),
+          onToggleSubtitles:
+              controller.phase == PracticeMediaPhase.active ||
+                  controller.phase == PracticeMediaPhase.draining
+              ? () => setState(() => _subtitlesVisible = !_subtitlesVisible)
+              : null,
         );
       },
     );
