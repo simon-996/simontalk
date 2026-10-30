@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-30",
+  "scenario": "Edge macOS local WebRTC delayed synthetic audio",
+  "source": "local page accessibility output manually transcribed",
+  "no_provider_calls": true,
+  "physical_microphone_used": false,
+  "output_muted": true,
+  "old_script_sha256": "51725dd14d88a16cddd8f8be2759b23c93652bd0d692453cb1f216d79b8173a6",
+  "final_script_sha256": "17bef89ce4a62acbcc8557464f9514656d411694b8d91366585eea949bad13e5",
+  "method": "local peer adds a generated tone track approximately 6.5 seconds after transport activation; no hardware speaker destination",
+  "old_with_audio_element_in_document": {
+    "before_audio": {"playback_waiting": true, "playback_playing": false, "ready_state": 0},
+    "after_audio": {"inbound_bytes": 20188, "inbound_packets": 250, "remote_track_live": true, "remote_track_muted": false, "playback_playing": false, "ready_state": 0, "current_time_seconds": 0}
+  },
+  "temporary_rebind_after_track_added": {
+    "before_audio": {"playback_playing": true, "ready_state": 4},
+    "after_audio": {"inbound_bytes": 20214, "inbound_packets": 250, "playback_playing": true, "ready_state": 4, "current_time_seconds": 11.515288}
+  },
+  "final_script_audio_element_detached": {
+    "before_audio": {"playback_waiting": false, "playback_playing": true, "ready_state": 4},
+    "after_audio": {"inbound_bytes": 20188, "inbound_packets": 250, "remote_track_live": true, "remote_track_muted": false, "playback_playing": true, "ready_state": 4, "current_time_seconds": 11.509141}
+  },
+  "limitations": [
+    "one machine and one local connection per variant",
+    "muted output and playing event do not prove human hearing or text alignment",
+    "playing was observed even before synthetic remote audio was attached",
+    "the revised script was not retested against the model in this turn"
+  ]
+}

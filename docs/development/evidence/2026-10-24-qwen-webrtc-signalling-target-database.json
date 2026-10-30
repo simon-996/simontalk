@@ -1,0 +1,188 @@
+{
+  "pytest_exit": 0,
+  "elapsed_seconds": 6.89,
+  "development_before": {
+    "alembic_version": {
+      "rows": 1,
+      "sha256": "c2d0cb7c94addf17b83a61fcb4f2d726f8dec4a9527e77e45f1d0dfd74de8d42"
+    },
+    "auth_sessions": {
+      "rows": 11,
+      "sha256": "4427293a54062ddb03b49c77c78c053fcef8b756d1d60a7ff7e0fd073f2f3dc1"
+    },
+    "completion_connections": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "connection_observations": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "final_transcripts": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "invites": {
+      "rows": 1,
+      "sha256": "897f8cc697e67282ce7eba8257dac2298528ae95c116f6fe669abc45b5b941d7"
+    },
+    "password_reset_grants": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "playback_evidence": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_completions": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_deletion_receipts": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_sessions": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "rate_limit_buckets": {
+      "rows": 1,
+      "sha256": "6e5544982ea80af7495321a0938988c01bc58aea61ad782258cdc7542ca0f49b"
+    },
+    "realtime_connections": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_actions": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_attempts": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_inputs": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_jobs": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_results": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "termination_checks": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_preferences": {
+      "rows": 1,
+      "sha256": "c5b0fee62f911d3572e3c7499a206be7d1081bf90d56ad968a8938fcae0082f1"
+    },
+    "users": {
+      "rows": 1,
+      "sha256": "f72738fddc188f2a9502354a8b88206fd334e2bcf656b144a364401a5c8478b3"
+    }
+  },
+  "development_after": {
+    "alembic_version": {
+      "rows": 1,
+      "sha256": "c2d0cb7c94addf17b83a61fcb4f2d726f8dec4a9527e77e45f1d0dfd74de8d42"
+    },
+    "auth_sessions": {
+      "rows": 11,
+      "sha256": "4427293a54062ddb03b49c77c78c053fcef8b756d1d60a7ff7e0fd073f2f3dc1"
+    },
+    "completion_connections": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "connection_observations": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "final_transcripts": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "invites": {
+      "rows": 1,
+      "sha256": "897f8cc697e67282ce7eba8257dac2298528ae95c116f6fe669abc45b5b941d7"
+    },
+    "password_reset_grants": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "playback_evidence": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_completions": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_deletion_receipts": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_sessions": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "rate_limit_buckets": {
+      "rows": 1,
+      "sha256": "6e5544982ea80af7495321a0938988c01bc58aea61ad782258cdc7542ca0f49b"
+    },
+    "realtime_connections": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_actions": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_attempts": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_inputs": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_jobs": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_results": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "termination_checks": {
+      "rows": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_preferences": {
+      "rows": 1,
+      "sha256": "c5b0fee62f911d3572e3c7499a206be7d1081bf90d56ad968a8938fcae0082f1"
+    },
+    "users": {
+      "rows": 1,
+      "sha256": "f72738fddc188f2a9502354a8b88206fd334e2bcf656b144a364401a5c8478b3"
+    }
+  },
+  "development_all_rows_unchanged": true,
+  "test_database_is_unique": true,
+  "test_database_dropped": true,
+  "real_supplier_calls": 0,
+  "schema_modified": false,
+  "pytest_passed": 111,
+  "pytest_seconds": 5.55,
+  "test_files": [
+    "tests/test_qwen_webrtc_signalling.py",
+    "tests/test_qwen_webrtc_signalling_integration.py",
+    "tests/test_signalling.py"
+  ]
+}

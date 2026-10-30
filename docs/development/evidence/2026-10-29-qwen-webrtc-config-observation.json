@@ -1,0 +1,46 @@
+{
+  "date": "2026-10-29",
+  "time_utc_approx": "2026-10-29 13:50",
+  "model_requested": "qwen3.8-omni-flash-realtime",
+  "region": "cn-beijing",
+  "method": "One browser WebRTC connection, actual candidate gateway, configuration only; no retries",
+  "source": "Page accessibility text manually transcribed",
+  "result": {
+    "offerSent": true,
+    "answerReceived": true,
+    "connected": true,
+    "channelOpened": true,
+    "created": true,
+    "updateSent": true,
+    "updated": true,
+    "error": false,
+    "timeout": false,
+    "toolsPresent": false,
+    "toolsType": "undefined",
+    "toolsCount": null,
+    "search": false,
+    "settingsMatched": true,
+    "uploadedAudio": false,
+    "responseRequested": false,
+    "localClosed": true
+  },
+  "settingsMatched_fields": [
+    "modalities",
+    "max_tokens",
+    "voice",
+    "instructions",
+    "input_audio_transcription.model",
+    "turn_detection"
+  ],
+  "settingsMatched_does_not_include": [
+    "session_id",
+    "model",
+    "tools",
+    "enable_search"
+  ],
+  "limitations": [
+    "A successful session.updated and absent tools field do not by themselves demonstrate an echoed empty tools list.",
+    "This test did not run the Dart protocol, attach microphone or other audio track, request a response, verify playback, or establish remote termination or settled charges.",
+    "No response usage was returned; actual billing is unknown."
+  ]
+}

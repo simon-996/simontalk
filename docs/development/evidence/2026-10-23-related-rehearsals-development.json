@@ -1,0 +1,48 @@
+{
+  "development_schema_head": "4f6a58cd2e32",
+  "business_table_count": 20,
+  "all_development_business_rows_unchanged": true,
+  "development_counts": {
+    "auth_sessions": 11,
+    "completion_connections": 0,
+    "connection_observations": 0,
+    "final_transcripts": 0,
+    "invites": 1,
+    "password_reset_grants": 0,
+    "playback_evidence": 0,
+    "practice_completions": 0,
+    "practice_deletion_receipts": 0,
+    "practice_sessions": 0,
+    "rate_limit_buckets": 1,
+    "realtime_connections": 0,
+    "review_actions": 0,
+    "review_attempts": 0,
+    "review_inputs": 0,
+    "review_jobs": 0,
+    "review_results": 0,
+    "termination_checks": 0,
+    "user_preferences": 1,
+    "users": 1
+  },
+  "preexisting_files": 587,
+  "preexisting_files_missing": [],
+  "backend_files_unchanged": 100,
+  "dependency_files_unchanged": [
+    "apps/client/pubspec.lock",
+    "apps/client/pubspec.yaml",
+    "services/api/pyproject.toml",
+    "services/api/uv.lock"
+  ],
+  "preexisting_files_changed_by_unit": [
+    "apps/client/lib/features/history/history_screen.dart",
+    "apps/client/lib/features/history/history_view.dart",
+    "docs/architecture/2026-10-23-rehearsal-client.md",
+    "HANDOFF.md",
+    "apps/client/lib/app.dart",
+    "docs/architecture/2026-10-15-technical-design.md",
+    "docs/design/2026-10-15-screen-and-interaction-spec.md",
+    "docs/development/local-development.md",
+    "docs/roadmap/2026-10-15-product-roadmap.md",
+    "docs/validation/2026-10-15-validation-plan.md"
+  ]
+}

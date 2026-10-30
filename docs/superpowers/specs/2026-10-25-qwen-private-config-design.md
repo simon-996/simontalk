@@ -1,0 +1,9 @@
+# 千问私有配置读取
+
+用户已明确要求写入所给Key后开始开发，并确认首轮真实测试预算20元。Key/workspace存后端Git忽略的.env，权限0600，不回显、不进入前端；20元是授权上限，尚无已验证的自动停费机制。
+
+本单元接通私有配置到既有QwenWebRtcSettings构造：独立load_qwen_realtime_settings入口，默认读取当前目录.env，支持显式文件及同名前缀环境覆盖。采用既有pydantic-settings/SecretStr，字段为SIMONTALK_QWEN_API_KEY、WORKSPACE_ID、REALTIME_MODEL、CONFIG_ID；后两项默认当前已查询目录的plus候选和本地配置标签。最终字段仍交既有dataclass完整验证。失败只抛新稳定错误，不携带原ValidationError/context或输入；不重复实现供应商校验。
+
+配置读取只构造参数，不请求供应商、不建会话、不改变create_app三类Unavailable门。它为下一步受控终止验证提供实际配置入口，不开放正式媒体或把目录鉴权等同模型调用权限。预算和允许实验范围按实际验证逐步执行；不把本地时钟当供应商释放。
+
+先验证缺模块/配置读取RED，再覆盖文件/环境优先、缺失/错误字段/泄密、无网络及默认应用准入不变；实际私有文件只验证成功与秘密不出现在repr，不输出值。生产API参数未增、schema/依赖/Flutter不变。

@@ -1,0 +1,68 @@
+{
+  "recording": "Manual transcription from local browser accessibility output; two single observations, not automated export.",
+  "date": "2026-10-29 Asia/Shanghai",
+  "environment": {
+    "browser": "Microsoft Edge 156.0.4314.50",
+    "os": "macOS 26.6.2",
+    "sample_rate": 48000
+  },
+  "method": {
+    "audio_muted": true,
+    "microphone_used": false,
+    "model_called": false,
+    "generated_buffer_seconds": 1.5,
+    "output_clock_sampling_interval_ms": 50
+  },
+  "complete_playback": {
+    "start_context_time": 0.116,
+    "scheduled_end_context_time": 1.616,
+    "output_latency": 0.016,
+    "ended_event": {
+      "current_time": 1.616,
+      "performance_time": 17633.899999976158
+    },
+    "sample_count": 33,
+    "first": {
+      "current_time": 0.016,
+      "output_context_time": 0,
+      "output_performance_time": 16033.5,
+      "state": "running"
+    },
+    "last": {
+      "current_time": 1.6586666666666667,
+      "output_context_time": 1.6373343333333332,
+      "output_performance_time": 17675.899999976158,
+      "state": "running"
+    },
+    "output_reached_end": true,
+    "output_monotonic": true,
+    "state_before_close": "running",
+    "state_after_close": "closed",
+    "outcome": "observed"
+  },
+  "early_stop": {
+    "start_context_time": 0.11066666666666668,
+    "stop_requested_context_time": 0.6613333333333333,
+    "stop_requested_performance_time": 15100.300000011921,
+    "output_at_stop": {
+      "context_time": 0.640001,
+      "performance_time": 15097.599999964237
+    },
+    "ended_event": {
+      "current_time": 0.6613333333333333,
+      "performance_time": 15102.699999988079
+    },
+    "sample_count": 2,
+    "last": {
+      "current_time": 0.7146666666666667,
+      "output_context_time": 0.6933343333333334,
+      "output_performance_time": 15150.899999976158,
+      "state": "running"
+    },
+    "output_reached_stop": true,
+    "output_monotonic": true,
+    "state_before_close": "running",
+    "state_after_close": "closed",
+    "outcome": "observed"
+  }
+}

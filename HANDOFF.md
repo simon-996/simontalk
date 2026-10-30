@@ -1,6 +1,6 @@
 # SimonTalk 项目交接
 
-最后更新：2026-10-20（Asia/Shanghai）。有实质进展时更新，并先核对实际 Git、文件和验证结果。
+最后更新：2026-10-30（Asia/Shanghai）。有实质进展时更新，并先核对实际 Git、文件和验证结果。
 
 ## 1. 一分钟理解项目
 
@@ -12,25 +12,133 @@
 
 ## 2. 当前阶段与边界
 
-**第2阶段账号/偏好、Web首屏与本机麦克风检查已实现；第3阶段准备/恢复/清理、代次/租约、WebRTC/Flutter桥接、单次信令、媒体协调、持久观测、内存文字/播放和最终文字追加/精确确认已有。本批新增账号/原连接绑定的客户端分页读取与不可变修订重建，接入现有未结束练习的只读查看；实际Dart→API→PostgreSQL和浏览器分页/网络失败/跨标签身份隔离通过。来源仅client_reported，AI持久播放状态unknown，不改变终止/租约/占用。准入/网关/协议继续关闭，媒体来源仍为替身；正式练习页、供应商语音、有界正常收尾、播放持久证据、服务端固化与学习闭环未实现。**
+**2026-10-30修复WebRTC播放空流绑定：真实千问控制器单轮出现音频包到达但播放器waiting，随后不调用模型，用Edge本地双Peer回环复现：旧脚本先绑定空流，延迟音轨已收250包/20188字节，播放器仍readyState 0；即便元素挂入页面亦如此。现首个远端音轨加入后再绑定，绑定失败释放媒体；两项测试先失败后修复，最终脚本本地回环收250包且readyState 4、观察到playing，Node 77项及Web release构建通过，实验副本/源码/产物哈希一致。[验证](docs/development/2026-10-30-webrtc-audio-stream-binding-verification.md)。输出静音，playing甚至早于音调到达，不证明人耳或文字对齐；千问单轮使用旧脚本，新脚本未实网复测。正式语音入口仍关闭，下一步验证新脚本真实千问与设备，解决多轮插话、可信远端退出；功能完成后按授权提交推送。**
 
-用户已要求“开始吧”和多次“继续”，允许应用工程及本地验证。**2026-10-17最新指令：按照建议路线持续开发，不逐项汇报和确认；需要本人确认或更改的部分先跳过，待后续补齐后再实施。以Flutter Web为主，暂停Android构建和安装。** 常规可逆工程选择直接执行，验证与边界持续写入本文件；未提供的模型账号与预算不能由持续开发授权推定，付费连接仍关闭，不推送远端、不对外部署。物理设备许可、账号/预算及真实手机条件暂缓，不反复提问，也不阻塞其他工程工作。
+**2026-10-30真实千问WebRTC接产品媒体控制器：Edge隔离页面使用当前PracticeMediaController、Dart/JS浏览器传输、千问受限协议和真实信令网关，练习/账号HTTP为替身；一次交换、5.58秒固定合成音频、一次回复，未用物理麦克风。控制器进入active，用户与助手最终话轮均可观察、识别含两个标记词，助手播放证据unknown，response.done completed；入站音频213081字节但播放器显示waiting，原因未明，页面输出元素静音。本地关闭、释放unconfirmed；usage共849 Token，按北京标价估0.0022395元，实际账单未知。[验证](docs/development/2026-10-30-qwen-controller-webrtc-voice-verification.md)。本次不证明实际设备播放、正式页面/后端、多轮插话或可信远端退出；继续排查waiting、输出/上下文和退出，正式语音入口关闭，功能完成后按授权提交推送。**
+
+**2026-10-30修复Web播放状态竞态：浏览器旧播放请求的等待/权限拒绝和Flutter控制器迟到的恢复结果不再覆盖较新的播放观察或恢复结果；重入回调受保护，当前请求迟到的权限拒绝仍报告，非权限播放器错误仍关闭媒体。浏览器替身及真实控制器配替身先复现失败后修复；相关Flutter 89项、全量1489项通过/10项跳过，Node 75项、分析、229文件格式与Web release构建通过，产物脚本与源码哈希一致。[验证](docs/development/2026-10-30-playback-observation-order-verification.md)。本轮无供应商调用或麦克风；尚未证明真实产品控制器端到端、多轮、插话、播放对齐或上游可信退出，正式语音入口保持关闭，功能完成后按授权提交推送。**
+
+**2026-10-30真实WebRTC合成语音单轮：Edge隔离页面运行仓库当前Dart受限协议与真实千问信令网关，一次SDP/一条合成语音/一次回复，无重试或物理麦克风。3通道含txt，确认配置后发送5.58秒固定合成音频，最终识别含固定标记词；Dart只请求一次回复，助手最终文字及response.done completed，入站RTP统计251145字节，本地关闭。usage输入文本726/音频28、输出文本24/音频87，按北京标价估约0.002409元，实际账单未知。[证据](docs/development/2026-10-30-qwen-dart-webrtc-voice-verification.md)。这是独立页面而非产品媒体控制器或真人通话；远端异常退出、实际播放前缀/插话、多轮和完整产品仍未完成，正式准入关闭，完成后按用户授权提交推送。**
+
+**2026-10-30用户转述百炼工单答复：不设置tools不会触发工具调用；response.done返回usage并按其计费，若没有事件且未产生usage则不计费；RealtimeSession.close结束会话、无撤销入口；播放对齐不支持、打断由客户端实现，上下文更新效果须实测，max_tokens仅限输出。现候选请求不再设置tools，回显缺失/空列表可接受，非空、null及异常类型仍拒绝；搜索及其他配置校验保留。一次实际Edge WebRTC经真实Dart候选及仓库信令网关：3通道含txt、原通道配置确认成功，无tools请求/回显，无麦克风、音频或回复；相关67项、Flutter全量1486项通过/10项专用skip，分析/229格式及Web release构建通过。本地关闭不证明上游退出或结算。详见[回复与实测](docs/development/2026-10-30-qwen-reply-and-webrtc-verification.md)。产品媒体控制器、真实通话、可信异常退出、播放/上下文仍需完成，生产准入关闭；用户授权功能完成后提交推送。**
+
+**2026-10-29用户转述阿里云工单回复：问题较复杂、正在核查，提供实时交互和WebRTC文档；暂未给出退出、tools、截断、对齐或费用的具体结论。对照WebRTC官方文档发现候选协议把首个打开通道误当唯一事件通道，客户端和服务端各打开通道时会失败；现最多登记8个通道，以session.created所在通道绑定并配置，其他空闲通道不致故障，跨通道消息和未打开/超限仍失败封闭。协议及真实控制器配替身的双通道测试先失败后修复；相关64项、Flutter全量1483项通过/10项专用skip，分析/229格式及Web release构建通过。严格tools门、正式语音准入仍关闭，修订未在真实供应商WebRTC上运行；详见[验证](docs/development/2026-10-29-qwen-guarded-protocol-verification.md#webrtc-多通道绑定修补)。用户已授权功能完成后提交推送；继续等待供应商具体回复。**
+
+**2026-10-29用户完成工单页面操作后，浏览器标签已从提交页跳转到阿里云百炼的工单会话地址，地址带工单标识；具体工单正文和处理状态因页面读取两次超时、原生屏幕读取失败而未独立核验。不要重复提交；下次先查看该工单详情与供应商回复，再决定后续工程方案。用户已明确授权联系供应商。**
+
+**2026-10-29用户已明确同意联系阿里云：已在百炼官方工单页面选择“大模型服务平台百炼”，填入[技术询问](docs/development/2026-10-29-aliyun-support-request.md)，涵盖3.8 WebRTC/WebSocket退出核验、tools回显、插话/上下文、对齐与用量；不包含Key/音频/个人正文。平台要求设置联系手机、短信验证码和电话联系时间，联系方式弹窗及工单页面已保留等待用户操作；工单尚未提交，没有工单号或供应商答复。用户完成验证后继续检查页面并按现有授权提交、核对结果；若用户自己已提交，先核对避免重复。**
+
+**2026-10-29一次真实WebRTC配置观察：Edge/macOS经仓库候选信令网关一次SDP交换，连接及数据通道建立、收到session.created/session.updated；所测模态/音色/提示/识别/VAD及max_tokens匹配，search=false，但tools字段仍缺失，session ID/返回model未列入页面匹配检查。没有麦克风或音频轨道、未请求回复，无重试；本地关闭不证明远端释放或实际账单。见[证据](docs/development/2026-10-29-qwen-webrtc-config-verification.md)。当前严格配置门仍不放行，正式语音、可信退出/播放/上下文尚未完成；继续按用户授权完成后提交推送。**
+
+**2026-10-29继续修补千问收尾竞态：复现回复请求已发、response.created在进入收尾后迟到时旧实现一直忽略，现立即关闭本地传输，未发布新话轮或对未冻结响应发送取消，远端释放仍unconfirmed；传输beginDrain同步迟到也经真实控制器/替身测试不越界取消。两项先失败后修复，相关60项及Flutter全量1479项通过/10项专用skip，分析/229格式及Web release构建通过。详见[验证](docs/development/2026-10-29-qwen-guarded-protocol-verification.md#回复创建迟到的处理)。不能把本地关闭当供应商停费；工具配置、可信退出、播放和WebRTC仍缺，正式语音保持关闭，功能完成后提交推送。**
+
+**2026-10-29排程修补后补做一次Edge/macOS本机合成音频复验：两片完整估计1秒，中途停止估计0.3286676666666666秒且200毫秒后冻结，暂停/恢复后估计unknown，停止后均拒收新分片；当前源码与浏览器页面加载副本哈希一致。无模型或麦克风；这不证明人耳、逐词前缀、远端退出或WebRTC，极端排程时序仍只经替身测试。[证据](docs/development/2026-10-29-streaming-pcm-output-verification.md#排程修补后的浏览器复验)。**
+
+**2026-10-29继续修复千问候选的收尾顺序：复现收尾后未经同项停止/提交即可发布最终转写；现仅在同项依次收到speech_stopped和committed后接纳最终文字，允许这些事件在收尾后迟到，不发送新回复。错项、提交早于停止、收尾前停止/收尾后提交及真实媒体控制器配替身的尾部路径均有回归；两项先失败后修复；目标21项、Flutter全量1475项通过/10项专用skip，分析/229格式及Web release构建通过。详见[验证](docs/development/2026-10-29-qwen-guarded-protocol-verification.md#收尾顺序修补后续继续)。正式准入仍关闭，供应商空工具配置、可信退出、实际播放/上下文及WebRTC真机仍缺；不将本地测试当产品通话完成。功能完成后按用户授权提交推送，本次暂不提交。**
+
+**2026-10-29继续完成千问单轮受限协议候选：单通道配置确认、用户语音项/最终转写后只请求一次回复、归一化投影、异常安全停止及在途回复单次取消；测试显式构造，默认准入仍关闭。一次真实WebSocket合成音频实验完成一问一答并保留39条脱敏事件、用量估价约0.001827元；随后两次只配置、无音频/回复的实测发现`session.updated`虽成功但省略`tools`字段，不能证明空工具列表。当前严格校验因此拒绝该实际回包，模拟补充字段的重放不冒充真实接入。目标15项、Flutter全量1469项通过/10项专用skip、分析/229格式及Web release构建通过。关闭帧不证明远端退出，播放前缀、上下文截断及WebRTC设备仍未验证；[完整证据](docs/development/2026-10-29-qwen-guarded-protocol-verification.md)。用户授权功能完成后提交推送，功能尚未完成，当前不提交推送；继续保留所有已有改动。**
+
+**2026-10-29完成千问转写归一化单元及一次真实事件重放：用户识别`text+stash`按快照替换，助手delta顺序拼接并以done为最终；单连接内绑定供应商项、UUID/次序与revision，去重、冲突和容量限制失败封闭，不产生播放证据。一次受限3.8 WebSocket真实实验使用合成语音，输入完整、一次助手回复completed、语音重叠开始/结束item匹配；33条转写相关事件按原顺序脱敏重放进归一化器与真实投影通过，助手播放仍unknown。实际usage701文本输入/42文本输出/174音频输出，按标价估约0.0033285元，实际账单及可能不包含的费用未知；双方关闭帧不证明远端释放。最终Flutter1454通过/10专用skip、分析/226格式、Node71及Web构建通过；[详细验证](docs/development/2026-10-29-qwen-transcript-normalization-verification.md)。未接正式工厂/页面或开启语音，上游可信退出、播放前缀和上下文仍缺；本地浏览器控制禁用，实际WebRTC/真机未验。未提交/推送，用户已授权功能完成后提交推送。**
+
+**2026-10-29继续修补分片播放排程：复现准备耗时导致计划起点已经过去、启动调用期间错过起点两种情况；现改为准备后按当前图时钟预留50毫秒，启动后错过起点则停止并标未知。新增3项测试（前两项先失败），Node全量71项及Web release构建通过，构建中的该JS与源码一致；本地浏览器控制当前被Work设置禁用，修订后未做实际浏览器复验，旧浏览器证据只属于旧版本。见[验证](docs/development/2026-10-29-streaming-pcm-output-verification.md)。正式语音与供应商退出仍未完成，继续关闭准入，用户已授权功能完成后提交推送。**
+
+**2026-10-29继续推进受控分片播放：新增独立 PCM16 小端分片播放单元，限制单片、排程与实例总片数，支持停止冻结输出时钟估计、上下文暂停时终止及异常保守返回未知。10项Node替身测试通过；Edge/macOS本机三轮完整及中途停止、最终版显式暂停恢复的低振幅合成音频观察见[验证](docs/development/2026-10-29-streaming-pcm-output-verification.md)，页面数字为人工转录，不证明听者实际听见或精确文字前缀。单元未接正式页面、供应商、WebRTC、播放账本或上下文；可信退出、实际音频/文字对齐和完整真实通话仍未完成，正式语音继续关闭。用户已授权功能完成后提交推送；当前仍有大量本地变更，应先完成目标并检查归属、敏感信息和验证，不以本单元冒充完整功能。**
+
+本轮验证：后端独立 PostgreSQL 测试库全量1174项通过、零skip，包含真实备份恢复；Flutter测试1439项通过、10项专用夹具skip，分析和223个Dart文件格式通过，最终Web release构建通过；Node 68项通过，Ruff及125文件格式通过。测试库、浏览器标签和临时资源已清理；887个候选Git文件与私有配置中两项敏感值比对无匹配。旧配置、开发数据库及既有本地改动保留。仍未提交或推送；缺口不能因合成音频测试而关闭。
+
+**2026-10-29补充本地静音输出时钟实验：Edge/macOS各一次完整播放和中途停止，`getOutputTimestamp()`观测分别越过安排终点及停止时图时间；停止请求时估计输出时间0.640001秒、图时间0.661333秒。50毫秒采样及浏览器估计不能证明声音、人耳听见或精确前缀，不适用于现有WebRTC音轨，不接播放账本、不解锁上下文/准入。原始页面数值为人工转录，详见[实验](docs/development/2026-10-29-webaudio-output-clock-verification.md)。本次零模型调用；账单页读取超时，实际结算仍未知。**
+
+**2026-10-29继续验证播放边界：在已有百炼账号对 `qwen-audio-3.0-tts-flash` 两次各提交同一57字符合成英语，无自动重试、无麦克风/音频保存；两次均task-finished/usage57/双向1000帧，按标价合计约0.0114元（实际账单及旧未知另核）。第三次首帧后发一次取消，终态前仍收12,724字节、终态后3秒无事件及双向1000帧，usage缺失；仅为本机时序观察，不证明远端因取消而停费。返回12词段、121,920字节16kHz PCM；供应商索引0/1等是词段序号而非原文字符位，`.What`漏掉原文句号后空格。新增纯函数单结构化句末结果的严格原文匹配、UTF-8候选边界/有界时间和常见Unicode边界拒绝；对两次真实样本均可映射12前缀，只是候选，不证明声音或设备播放，不接播放账本、不解锁上下文/unknown。独立复核发现异常后迟到发送、事件乱序/缺帧、供应商异常文字及多句末扁平化四项，均先RED修复并针对性复审；取消模式独立复核再修累计上限与空帧误判；最终探针与映射41测试、Ruff/4文件格式通过。详见[验证](docs/development/2026-10-29-qwen-tts-timestamp-verification.md)。正式语音/WebRTC、可信退出及实际播放边界仍未完成；TTS仅候选，不修改默认供应商准入。**
+
+**2026-10-29已登录核对百炼：本次工作空间/Key的10月25日已列按量费用0.03705095元，10月26/28的3.8行显示免费额度；按天汇总不能定位旧unknown；本轮后08:53刷新总览仍0.04元，按日列表与模型用量尚未显示今日对应数据，不能判本轮零费用。补齐本机合成语音和单次受限入口，三次各不重试：首次超限后一次cancel收到cancelled及双方1000帧，usage未知；第二次旧探针未核事件顺序/输入项及error，不单独认定完整重叠。独立审查复现上述缺陷并修复/复审，第三次完整输入、speech_started早于原回复done、语音开始结束item_id匹配且无error，原回复completed、speech_stopped后3秒无额外response.created，双方1000帧及usage返回。有usage两响应标价合计约0.006228元，第一次取消未知；正式媒体/旧unknown未解除，不能用单次WebSocket观察代替WebRTC、实际播放前缀或可信释放。证据见[实测](docs/development/2026-10-29-qwen-overlap-verification.md)。本轮最终39项定向测试和Ruff通过，独立审查发现的两项误判经修复和针对性复审；后续仍需验证前缀、上游释放与安全重建，费用以实际账单为准。**
+
+**2026-10-28继续千问真实语音关键能力：17次WebSocket连接、26次明确响应，25次已回用量标价估约0.006291元，重叠试验1次usage未知/本机发1000未收远端关闭帧。真实删除和助手替代创建均确认，但后续模型未可靠遵循替代内容；新会话助手项确认也未保证参与后续回答，用户侧标注回顾单次可用。音频转写delta六段先于首音频，不能推算已播放前缀。合成音频server_vad回显create_response=false/interrupt_response=false，静音后4秒无自动回复，明确请求完成；重叠测试因探针超过960,000字节后接收器退出、未及时cancel而超时，不能判自动打断或停费。完整失败与对照见[实测](docs/development/2026-10-28-qwen-context-vad-verification.md)。新增本地探针协议流程及26项测试（含RED）：配置与输入项确认、响应ID匹配、并发输入监督、受限接收/取消、语音结束观察窗口和关闭帧记录；不自行连接或生成音频，尚无独立可执行入口，未实网复测。没有产品代码/依赖/schema/数据库变化，正式语音仍关闭；需核对未知账单及退出，再补可执行入口和协议验证后安全推进。供应商草稿已更新未发送，累计20元授权仍在，不将估价当硬停费。百炼费用页本机未登录、账单未核；官方月度预算/达额停止存在范围及延迟限制，未修改设置。**
+
+本轮本地定向26项及Ruff/6文件格式通过；原853文件均保留、其中3份文档有意更新，新增8份文件；180处本地链接、实测JSON、私有Key扫描及`git diff --check`通过，私有配置内容和权限未变。实验临时目录已清理；独立审查任务未能启动，不能记为已完成。未重跑无关全量或客户端测试。
+
+**2026-10-26用户已明确恢复千问针对性实测，沿用首轮累计20元上限；此前“先只查公开资料”限制已更新，供应商联系仍未授权。已完成[重练两轴改善评价](docs/architecture/2026-10-26-rehearsal-evaluation.md)：后端四阶段来源复验/精确本次引文，Flutter严格模型、零建议有效评价及两轴展示；旧结果保留。真实模型首轮语义问题已推动提示修正，新四类最终人工核对通过；共9文字调用，含1次已知失败明确重试、1次未知仍仅1尝试。新Web四类/503撤旧恢复/原文/换号409及重载404、4项实际Preview与12图已核。最终API1094零skip（含真实PG17恢复）、Flutter1439/10专用skip、Node58、分析/格式/Web35.5秒/完整字体及独立wheel通过，见[完整证据](docs/development/2026-10-26-rehearsal-evaluation-verification.md)。开发21表及私有.env不变，3个测试库、3个标签及临时服务已清理；无依赖/schema/原生/提交/推送/部署。**
+
+**新版3.8实时2连接/2短响应：真实AI项delete约86.7毫秒得到匹配确认；finish仍invalid_value，200毫秒truncate在5秒内无确认。见[控制实测](docs/development/2026-10-26-qwen38-control-verification.md)。本轮文字+实时已返回用量标价估约0.0117863元，未知/账单未核。整项删除不代替已播前缀，正式语音默认关闭，B2/B6仍未完成。**
+
+本轮保留开工824个文件，16个原文件有意更新、808个摘要不变，新增29个文件；10份Markdown的409本地链接、6份JSON、12张JPEG及私有Key扫描通过。最终独立交叉审查PASS。
+
+**2026-10-26继续按“先只查公开资料”补RTC恢复与Web打断。新找到验签4002智能体退出回调；三份免鉴权公开元数据均200，但未补创建幂等/迟到与终态保留保证。固定官方RTC SDK及5文件，另核Web包dingrtc-aiagent 1.0.10的SHA512与完整公开类型：interrupt为void，没有精确已播前缀/截断确认。已提出单发后仅核原任务的待验证路线，不因缺幂等直接否定候选，也不把回调沉默当退出。见[报告](docs/development/2026-10-26-rtc-recovery-public-review.md)。0业务API/模型/DB访问，未安装或执行SDK、未改源码/依赖/准入；.env未改/0600，822原文件保留、4份文档更新、818不变，新增报告/JSON，临时资料已清理。未选RTC、不发工单、无原生/提交/推送/部署，B2/B6仍缺。**
+
+**2026-10-25本轮已按用户最新“先只查公开资料”核对官方SDK与实时控制接口，不提交工单。固定SDK提交及3文件确认finish/delete为发送封装，替身测试不证明型号能力；Omni文档结束差异仍在，Qwen-Audio删除确认/Responses会话管理不混用。RTC控制面可按TaskId查询，但重复/迟到创建、查无对象及上下文/费用语义仍缺，未选用。见[公开资料复核](docs/development/2026-10-25-qwen-control-contract-public-review.md)。本轮0供应商API/推理、未访问DB或改应用/依赖/准入；.env未改/0600，820原文件保留、4份文档更新、816不变，新增报告/JSON，无提交/推送/部署。**
+
+**2026-10-25已补真实建议到一级重练的页面接入验收。标准qwen后台runner真实1次，短引用I go/I went正确带入完整原句；默认准入503零半写，隔离测试准入下迟到201→明确同key/body核对保持同一child/一次准入，仅本次advanced不改日常beginner。安全放弃后同句再准备产生独立beginner记录，关联列表两条、子目标只读及重载零自动写均通过。30条真实API元数据、7张已查看截图、689输入/49输出Token见[报告](docs/development/2026-10-25-real-review-rehearsal-browser-verification.md)。测试准入不代表正式媒体；两子零连接，改善评价/B2/B6仍缺。开发21表及.env未改，临时标签/服务/库/私有文件已清理，无应用/schema/依赖/原生/提交/推送/部署。**
+
+**2026-10-25已完成真实复盘在本人Web页面的补验。现有release→真实Cookie/API/独立SQL→标准qwen配置与后台runner，页面明确生成2次：错误句得到精确引用及过去式建议，正确句为有效空结果；原话定位、重载纯读、503撤旧/恢复、跨标签换号409清正文和重载404均通过。52条浏览器元数据、6张已查看截图及1332输入/98输出Token见[报告](docs/development/2026-10-25-real-review-browser-verification.md)。仅固定英文封存样本，非实时语音；实际账单未核，B2/B5真实通话及B6仍未完成。测试标签/服务/库与私有临时文件已清理，开发21表全行不变，.env未改/0600；无应用/schema/依赖改动或原生/提交/推送/部署。**
+
+**2026-10-25继续完成复盘标准启动配置。新增默认disabled的后端review_provider及私有文件位置；明确qwen时仅启用3.8复盘loader/网关，Key不进通用Settings/API，错误配置在DB/runner前稳定失败，语音准入与信令仍关闭。23新纯测试先RED，新增4组合与既有目标164/7.38秒；API全量1042/191.31秒零skip（含真实PG17恢复）、Ruff/113格式/38包锁通过，独立143/0.32秒无确定功能问题，旧docstring已修正。标准create_app不替换gateway，由生命周期runner自动真实调用1次，空建议/650与6 Token落库；构造零HTTP、本人GET/他账号404、disabled重启不需私有文件仍可读及删除通过。见[配置契约](docs/architecture/2026-10-25-review-provider-config.md)、[本轮验证](docs/development/2026-10-25-review-provider-config-verification.md)。仍为隔离ASR文字离线重放，非实时媒体闭环；实际私有.env未改，默认disabled，无后台日常服务/客户端/schema/依赖/原生/提交/推送/部署。**
+
+**2026-10-25继续完成真实合成音频输入与复盘worker组合。北京Plus上传3.961秒PCM，最终ASR与固定英文一致，commit→ASR final约0.336秒、→首回复音频约0.716秒；另一次取消后发送实际item的truncate，约29.127秒未收到确认/error，不能提供上下文截断确认。实际ASR文字离线重放至独立API/SQL/生产worker，真实3.8复盘仅调用1次，返回no_suggestions，650/5 Token落库；GET/重启不重调、本人历史/他账号404及删除清正文通过。并非实时业务通话闭环。六个组合场景参数化两型号，新增6用例，最终目标137/6.27秒、Ruff/110格式/38包锁通过；见[本轮验证](docs/development/2026-10-25-qwen-audio-worker-verification.md)。本轮2语音响应+1复盘；本轮已返回用量估约0.02506元、累计已知约0.04081元，取消缺用量/账单未知。默认准入/信令/反馈不开放，可信退出/播放截断仍缺，已备[供应商契约询问稿](docs/development/2026-10-25-qwen-upstream-capability-questions.md)，未发送；应用源码/schema/依赖/客户端未改，无原生/提交/推送/部署。**
+
+**2026-10-25按用户“开始”及20元预算执行首轮真实模型实验，并继续复盘适配。语音北京Plus共6次WebSocket连接、2次响应：短回复首音频0.995秒、completed及519 Token回报；取消约81毫秒收到cancelled但无usage，session.finish本次返回invalid_value，双方1000帧后本机仍约12秒才完成连接清理。见[语音实测](docs/development/2026-10-25-qwen-realtime-live-probe-verification.md)。无麦克风/音频上传/保存，不能当WebRTC或可信远端退出验收。复盘真实8次调用暴露旧qwen-flash错误键/不当识别纠正；新增显式qwen3.8-flash strict JSON Schema候选和提示范围，最终两组不同样本只纠正清晰语法，见[真实复盘验证](docs/development/2026-10-25-qwen-review-live-verification.md)。新5测试先4失败，最终组件199/0.39秒、Ruff/110格式/38包锁通过；独立107/0.17秒无确定问题。已返回用量部分标价估算约0.01575元，取消缺用量、账单未核，总费用不记零。默认三Unavailable/unknown占用保留，B2/B5/B6仍未完成；仅候选源码/测试和文档变化，无DB/客户端/schema/仓库依赖/提交/推送/部署，历史全量1004不重标。**
+
+**2026-10-25用户明确要求将所给Key写文件并开始开发，已确认首轮真实测试预算20元。Key/workspace现存Git忽略的后端私有.env/0600，未进报告/源码/前端或wheel。已新增独立私有配置loader→现有QwenWebRtcSettings，SecretStr、环境覆盖、稳定脱敏错误无原context；实际私有文件离线构造gateway检查通过。13项先RED，新13+原适配器共194/0.34秒；最终API1004/191.98秒零skip、Ruff/110格式、38包锁/metadata及wheel源码/无私有Key检查通过，独立复核13/0.11秒无确定问题。见[本轮验证与费用估算](docs/development/2026-10-25-qwen-private-config-verification.md)。北京Plus按短会话首轮估5–15元、20元为授权上限，非已实现的供应商硬停费机制。默认三Unavailable与生产准入保留，本轮0推理/无语音会话/音频上传；先验证可信退出与用量，再接正式媒体。开发21表全行不变，测试库已清理，开工777文件保留、4份原文件有意更新；无依赖/schema/Flutter/原生/提交/推送/部署。**
+
+**此前2026-10-25按用户明确“试这个配置”授权完成千问北京workspace只读鉴权：官方GET /api/v1/models，不带Key为401/InvalidApiKey，带所给Key为200/success:true，qwen3.5-omni-plus-realtime精确筛选返回1项。仅证明此次基础鉴权与目录可读，不证明实际模型调用权限、语音准入、终止/插话或费用。见[脱敏证据](docs/development/evidence/2026-10-25-qwen-readonly-auth.json)及[官方接口](https://help.aliyun.com/zh/model-studio/list-models)。共2次GET、0推理请求、无音频/语音会话；Key仅进程内用于本次请求后清除引用，未写配置/日志/仓库，workspace已存Git忽略的后端私有.env。预算仍待明确，现有网关/准入继续关闭；未改应用/依赖/schema或运行数据库、重跑测试/构建、提交/推送/部署。**
+
+**此前2026-10-25补齐真实备份恢复CI。发现既有工作流未配置PG工具导致两项恢复skip；现复用PG17服务ID生成私有Docker入口，pytest显式required=1与两绝对路径，缺工具直接fail。新增16项先RED后通过，实际生成入口跑两项恢复2/2.70秒，最终API991/187.50秒且零skip，Ruff/108格式、38包锁、metadata无新迁移、官方SHA256校验的actionlint1.7.7检查通过；独立只读复核16项通过、无确定问题。详见[设计](docs/superpowers/specs/2026-10-25-backup-ci-design.md)与[验证](docs/development/2026-10-25-backup-ci-verification.md)。开发21表全行摘要不变，源测试库/恢复库已清理；保留开工770文件，仅5个原文件有意更新。生产包源码/schema/依赖及Flutter/Node未变，不重跑客户端或wheel；前批页面证据保留历史。没有提交/推送/触发GitHub，不能称远端Checks已通过；自动备份/异地清单/保留期及B2/B5/B6仍未完成，无模型/原生/提交/推送/部署。**
+
+**此前2026-10-25补验实际浏览器会话过期/禁用/限流。A Web会话预置过期后，旧草稿PATCH401→GET me401→登录，偏好仍v2/intermediate，移动会话仍200；重登正常。调用既有维护禁用A后，旧保存/恢复401、正确密码登录401、A全部3会话撤销，B独立偏好不受影响。默认10次账号/30次IP/600秒配置未改，直接HTTP预填与浏览器真实429分开；正确密码下复验429带Retry-After600、C零Web会话，单独预置C桶过期后明确重试200且attempts1。首轮重试401为自动化输入拼接，已排除并重做。23条全部真实API的浏览器请求与5截图已核，见[报告](docs/development/2026-10-25-browser-session-boundaries-verification.md)。最终3用户/8会话3撤销、三账号偏好v2不变，练习/连接/反馈0；开发21表全行不变，测试标签/服务/库已清理。保留原762文件，仅3份原文档更新；无应用/schema/依赖改动，不重建/重跑历史Flutter1401/10skip、Node58、API975。预置过期不冒充自然等待；自然长时到期、IP上限、精确版本/手机/大陆网络/完整竞态及B2/B5/B6仍未验，无模型/麦克风/原生/提交/推送/部署。**
+
+**此前2026-10-25补齐实际浏览器注册与密码重设：当前release/IAB真实Cookie/JS/loopback代理/API/独立库，密码确认不一致零注册请求，无效/重复邀请400、合法注册201→初设保存→首页均验。重设无效400，代理503保留输入且2会话/2凭证未动；明确重试204提示成功，两个旧会话及两个重设凭证均失效，旧Web/移动GET401，完整用户名旧密码401/新密码200。已用凭证浏览器400、另一旧凭证直接HTTP400；另一合法重设204回包延迟5.100秒，后退/login后不抢路由/不提示旧成功，之前密码401/最新密码200且另一旧标签再次401。24条浏览器元数据（23真实API+1代理503）和7截图已核，见[本轮报告](docs/development/2026-10-25-browser-registration-reset-verification.md)。首轮自动输入漏用户名的401不计改密证据，纠正后复验；最终1用户/4会话3撤销/3凭证全消耗、偏好v2/intermediate/normal，练习/连接/反馈0。开发21表全行摘要不变；测试标签/服务/库已清理，原752文件保留，仅3份原文档有意更新。无应用/schema/依赖变化或重建，不重跑/重标历史Flutter1401/10skip、Node58、API975。精确版本/手机/大陆网络/凭证自然过期与完整竞态仍未验，B2/B5/B6及暂缓条件保留；无模型/麦克风/原生/提交/推送/部署。**
+
+**此前2026-10-25完成阶段5人工备份生成与离线核验。新增backup-create/backup-check，同一只读快照导出PG17 custom dump与完整删除清单，私有排他目录/manifest最后发布、工具截止与容量限制，离线检查不读Settings或连DB。新增54项；目标82/24.62秒、最终API975/189.45秒、Ruff/106格式、38包离线锁和metadata无新迁移通过。真实pg_dump/pg_restore覆盖全行恢复及快照后API删除：包内仍旧快照，最新清单重放清正文、保留unknown，重复全行不变；最终wheel无pytest独立runtime再验安装CLI实际生成/离线检查/真实恢复21表一致。独立审查发现子进程/外部替换文件归属两类清理问题，分层先RED修正，终审43组件通过、无剩余确定问题。详见[契约](docs/architecture/2026-10-25-backup-bundle.md)与[验证](docs/development/2026-10-25-backup-bundle-verification.md)。开发20业务表及迁移记录全行摘要不变；本轮测试库已清理，开工744既有文件保留，7个原文件有意更新、其余737摘要未变。未改Flutter/Node/schema/依赖，历史客户端检查不重标；无模型/物理麦克风/原生/提交/推送/部署。完整性不证明可恢复或清单最新，恢复仍需可信最新独立清单；自动调度、异地实时日志、保留期执行及供应商准入待后续，阶段5未完成。**
+
+**此前2026-10-25连续补验真实账号正常流程及失败/跨标签/迟到恢复。当前Web release → IAB真实Cookie/JS → loopback代理/API → 独立库，实际登录/初设保存/首页、编辑放弃、保存刷新、退出确认取消/204再登录已验；同A独立移动身份使旧偏好409后重读，A旧退出在B Cookie下403后明确重试409恢复B且不注销B，B旧草稿在A Cookie下409恢复A且不改偏好；代理503分别保留草稿、真实登录和明确恢复入口。成功保存回包5.019秒/恢复读取5.023秒迟到时，浏览器返回后仍/practice、无旧成功提示；首轮迟到为403，未冒充成功。42条代理元数据（其中3次503为代理拒绝）及9截图逐张查看，详见[本轮实测](docs/development/2026-10-25-browser-account-acceptance-verification.md)。最终A v5/advanced/slow、B v2/beginner/normal、5会话2正常撤销，练习/连接/复盘均0；开发20业务表及迁移记录全行摘要不变。两测试标签、API/Web及独立库已清理，默认8000未运行；开工732个既有文件保留。没有改应用源码/依赖/schema、未重建或重跑无关全量；前批Flutter1401/10skip、Node58/Web33.3秒仍为历史证据。实际注册/密码重设浏览器提交、精确浏览器版本、真机/大陆网络及全部竞态未覆盖，B2/B5/B6和已暂缓模型/预算/设备条件保留。无模型/物理麦克风/原生/提交/推送/部署。**
+
+**此前2026-10-25继续完成“登录/注册/重设操作范围→认证页面点击与迟到提示”两组修补。第一组15项先RED，authenticate/reset采用同pending/ref.mounted/provider门，clearError不释放busy；repository.scopedTo共享原API，身份/凭据发布前后查有效性，ApiClient默认关闭的stillCurrent门覆盖CSRF/token/正常回包。第二组页面26项先18失败，现按钮/键盘提交/导航/密码显隐绑定展示state/API owner/provider及当前Route+URI，reset迟到成功不抢其他页面。独立审查发现null身份冻结遗漏，6项API-only身份变化先RED后修补，当前操作转unreachable待明确恢复；复审无剩余确定问题。新增25服务层+29页面共54项，账号196、最终Flutter1401通过/10专用skip（43秒）、分析/220格式、Node58、Web33.3秒及完整30,890字体检查通过。详见[契约](docs/architecture/2026-10-25-auth-operation-scope.md)与[验证](docs/development/2026-10-25-auth-operation-scope-verification.md)。开工726个既有文件保留，生产仅改ApiClient/账号仓库/控制器/AuthScreen，后端/schema/锁文件未改；无本轮真实API/DB/浏览器Cookie/模型/麦克风/原生构建/提交/推送/部署。已发HTTP/Cookie响应及已开始原生存储I/O不能撤回，不把本机旧结果保护当服务端取消。B2/B5/B6及真机条件继续沿用此前安排。**
+
+**此前2026-10-25继续完成“设置点击/确认资格→账号HTTP及异步完成范围”两组修补。已复现旧保存写新账号、旧退出确认注销新身份；设置所有动作现绑定展示账号/偏好/草稿、controller/repository与当前Route+URI，旧确认/取消不pop新模态，迟到保存不在其他页面提示。随后preferences GET/PATCH/logout固定accountId，save/logout/restore持唯一pending与销毁门；退出网络异常清理前后核身份，恢复写共享API身份前核stillCurrent，双恢复只发布最新操作。新增89页面+22异步共111项；原账号31项保留，目标142通过。最终Flutter1347通过/10专用夹具skip（44秒）、分析/218格式、Node58、Web release34.5秒及完整30,890字体校验通过。独立静态审查发现的异常清理/自动恢复与双恢复问题已分别6项及2项RED复现修补，最终复审无剩余确定问题；审查者未运行Flutter。详见[契约](docs/architecture/2026-10-25-account-action-scope.md)和[验证](docs/development/2026-10-25-account-action-scope-verification.md)。保留开工435个已有改动文件，生产只改设置页/账号仓库/账号控制器；后端/schema/锁文件未改，无本轮API/DB/模型/物理麦克风/原生/提交/推送/部署。没有新布局或预览，未把前批浏览器/Preview证据重标本轮；原生已开始的安全存储delete不能撤回，真实并发I/O及登录/注册/重设全状态机仍未验证。B2/B5/B6条件沿用此前安排。**
+
+**此前2026-10-25按“继续完成后续所有内容”连续完成两组可验收工作。①[实际浏览器竞态补验](docs/development/2026-10-25-browser-races-verification.md)：原scope3经外部单子删除后原确认409、重读2；删除回包延迟10秒时8.076秒进入未知，GET凭据核对，迟到200不改历史路由；文字分页8.082秒保留原页、刷新两步共8.241秒清旧正文、保存状态两步共8.132秒清旧结论，以及在途返回后不抢路由/焦点已验，6张截图逐张查看。②[千问文本反馈候选](docs/architecture/2026-10-25-qwen-review-gateway.md)：复用既有ReviewGateway/生产worker，固定北京workspace/qwen-flash、去业务UUID、有界JSON、7秒/256KiB/单次无重试、精确引用映射和nullable用量；默认create_app/环境配置未开启。最终102组件+11实际API/SQL/worker组合共113项/4.10秒，API全量921项/188.07秒，Ruff/103格式、38包离线锁检查、metadata无新迁移、wheel及无pytest独立runtime通过。初审1项坏外层被判可重试invalid_output已先16 RED再修复为unknown，独立复审102组件通过、无剩余确定问题。见[验证](docs/development/2026-10-25-qwen-review-gateway-verification.md)。两独立库/服务及私有临时资源均清理，开发20业务表和迁移记录全行摘要一致；开工418个已有文件保留，只有5份原文档被本轮有意更新，原应用/依赖锁文件未覆盖。未改Flutter/Node/schema/依赖，不重标其历史检查。真实供应商响应兼容性/时延/语言质量仍未验证，相关Key/workspace/budget存在性检查均缺少，沿用暂缓安排不反复索要；B2可信退出/播放截断、正式媒体/结束保存、B5真实反馈及B6仍未完成。无真实模型/原生/提交/推送/部署。**
+
+**此前2026-10-24连续完成实际浏览器补验→Widget Previewer→当前WebRTC合成回环→B2公开资料复核。浏览器工具已恢复；隔离库/API及当前Web release实际走通历史10/10/4、保存状态深链接刷新、文字16+7/503保留与刷新清除、复盘第23段定位、关联目标、unknown拒新重练、单子删除及父+另一子删除丢回包/GET凭据核对、旧地址不可读与A/B跨标签身份清理；320视口及Tab/Enter已验。Previewer首轮空注册经官方clean重建后49项注册，实际查看5项浅色/320深色200%样例；预览字体回退404保留为限制。既有生产传输脚本的真实浏览器合成静音回环通过，无物理麦克风/供应商。当前Web重新编译38.2秒及30,890字体映射通过；未改应用源码/schema/依赖，不重跑或重标历史全量测试。详见[本轮实测](docs/development/2026-10-24-browser-acceptance-verification.md)。供应商官方资料存在finish及初始化门控表述差异；可信终止/失效和播放截断仍未获准入证据，RTC控制面仅候选，见[资料复核](docs/development/2026-10-24-qwen-realtime-readiness-review.md)。下一步集中B2账号/workspace/地域/权限/预算和真实退出/截断实测，既有暂缓安排保留；浏览器已不再是统一阻塞条件，版本/真机/全部竞态及B2/B5/B6仍未完成。最终开发库20业务表及迁移记录全行摘要一致；本轮独立库、16临时文件及服务已清理，开工396个已有变更文件保留。7份文档/283本地引用、19张截图与Git空白检查通过。本轮无模型/原生/提交/推送/部署。**
+
+**此前2026-10-24继续完成B2千问候选信令、实际API组合、运行打包和基础API贯通演练：固定北京workspace地址的QwenWebRtcSignallingGateway，单次/7秒/64KiB、无重定向/重试/环境代理、取消关闭和异常脱敏。新增79组件+8组合+1贯通共88项，最终API808/186.41秒、目标111/5.55秒、贯通1/1.17秒、Ruff/100格式通过；三次独立只读复核无确定问题。wheel及无pytest的独立runtime通过，HTTPX0.28.1从dev提升runtime，锁定38包版本不变。专属库逐次删除，开发20业务表及迁移记录全行保留，schema/既有业务协议未改；未改Flutter，保留其先前1236/Node58/Web证据。演练真实API/SQL贯通保存→默认blocked反馈/明确测试重试→历史/引用→删除/原key，unknown仍占用且A/B隔离。供应商HTTP/文字/反馈均替身，不是实际语音。默认main/admission/客户端协议继续Unavailable，无真实模型/原生/提交/推送/部署。见[契约](docs/architecture/2026-10-24-qwen-webrtc-signalling.md)、[验证](docs/development/2026-10-24-qwen-webrtc-signalling-verification.md)。下一步按B2可信退出/播放截断、实际账号/workspace/地域/权限/预算及浏览器设备条件接正常协议；既有暂缓安排保持，B2/B5/B6未完成。**
+
+**此前2026-10-24按连续开发要求已完成保存结果三个任务、复盘资格、重练确认、文字/关联列表阅读资格、普通首页/准备路由及共享恢复面板资格。每次保存情况已从历史详情接入，严格2次GET共8秒且状态/coverage一致后发布；实际Dart/API重启两轮各8 GET、专属库全行不变，开发库20业务表及迁移记录全行保留，临时库/服务/fixture已清理。随后各页点击复验当前Route+URI、owner/provider/controller和busy，写确认绑定展示来源/难度，翻页/行绑定展示page，列表迟到完成不抢其他页面焦点；账号busy保留结果并单独提示。最新Flutter1236通过/10专用skip、面板/入口目标121、Node58、分析/216格式、Web49.5秒，各单元独立复核无剩余确定缺陷；保存页四态五PNG逐张查看。证据：[保存结果](docs/development/2026-10-24-saved-practice-status-verification.md)、[复盘](docs/development/2026-10-24-review-action-guards-verification.md)、[重练确认](docs/development/2026-10-24-rehearsal-action-guards-verification.md)、[文字/关联阅读](docs/development/2026-10-24-reading-action-guards-verification.md)、[普通入口路由](docs/development/2026-10-24-entry-route-guards-verification.md)、[共享恢复面板](docs/development/2026-10-24-recovery-action-guards-verification.md)。六组共新增193常规+1可选wire；27份文档/295本地引用检查通过，68个本轮临时文件已清理，原629文件均保留。后续资格修补无API/数据库/模型调用，后端/schema/依赖保留，无原生/提交/推送/部署。现转整体验收清单核对；接下来的B2/B5真实接入及浏览器验收仍需已暂缓条件；实际浏览器仍禁用，正式通话/结束补交、真实反馈及完整B2/B6未完成。**
+
+**2026-10-24最新执行要求：用户要求连续完成任务，完成一项后立即推进下一项，不逐单元结束等待。已按[保存结果计划](docs/superpowers/plans/2026-10-24-saved-practice-status.md)连续完成“独立只读保存结果控制器→历史入口与页面→实际HTTP隔离联调”，已完成复盘/重练/阅读资格修补，已完成普通首页/准备页及恢复面板修补，现已继续完成候选SDP和基础API流程演练，复用已有真实接口，模型/预算与浏览器条件继续按既有安排，不伪装完整语音可用。分项证据见本节最新完成记录。**
+
+**2026-10-24客户端删除点击修补：已复现账号busy时旧按钮仍DELETE、旧确认提交新读取范围、旧保留绕过删除中离页、旧读取/核对/重试发请求，并按独立初审复现go/push切页尚未销毁时的旧确认/保留漏洞。现点击复验当前owner/账号busy/provider/controller、当前Route与最新URI；确认绑定本次实际展示scope，按钮及PopScope同步busy。原key/body、8秒/未知核对及成功清理未改。新增16回归，目标50、Flutter1043通过/9专用夹具skip（约36秒）、Node58、分析/206格式及Web36.2秒/完整30,890字体映射通过，复审无剩余确定缺陷；字体结果与工作区保留见[验证](docs/development/2026-10-24-deletion-action-guards-verification.md)。本单元无API/DB调用、后端/schema/依赖改动及模型/原生/提交/推送/部署。实际浏览器仍被Work设置禁用，B2/B5/B6及完整基础版本未完成。**
+
+**此前2026-10-24按基础验收核对，已修补Web删除两处DELETE遗漏：合法预检原返回400、缺X-Account-ID原错误受理200，均先RED复现。CORS明确允许DELETE；Web DELETE强制账号绑定，Origin/CSRF及精确来源限制保留。新增11项回归，目标66/12.17秒、API全量720/183.76秒、Ruff/96文件格式通过，独立只读复核无确定缺陷。专属测试库已删除；开发库只读前后20业务表及迁移记录全行一致，head仍4f6a58cd2e32。客户端/schema/依赖未改，无模型/原生/提交/推送/部署。[验证](docs/development/2026-10-24-web-delete-verification.md)与[B1–B6验收矩阵](docs/validation/2026-10-15-validation-plan.md#22-当前验收矩阵2026-10-24)区分工程证据和缺项；浏览器工具仍被Work设置禁用，实际Cookie/JS删除流程待验，真实语音/反馈、阶段4与完整基础版本未完成。**
+
+**此前2026-10-23单元修补普通准备难度快照与点击资格：已RED复现未知/已登记/预检中偏好变化导致显示与原请求难度不符，以及旧按钮在busy/新占用/偏好变化时仍导航或请求。Entry在明确开始冻结本次难度，已知配置优先、预检未登记则释放；首页仍为当前偏好，准备为本次难度。点击时重查账号/owner/忙碌与资格，新开始不套用旧显示，原请求确认仍原key/body。新增11回归，目标70、最终Flutter1027通过/9夹具skip、分析/206格式、Node58、Web33.3秒/30,890字体映射通过，独立复核无确定缺陷。取消/后台/恢复未改，无API/DB、后端/schema/依赖、模型/原生/提交/推送/部署。本轮浏览器仍禁用/原生表面锁屏，实际验收待补；[验证](docs/development/2026-10-23-preparation-snapshot-verification.md)。真实语音/改善评价、阶段4和完整基础版本仍未完成。**
+
+**此前2026-10-23恢复单元完成独立删除清单与人工停服恢复：既有CLI支持完整无正文导出、默认零写预检、明确目标库后全批原子重放。迁移4f6a58cd2e32持久保留完整成员；旧备份缺后来成员/账号也不补造数据，恢复后仍可完整再次导出。最终API709/191.33秒、目标45、Ruff/94 Python文件格式（含迁移）通过，真实pg_dump/pg_restore完整/更早备份、缺账号再次导出、清单再用于完整备份、实际HTTP旧正文404/另一账号保留/unknown仍409和二次重放20表全行不变均已验。初审两项问题已复现修正，独立复审无确定问题；旧凭据回填/损坏拒绝/非空拒降及metadata通过。开发库只升级schema，20业务表全行保留；专属库/私有文件/API已清理。详见[恢复验证](docs/development/2026-10-23-deletion-restore-verification.md)及[操作说明](docs/development/local-development.md#独立删除清单与离线恢复)。Flutter/Node/Web本单元未改未重跑。此能力以停服和可信最新独立清单为前提，自动备份/异地实时日志/保留期执行、真实终止/费用仍缺，阶段5只开始这一基础单元，完整基础版本未完成。**
+
+**此前2026-10-23 B4单元已接通本人记录删除：详情读取完整父/一级子范围，默认保留、明确确认后锁内复验；范围变化409重确认，同步清除正文/复盘/固化/重练目标，单子隔离。原key凭据支持丢回包核对/明确重放，unknown连接继续占用并保留blocked核验，不伪装已停费。API最终681、Flutter888通过/7夹具skip，真实删除wire1另验通过，Node58、分析/181 Dart格式、Ruff/90 Python格式、Web/字体、迁移及非空拒降通过，独立双次审查无确定问题。真实HTTP单子→父范围409→重读→丢成功回复/凭据、重启一致/正文清零和unknown仍阻止新建已验。开发库仅schema升级3e5947bc0d21，原19业务表全行不变、新凭据0；临时环境已清理。四态组件渲染已查看，B3/B4及前批保存文字的实际浏览器/Preview受Work设置禁用待补。详见[验证报告](docs/development/2026-10-23-practice-deletion-verification.md)。B1/B3/B4工程已有，B2/B5仍待模型/地域/预算输入，完整基础版本尚未完成。**
+
+**此前第4阶段单元已完成一级重练后端准备：从有效普通来源派生完整目标、确认hash后原子创建独立准备、固定目标复验与同级seek读取。数据库强制同账号ordinary父/一级关系，质量审发现的分页索引缺口已修复并复审通过。最终API641项通过，root另验全量640及最终目标86/34.69秒，Ruff/82格式、迁移/metadata、实际HTTP及查询计划通过。开发库只升级schema到1a6de74c9f20，17项跟踪表计数和原账号数据保留；隔离库/API/凭证/脚本已清理，默认网关关闭。当时客户端重练页面、真实媒体/改善评价、完整历史/删除仍缺；本轮历史/删除/离线恢复进展见上，第4阶段仍未完成；前批保存文字页实际浏览器/Preview点击当时受Work设置禁用影响，尚待独立补验。**
+
+用户已要求“开始吧”和多次“继续”，允许应用工程及本地验证。**2026-10-17工程推进授权：按照建议路线持续开发，不逐项汇报和确认；需要本人确认或更改的部分先跳过，待后续补齐后再实施。以Flutter Web为主，暂停Android构建和安装。2026-10-20另有并行文档完善任务，不确定的产品取舍向本人确认；仅该文档任务未实施应用代码，当前持续开发已推进到持久复盘输入、反馈任务/有效结果、原账号客户端及复盘来源/阅读页。** 常规可逆工程选择直接执行，验证与边界持续写入本文件；未提供的模型账号与预算不能由持续开发授权推定，付费连接仍关闭，功能完成后按用户最新授权提交推送，不对外部署。物理设备许可、账号/预算及真实手机条件暂缓，不反复提问，也不阻塞其他工程工作。
+
+前批代码单元：[复盘原话定位与整次已保存文字](docs/superpowers/specs/2026-10-22-saved-transcript-design.md)，已实现及待补验收见[实测报告](docs/development/2026-10-22-saved-transcript-verification.md)。普通回看不依赖模型/任务，定位沿原有效result/quote门；来源和文字页初读共8秒、分页每次8秒，翻页网络失败保留原页，身份/来源失效清空。前批[复盘入口与阅读页](docs/development/2026-10-21-review-page-verification.md)及新连接跨时钟修补保留。
+
+前批验收边界：隔离真实HTTP已验23段/2连接/第19段定位、最新空修订/旧prefix/rev0、无job读取及13表全行不变，Dart控制器与实际后端互通；组件渲染实际查看浅/深320 200%/空/错误。浏览器工具直接返回“Local browser use is disabled in Work settings”，未创建标签、未执行实际页面/Preview点击，后续可用时补验，不标完整产品验收。临时库/API/Web/凭证/脚本已清理；默认API8000 live/ready正常，模型/原生保持关闭。
+
+此前工程单元（2026-10-22）：[一级重练来源、目标与独立准备](docs/superpowers/specs/2026-10-22-rehearsal-preparation-design.md)，仅后端，详情见[契约](docs/architecture/2026-10-22-rehearsal-preparation.md)与[实测报告](docs/development/2026-10-22-rehearsal-preparation-verification.md)。真实HTTP验证两次独立同级准备、同key不重新准入、默认503零半写、跨scope完整原话/安全前文、源失效仍保留子自身；数据库拒绝跨账号/二次派生，单删子及父删级联已验，当时删除产品流程未实现；当前B4进展见本节首段。Flutter该批未改未重跑，实际供应商/模型继续关闭。
 
 | 项目 | 当前事实 |
 | --- | --- |
 | 仓库 | `/Users/simon/workplace/projects/simontalk`，origin为`https://github.com/simon-996/simontalk.git` |
 | Git | main保留文档基线`71ecbe0`；当前`feat/account-foundation`，核对最新日志/状态；未推送 |
-| 客户端 | `apps/client/`，真实账号/偏好；准备/信令/媒体协调、有界观测及最终文字确认journal、内存文字/播放投影；原连接文字分页/修订重建和只读查看，偏好页明确查询/翻页及确认后清理；HTTP家族共享CSRF，原生工程保留 |
-| 后端 | `services/api/`，FastAPI/PostgreSQL17/Alembic；账号、准备/恢复、代次/租约、周期/明确清理、单次信令、受限观测及最终文字修订追加/分页，head b97d2a641e30；真实语音准入与网关固定关闭 |
-| 本地数据 | Compose专用数据库127.0.0.1:54329；开发库`simontalk`、独立测试库`simontalk_test` |
-| 页面 | 深浅色、双弧线品牌、响应式表单、错误恢复；Web本机麦克风检查、未结束练习/客户端记录/已保存文字与未开始准备确认清理；文字独立有界滚动/选择、未知播放和修订提示；没有练习占位页或完整历史页 |
-| 检查 | 本批Flutter435项、Node51及实际HTTP1项通过；分析/87 Dart格式通过，最终Web release34.5秒/发布字体通过，真实浏览器分页/断网刷新/跨标签账号隔离与深浅色/空态预览通过。选择焦点问题先失败后修复并独立复查。后端无变更，276项沿用前批证据。默认API ready200；开发库1账号/0练习/连接/观测/文字，临时测试数据/服务已清理 |
+| 客户端 | `apps/client/`，新增本人历史列表/详情/删除确认及普通练习首页/准备，真实账号/偏好、媒体受限end/context、双journal及固化/恢复读取；复盘来源/任务与实际建议页已接，新增独立sealed文字模型/本人仓库/单飞阅读器及普通/定位路由，另接一级重练确认/独立准备、原请求核对、子目标只读及来源关联列表/分页。初读来源+页共8秒，单页16段，分页留原/失效清全，返回保持建议位置；原生保留 |
+| 后端 | `services/api/`，FastAPI/PostgreSQL17/Alembic；账号/准备/恢复/两账本/固化/核验及review输入/任务/结果；保存文字纯读/建议定位及一级重练目标/原子准备/子目标/同级列表；新增本人历史摘要/tuple seek，新增范围复验/墓碑清正文/幂等凭据，新增删除清单CLI/原子重放与完整成员凭据，迁移head 4f6a58cd2e32，同账号ordinary父约束与两类分页索引已验；新增千问候选SDP类（未接准入）及文本反馈候选类（已与真实worker隔离组合），实际语音准入/信令仍关闭；反馈默认disabled，现有明确qwen配置的标准工厂路径 |
+| 本地数据 | Compose专用数据库127.0.0.1:54329；开发库`simontalk`、独立测试库`simontalk_test`；实际20业务表；现有practice_deletion_receipts新增完整members，20业务表全行保留，未向开发账号注入假练习 |
+| 页面 | 普通练习首页/准备及深浅色账号/本机麦克风/恢复/保存核验、sealed复盘及独立保存文字普通/定位阅读地址；真实建议可跳对应用户段，AI播放片段与生成全文区分，支持翻页/回原话/纯读刷新/返回及大字选择。B1入口实际浏览器/Preview通过，新增本人历史/详情组件与真实读取已验，本轮历史/保存文字/删除指定浏览器场景和5项Preview已补验，版本/真机与未覆盖场景保留；本人删除范围/确认/返回及一级重练目标确认/独立准备、历史子目标只读、来源关联列表/分页已接；两轴改善评价已接真实固定文字/页面与Preview；正式通话/结束保存页及真实重练媒体仍缺 |
+| 检查 | 本轮API1094/238.55秒零skip、Ruff/99格式/38包锁、独立wheel56源码一致；Flutter1439/10专用skip、分析/223格式、Node58、Web35.5秒/字体30,890通过。新4类实际评价及39条页面API元数据/12图已核，默认disabled，远端Checks/原生/提交/推送/部署未执行 |
 | 原生 | Android曾因磁盘不足构建失败，没有APK；已暂停并清理本轮新增资源。Android/iOS工程保留，均无设备验收证据 |
 | CI | 已配置PostgreSQL/API检查、Flutter分析/测试/Web构建；APK步骤已移除，未推送、远端未运行 |
-| 语音/学习 | 协调器/观测/内存投影/最终文字持久追加、分页重建及恢复入口已有；协议默认拒绝、无正式练习页；有界收尾、供应商语音/事件、播放证据持久化、服务端最终固化、媒体恢复、反馈、重练、学习记录、用量与成本控制未实现 |
-| 生产 | 没有线上服务；TLS、正式签名、备份恢复与运维待后续 |
+| 语音/学习 | 复盘资格/安全前文、精确引用、任务/结果、本人阅读与原话定位及有界封存文字回看已有；本轮指定页面浏览器验收已补，其余场景/真机待验。缺质量信号不编分，真实模型建议已在隔离封存样本及本人页面/重练准备验证、日常反馈默认disabled。seal不证明设备输出/可信终止，unknown仍占用/核验blocked0；一级重练后端目标/独立准备已接；本人历史/详情/关联纯读和删除产品流程已有；人工离线备份删除重放已验；重练确认/准备客户端已接；两轴评价已接固定文字和本人页面；真实语音、自动备份/异地实时日志/保留期和成本仍缺 |
+| 生产 | 没有线上服务；人工停服删除重放已验，TLS、正式签名、自动备份/异地保管及完整运维待后续 |
 
-启动、维护与检查见[本地开发](docs/development/local-development.md)，最新进展见[文字读取与浏览器验证](docs/development/2026-10-20-final-transcript-read-verification.md)、[最终文字持久提交验证](docs/development/2026-10-20-final-transcript-storage-verification.md)、[内存对话投影验证](docs/development/2026-10-18-conversation-projection-verification.md)、[恢复入口失败/身份浏览器验收](docs/development/2026-10-18-recovery-browser-failures-verification.md)、[明确准备清理验证](docs/development/2026-10-18-preparation-discard-verification.md)、[只读恢复验证](docs/development/2026-10-18-readonly-recovery-verification.md)、[受限观测验证](docs/development/2026-10-18-connection-observations-verification.md)、[媒体协调验证](docs/development/2026-10-17-practice-media-coordinator-verification.md)、[单次信令验证](docs/development/2026-10-17-guarded-signalling-verification.md)、[恢复与自动清理验证](docs/development/2026-10-17-preparation-recovery-verification.md)、[客户端准备验证](docs/development/2026-10-17-client-preparation-verification.md)、[连接与租约验证](docs/development/2026-10-17-connection-reservations-verification.md)、[预览字体验证](docs/development/2026-10-17-preview-font-verification.md)、[WebRTC传输验证](docs/development/2026-10-17-web-realtime-transport-verification.md)、[准备登记验证](docs/development/2026-10-17-practice-preparation-verification.md)和[麦克风检查](docs/development/2026-10-17-microphone-check-verification.md)。账号基础、首屏/键盘和Android清理保留历史记录。
+启动、维护与检查见[本地开发](docs/development/local-development.md)，最新进展见[每次保存结果](docs/development/2026-10-24-saved-practice-status-verification.md)、[删除点击资格](docs/development/2026-10-24-deletion-action-guards-verification.md)、[Web删除HTTP](docs/development/2026-10-24-web-delete-verification.md)、[普通准备快照](docs/development/2026-10-23-preparation-snapshot-verification.md)、[删除后scope清理](docs/development/2026-10-23-deletion-read-scopes-verification.md)、[历史导航修补](docs/development/2026-10-23-history-action-guards-verification.md)、[关联列表验证](docs/development/2026-10-23-related-rehearsals-verification.md)、[重练客户端验证](docs/development/2026-10-23-rehearsal-client-verification.md)、[删除恢复验证](docs/development/2026-10-23-deletion-restore-verification.md)、[本人删除验证](docs/development/2026-10-23-practice-deletion-verification.md)、[本人历史验证](docs/development/2026-10-23-practice-history-verification.md)、[一级重练后端验证](docs/development/2026-10-22-rehearsal-preparation-verification.md)、[原话定位与已保存文字验证](docs/development/2026-10-22-saved-transcript-verification.md)、[复盘入口与阅读页验证](docs/development/2026-10-21-review-page-verification.md)、[原账号复盘客户端验证](docs/development/2026-10-21-review-client-verification.md)、[持久反馈任务与结果验证](docs/development/2026-10-21-review-jobs-verification.md)、[复盘输入/原话引用门验证](docs/development/2026-10-21-review-input-eligibility-verification.md)、[保存/核验状态与浏览器验证](docs/development/2026-10-21-saved-status-recovery-verification.md)、[结束与固化验证](docs/development/2026-10-21-practice-finalization-verification.md)、[播放证据持久化验证](docs/development/2026-10-21-playback-evidence-verification.md)、[有界媒体收尾验证](docs/development/2026-10-21-bounded-media-drain-verification.md)、[文字读取与浏览器验证](docs/development/2026-10-20-final-transcript-read-verification.md)、[最终文字持久提交验证](docs/development/2026-10-20-final-transcript-storage-verification.md)、[内存对话投影验证](docs/development/2026-10-18-conversation-projection-verification.md)、[恢复入口失败/身份浏览器验收](docs/development/2026-10-18-recovery-browser-failures-verification.md)、[明确准备清理验证](docs/development/2026-10-18-preparation-discard-verification.md)、[只读恢复验证](docs/development/2026-10-18-readonly-recovery-verification.md)、[受限观测验证](docs/development/2026-10-18-connection-observations-verification.md)、[媒体协调验证](docs/development/2026-10-17-practice-media-coordinator-verification.md)、[单次信令验证](docs/development/2026-10-17-guarded-signalling-verification.md)、[恢复与自动清理验证](docs/development/2026-10-17-preparation-recovery-verification.md)、[客户端准备验证](docs/development/2026-10-17-client-preparation-verification.md)、[连接与租约验证](docs/development/2026-10-17-connection-reservations-verification.md)、[预览字体验证](docs/development/2026-10-17-preview-font-verification.md)、[WebRTC传输验证](docs/development/2026-10-17-web-realtime-transport-verification.md)、[准备登记验证](docs/development/2026-10-17-practice-preparation-verification.md)和[麦克风检查](docs/development/2026-10-17-microphone-check-verification.md)。账号基础、首屏/键盘和Android清理保留历史记录。
 
 ## 3. 已确认与工程采用
 
@@ -44,21 +152,62 @@
 | 邀请72小时/重设15分钟/会话固定7天 | 工程参数，有事务并发与撤销测试 |
 | 字体与渲染 | 原生系统字体；Web完整Noto Sans SC WOFF2约7.8MB、保留30,890映射/可变字重，注册前校验摘要；本地Roboto/CanvasKit；HTTPS或可信loopback |
 | 实时语音 | 千问北京地域WebRTC仍为首轮候选；Web工程采用浏览器原生WebRTC与Dart桥接，原生恢复时评估flutter_webrtc；未接供应商或证明费用可控 |
-| 音频/后台/删除 | 默认不保存原始音频、前台练习后台暂停、删除级联关联内容，仍按总纲建议状态推进 |
+| 音频/后台 | 默认不保存原始音频、前台练习后台暂停，仍按总纲各自建议状态推进 |
+| 一级重练/删除 | 2026-10-20用户确认仅一级重练、同句可多次练；删除普通练习包含全部关联重练，单删重练不影响来源及同级；后端一级来源/独立准备及数据库删除关系已验，目标确认/独立准备客户端已接，真实重练语音/改善评价未实现；本人历史/删除产品流程已接，实际浏览器待补 |
 
 工程选择是在开发授权内沿用既有方案，不冒充用户逐项审批。决策见[产品总纲](docs/superpowers/specs/2026-10-15-simontalk-mvp-design.md)和[基础决策](docs/architecture/2026-10-15-foundation-decisions.md)，当前API以[账号契约](docs/architecture/2026-10-15-account-api.md)为准。
 
+### 2026-10-20文档完善结果
+
+用户先确认D17–D19：首版不提供转写纠错入口；重练判断原意及目标问题是否改善、允许不同说法；正常结束立即停麦停声、短暂等待最后一句最终识别。随后要求完善文档，并确认D20仅一级重练、同句可多次练，以及D13删除普通练习包含全部关联重练、单删某次不影响其他记录。
+
+已新增[收尾、恢复准入与反馈依据契约](docs/architecture/2026-10-20-practice-completion-and-review-contract.md)，同步总纲、交互、技术、路线、验证及现有媒体/投影/连接/文字契约的后续边界：
+
+- 正常end与立即stop分离；收尾默认3秒、配置1–5秒且不顺延，覆盖无字幕的最后一句及原AI回复证据；最终补交另以首次结束受理后30秒为工程初值，不延长媒体。
+- 插话不丢全部旧response事实；版本绑定的独立已播前缀可用于冻结上下文，不冒充完整final，不污染新epoch。
+- unknown须经可信终止/失效边界解除；结束意图及失联扫描均能登记去重核验任务。无可核验退出路径不进入正常试用，金额硬上限另验；删除正文不删除占用证据。
+- 反馈按话轮版本派生eligible/uncertain/excluded；无confidence不排除全部内容，疑点只限制相应判断。重练分别评价原意和目标问题，区分未展示目标、证据不足与技术失败。
+- 一级来源与删除范围在服务端核验；删除按完整成员范围版本复核，变化须重确认。账号方案状态与统一invite_invalid文案已对齐实际账号契约。
+
+证据：三方向独立复核，修正正常结束遗漏AI收尾及客户端消失后核验任务无启动点两处问题；最终交叉审查未发现剩余确定冲突。11份文档的本地链接/标题引用、表格、围栏及空白检查通过，具体实施验收补入验证计划6.1，尚未执行。只改文档，未改代码、调用模型、提交、推送或部署；保留工作区进行中的文字读取开发，未重跑应用测试。
+
+当时待实现与实测：正常draining/独立输出前缀、可信终止与核验任务、服务端固化/评价资格、反馈/一级重练及删除。2026-10-21已补客户端受限draining/版本前缀、独立播放账本及服务端固定补交/固化；真实供应商完成/对齐/可执行终止核验和完整学习功能仍待后续；当前边界以第2节为准。模型账号、预算、设备输入继续暂缓，正式媒体及学习功能按集中契约实施。
+
 ## 4. 下一步
 
-1. 以Flutter Web持续推进：最终文字追加/读取API、确认队列、账号/原连接分页仓库与当前修订只读查看已实现。下一单元按最新收尾规则先实现正常end的固定截止收尾和版本绑定的中断输出前缀，保留异常stop/dispose立即释放；为播放证据持久化和服务端结束固化建立可验证输入。读取快照不作为固化或反馈资格证据，不把AI生成文字当已播放。当前恢复入口刷新仍只读，明确准备清理核验完整历史；local_closed不是confirmed终止。真实协议未实现，信令成功仍只到configuring，替身active/deviceOutputAligned不代表供应商/物理证据。未知创建key跨进程恢复与丢失答案可信终止仍缺。准入/网关/协议保持关闭；模型/预算/设备任务跳过，原生暂停。
-2. 本地功能分支核对最新提交与干净状态，不擅自推送或部署；之后获推送授权时运行Web/API远端CI。
+本轮已获得一次真实3.8合成语音事件到Dart投影的离线重放证据；下一步仍需在有效协议工厂内接通配置与事件流并验证受保护通道、真实WebRTC媒体、停止/收尾和上游退出，不把纯转写、短时关闭帧或生成文字作为播放/终止证明。现有千问询问稿未发送；用户未明确授权联系供应商，不自行发送。可信退出、丢失创建回包与截断语义没有新证据时不得开放准入；继续评估新假设及可独立交付的正式工程，不以替身标记完整通话。
+
+本轮分片播放已覆盖基本排程与本机合成输出时钟观察，尚未处理真实网络分片、设备切换/后台、供应商音频及文字映射；先继续验证后端持有连接的可信退出和上下文重建，设计并实测能用于真实语音的安全媒体路径，不把此单元的输出估计直接接入`PlaybackUpdate`。本轮用户已授权功能完成后的提交和推送；正式语音闭环尚未完成，提交前先核对现有全部本地改动、私有信息及测试状态。
+
+最新实测后的优先事项：先核实`session.updated`省略`tools`时能否有可靠证据证明空工具配置已生效，当前受限协议候选对真实回包安全拒绝，不要重复相同探针或放开正式准入。此前本地单次入口及固定合成音频已接通，10月29日严格校验后的完整重叠观察取得一次正结果；本次超限取消无usage，继续对账，勿把账单汇总或关闭帧当作逐会话费用/释放证明。后续推进实际播放边界、可信上游退出和新会话安全恢复。3.8整项delete/assistant create确认不能当已播放前缀准确重建；新会话用户侧回顾仅为单次文本模型观察，需来源、安全编码、设备边界、重连及可信终止证据。语音未开放，保持unknown占用；其它不依赖该缺口的真实功能可继续推进。
+
+最新已完成：[重练两轴改善评价及真实样本/页面](docs/development/2026-10-26-rehearsal-evaluation-verification.md)，不再列为工程待办。持续工作已覆盖后端→客户端→真实样本→页面→预览及检查，不需要用户逐项“继续”。日常反馈仍默认disabled，部署需配套更新支持扩展的客户端；旧指纹未完成任务按配置变化门处理。
+
+当前可执行下一步集中B2：利用[3.8整项删除确认](docs/development/2026-10-26-qwen38-control-verification.md)评估后端持有连接和上下文重建路线，补精确已播前缀确认、可信退出/失效及丢失创建回包的起算依据。静音[输出时钟观察](docs/development/2026-10-29-webaudio-output-clock-verification.md)仅为未来Web Audio路径的线索，下一步需先设计实际音频分片、输出估计和文字候选对齐的保守验证，不得把该观察用于现有WebRTC播放确认。公开最长120分钟说明不能直接代替这些语义。只有有新契约或明确新假设时再做有界实测，不重复原探针；不以本地计时/关闭帧解锁unknown。条件成立后接正式通话/结束保存、真实重练媒体与完整B6；话题/辅助随后接实际媒体，不能用占位页冒充完成。手机/大陆网络和广泛语义仍待验。
+
+最新授权：2026-10-26“恢复千问实测，累计20元上限”继续有效；Key/workspace已有，不重复索要。不新增RTC服务；用户已明确授权联系阿里云，待联系方式验证后完成提交。原生仍暂停，功能完成后依最新授权提交推送，不擅自部署。自动备份/异地实时清单/保留期需要真实目的地及政策，不自行部署删除定时任务。
+
+此前公开资料收尾：[RTC恢复/Web类型](docs/development/2026-10-26-rtc-recovery-public-review.md)保留候选路线；旧“先只查公开资料”已由上述授权更新。
+
+最新重练收尾：[真实建议到确认/准备/历史的页面实测](docs/development/2026-10-25-real-review-rehearsal-browser-verification.md)已完成，810原文件保留、3份文档有意更新、807摘要相同，新增10份。后续集中B2可信上游退出/失效与播放截断，满足契约后再接正式通话/结束保存及真实重练媒体与改善评价；已有询问稿未发送，不重复同类探针，也不以更多样本准备冒充语音推进。广泛语义、手机/大陆网络及B6仍待验；实际日常配置保持disabled。
+
+最新本人页面收尾：真实复盘正例/空结果、原话定位、读取故障撤旧/恢复及换号隔离已验，见[报告](docs/development/2026-10-25-real-review-browser-verification.md)。801文件保留，仅3份原文档有意更新、798摘要相同，新增9份；测试服务/库/标签与私有临时文件清理，开发21表及.env保持不变。后续真实建议到一级重练确认/准备的页面接入已补，见下列最新收尾；B5真实业务通话来源和广泛语义、B6仍待验。日常配置仍disabled。
+
+前批复盘配置收尾：开发21表全行摘要未变，测试库/恢复库和本轮临时工具/探针已清理；793文件保留、11份原文件有意更新、782摘要相同，新增8份，311本地链接/JSON及私有Key扫描通过，实际.env未改/0600。复盘启动装配已完成，后续可按配置契约显式开启处理已提交任务；其后的本人页面补验见上。
+
+最新收尾：目标137/6.27秒及独立120/0.23秒通过，开发21表全行摘要未变；本轮专属库和合成音频/探针已清理。789文件保留、7份原文件有意更新、782摘要相同，新增4份，302本地链接/JSON与私有Key扫描通过。正式语音仍需供应商可信退出和截断证据，询问稿已备但未发送，不重复发同类探针冒充进展。
+
+本轮收尾：开工783文件保留，9份原文件有意更新、774份摘要相同，新增6份；11份Markdown本地链接/两JSON及私有Key扫描通过，.env保持忽略/0600，临时探针已清理。独立复核已完成，语音与复盘调用没有留后台任务。下一步无需再次索要Key或20元实验预算。
+
+1. 继续按[基础版本开发路线](docs/superpowers/plans/2026-10-22-basic-version-development.md)及[当前验收矩阵](docs/validation/2026-10-15-validation-plan.md#22-当前验收矩阵2026-10-24)。B1/B3/B4工程已有，本轮已补指定浏览器场景、5项实际Preview与WebRTC合成回环；不再统一写“浏览器禁用”。本轮scope409浏览器并发、文字/保存状态共享截止、删除迟到及在途返回已专验，设置页点击/确认及账号CSRF等待/迟到恢复也已修补，其他旧回调/超时竞态、明确浏览器版本、手机/大陆网络继续留待对应验收。文本反馈已接默认disabled、显式qwen启用的标准工厂及正常后台runner，真实隔离调用/打包已验；仍不能当实时真实练习B5或完整B6通过。接下来按[供应商资料复核](docs/development/2026-10-24-qwen-realtime-readiness-review.md)集中验证可信终止/失效及插话播放截断；私有Key/北京workspace和首测20元已提供；2026-10-25真实WebSocket生成/取消与复盘候选样本已有证据，不再重复索要或统一写模型调用暂缓。继续补可信远端退出/失效、真实音频输入与设备播放截断，不虚构finish/截断确认；据实比较后端持有连接与现有WebRTC候选。条件成立后接正式通话/结束页及受控真实练习反馈，再完成B6。没有确定工程缺口时不加外围占位功能。unknown继续占用，删除不确认停费；人工备份包已补，后续可靠性仍需自动调度/异地实时清单/保留期及生产恢复隔离条件，不在缺少目的地和保留政策时擅自部署定时任务或删除文件，原生继续暂停。
+2. 本单元代码/证据及原有文档改动保留在本地功能分支，尚未提交；功能完成后按最新用户授权检查变更归属和敏感信息、提交并推送，随后核对远端CI；不擅自部署。
 3. a6b7eab已修复“清理后首次退出403”：同一家族共享CSRF签发，旧拒绝不抹去新令牌、不自动重放。不同标签仍可轮换共享Cookie，旧写被拒绝后须明确刷新/确认；此前清理/身份验收实际旧写403、随后身份GET409均未误改数据。此前预检后传输异常未自然复现、仍未定因，不能用本批主动停止API的网络失败解释它；保留Origin/CSRF规则。
-4. 待用户后续补齐账号/地域/预算与设备条件，再做物理麦克风及最小供应商语音闭环，实测插话、断线、释放、上游终止与计量，有证据后增加练习页。当前不主动索要重复确认，不把这些暂缓项冒充完成。
+4. Key/北京workspace和20元首测授权已提供；真实合成音频输入/识别、语音生成及复盘worker已有对应证据。继续补供应商可信退出/失效起算点及可确认的上下文截断；物理麦克风、WebRTC设备与实际通话闭环仍待验。询问稿已就绪但未发送，不能以继续等待本地时间替代上游证据。
 
 | 缺少输入或证据 | 影响 |
 | --- | --- |
 | 原生恢复时的设备与磁盘条件 | 当前已暂停；恢复后重新评估Gradle内存、下载空间、安装与音频体验，不作为Web前置。未接受的是microXR模拟器许可，并非本次手机构建的失败原因 |
-| 模型权限/地域、预算及是否要求费用硬上限 | 付费调用与媒体路线准入；目前仅做准备 |
+| 实际语音模型权限、可信退出/计量及是否要求产品级费用硬上限 | 北京workspace及真实语音/复盘调用已验，Key已私有配置、首测20元已确认；合成音频非真人设备。截断请求未获确认，可信上游退出/实际账单及自动硬停费仍缺 |
 | 实际手机浏览器与版本 | 当前只有桌面浏览器视口/AX与widget证据；真实Android Chrome、需支持的Safari及辅助技术仍待验收 |
 
 ## 5. 七阶段状态
@@ -66,10 +215,10 @@
 | 阶段 | 状态 |
 | --- | --- |
 | 1方案准备 | 工程前置落实；模型、费用与真机条件在对应任务前补齐 |
-| 2工程底座 | 账号/偏好、首屏恢复、键盘选择与组件预览通过；本批补验恢复入口的指定网络/身份场景，完整浏览器和性能验收未完成，原生暂停 |
-| 3真实语音 | 准备/恢复/清理、代次/租约、信令、Web底层、媒体协调、观测/恢复入口、内存文字/播放与最终文字追加/确认/客户端分页重建和只读查看已有；实际文字HTTP及浏览器隔离验收通过，归一化语音仍为替身；协议/网关关闭，正式练习页、有界收尾、供应商事件、服务端固化、费用和终止实测缺失 |
-| 4学习闭环 | 未开始 |
-| 5可靠性/成本 | 未开始 |
+| 2工程底座 | 新增普通练习首页/准备；账号/偏好、首屏恢复、键盘选择与组件预览通过；恢复入口的指定网络/身份场景已验，本轮指定浏览器场景补验通过，完整版本/设备/性能矩阵未完成，原生暂停 |
+| 3真实语音 | 准备/恢复/清理、连接/租约/信令、媒体协调/受限end、context门、观测、两账本及服务端固定补交/固化/回执已有；真实HTTP覆盖提前与30秒到期固化/未保存结清，恢复面板保存/缺口/核验真实读取与浏览器隔离也已验证；媒体仍为替身。实际协议/网关关闭，供应商/正式通话与结束保存页/可信终止/费用和设备实测仍缺 |
+| 4学习闭环 | 输入/引用门、任务/结果、本人复盘与文字页、一级重练后端目标/独立准备/关联读取已实现；新增本人历史列表/详情与关联纯读，B3/保存文字/删除指定浏览器场景及5项Preview本轮已补，未覆盖范围保留；本人范围删除/正文清除/独立占用已接；人工离线恢复删除与重练确认/准备及来源关联列表客户端已验；真实模型样本及本人页面已补验；双轴评价已接真实固定文字/本人页面；真实重练媒体、广泛语义及自动备份/异地实时日志/保留期仍缺，阶段未完成；B1普通入口的浏览器/Preview已验 |
+| 5可靠性/成本 | 已开始独立删除清单/人工停服恢复与同快照人工备份包/离线核验，真实恢复CI接线本机已验、远端待运行；真实恢复与HTTP已验；自动备份/异地实时日志/保留期、可信终止与费用核对仍缺，阶段未完成 |
 | 6Web交付与朋友试用 | 未开始；原生分发暂停 |
 | 7成熟维护 | 未开始 |
 
@@ -87,10 +236,48 @@
 
 ## 7. 接手入口与最近工作
 
-先读[AGENTS.md](AGENTS.md)与本文件，检查`git status --short`、`git log -3 --oneline`。没有`.codegraph/`时跳过CodeGraph，不擅自索引。
+先读[AGENTS.md](AGENTS.md)与本文件，检查`git status --short`、`git log -3 --oneline`。没有`.codegraph/`时跳过CodeGraph，不擅自索引。B1/B3/B4工程及后续重练确认/准备、关联列表已接通，按第4节最新下一步推进；本轮指定页面浏览器与预览已补验，剩余范围见最新实测；B2/B5待模型输入及可信退出/截断条件后执行，历史“下一步”只作当时记录。
 
-本批见[文字读取实施计划](docs/superpowers/plans/2026-10-20-final-transcript-read.md)，后续对照[交互](docs/design/2026-10-15-screen-and-interaction-spec.md)、[视觉](docs/design/2026-10-15-visual-design-spec.md)和[验证](docs/validation/2026-10-15-validation-plan.md)。本机已安装Flutter响应式/预览/布局排查与UI/UX Pro Max，另有design-taste-frontend；它们不随Git克隆自动安装，也不构成产品验收。
+本批客户端修补（2026-10-23）：按[准备快照计划](docs/superpowers/plans/2026-10-23-preparation-snapshot.md)补本次难度冻结/已知配置优先/预检失败释放，首页及开始/原请求确认的点击时资格。11项新增先观察9失败，修补后目标70、全量Flutter1027/9skip、分析/206格式、Node58、Web33.3秒/字体通过，独立审查无确定缺陷；四态Preview按当前/本次语义核验。无后端/API/DB/依赖与新媒体动作，实际浏览器仍待补，原文件保留；[证据](docs/development/2026-10-23-preparation-snapshot-verification.md)。
 
-最近工作：按[文字读取计划](docs/superpowers/plans/2026-10-20-final-transcript-read.md)实现独立严格分页模型、原连接GET仓库、不可变当前修订重建和恢复控制器串行/8秒/账号清理，接入真实偏好页只读入口；空修订覆盖旧原话、跨页冲突原子拒绝、AI播放未知，文字可滚动/选择。独立审查后用真实鼠标回归发现并修复双击/三击焦点抢占。最终Flutter435、Node51、实际HTTP1、分析/87格式通过，最终Web release34.5秒及完整字体通过。浏览器实际32+2分页、断网刷新清空与明确重试、跨标签GET409清除旧内容及B账号2段隔离通过，组件深浅色/空态预览可见；临时测试账号/邀请及关联数据、API/Web/预览服务与标签均清理。后端无变更，前批276项证据保留；开发API8000默认关闭准入/网关，开发库head b97d2a641e30、1账号/0练习/连接/观测/文字。一次构建误触发依赖解析后已恢复原锁文件/缓存配置，按原依赖复验，无依赖升级。并行文档完善内容保留，独立提交本批代码与证据；未推送/部署，下一单元补有界正常收尾与中断事实，模型/预算/设备继续跳过，原生暂停。
+前批客户端修补（2026-10-23）：按[删除后scope计划](docs/superpowers/plans/2026-10-23-deletion-read-scopes.md)先RED复现5处遗漏，补可信凭据后的恢复/目标/资格/列表失效及在途取消；新增7项回归保留unknown与失败边界。Flutter1016/9skip、目标212、删除页17、Node58、分析/206格式、Web32.9秒/字体通过；独立复核无当前产品确定回归并明确重练flow/key生命周期。无API/DB、后端/依赖或新媒体动作，浏览器禁用待补，原文件保留；[证据](docs/development/2026-10-23-deletion-read-scopes-verification.md)。
+
+前批客户端修补（2026-10-23）：按[历史导航计划](docs/superpowers/plans/2026-10-23-history-action-guards.md)先RED复现22处旧回调导航失败，再接当前账号/页成员/详情及sealed/一级关系校验；补账号busy禁用和正确读取提示，第27项同样先RED。最终Flutter1009/9skip、目标192、Node58、分析/206格式、Web34.7秒/字体通过，两次独立复核无确定问题；浏览器仍禁用待补。只改两个生产文件及现有测试、文档，无API/DB/依赖/媒体变化；[证据](docs/development/2026-10-23-history-action-guards-verification.md)。
+
+前批客户端开发（2026-10-23）：按[关联列表计划](docs/superpowers/plans/2026-10-23-related-rehearsals.md)接独立只读路由、严格分页/边界、8秒/身份取消、保留原页与游标失效清空、普通入口及子详情返回。Flutter982/9skip、实际wire1、Node58、分析/格式/Web/字体通过，独立只读审无确定问题；实际HTTP/Dart三页/同时间UUID/纯GET零写/删游标和来源已验。浏览器禁用待补；开发原数据/后端/schema/最终依赖保留，临时环境已清理，未提交/推送/部署。[证据](docs/development/2026-10-23-related-rehearsals-verification.md)。
+
+前批客户端开发（2026-10-23）：按[重练客户端计划](docs/superpowers/plans/2026-10-23-rehearsal-client.md)完成ordinary建议入口、独立目标页/本次难度/固定请求、安全放弃和历史子目标只读。两项初审与跨设备状态边界均先RED后修，最终复审通过。Flutter938/8skip、wire1、Node58、分析/格式/Web/字体、真实HTTP及组件渲染通过；浏览器/Preview禁用待补。后端/schema/依赖和开发原数据不变，临时环境已清理，未提交/推送/部署；[证据](docs/development/2026-10-23-rehearsal-client-verification.md)。
+
+前批开发（2026-10-23）：按[删除计划](docs/superpowers/plans/2026-10-23-practice-deletion.md)接完整范围GET/锁后复核DELETE/原key凭据、墓碑清正文和未知占用保留，Flutter独立确认页/8秒CSRF总界/未知核对与原请求重放、旧provider清除和列表刷新。API681（新增17）/174.18秒、Flutter888（新增27）/7skip/33秒、真实wire1、Node58、分析/格式/Web/字体、迁移/metadata/非空拒降通过；两次独立只读审无确定问题，四态组件图已查看，实际浏览器/Preview禁用待补。真实HTTP单子与父范围变化、已受理丢回包核对、正文清零、unknown仍409/blocked0与重启凭据/20表全行一致；开发原19表全行保留，仅schema新增字段/空凭据表。临时库/凭证脚本/API/Web/Preview已清理，默认8000保持未运行；未改依赖、调用模型、构建原生、提交/推送/部署。[报告](docs/development/2026-10-23-practice-deletion-verification.md)。
+
+前批开发（2026-10-23）：按[历史计划](docs/superpowers/plans/2026-10-23-practice-history.md)实现本人只读摘要/tuple seek索引、历史列表/详情、导航与文字/复盘返回。API664、Flutter861/6skip、实际wire1、Node58、分析/格式/Web/字体、迁移及19表全行保留通过；独立复审无确定遗留，五态组件截图已查看，实际浏览器/Preview受Work设置禁用待补。临时服务/专属库/凭证脚本已清理，开发库仅升级索引，依赖不变，无模型/原生/提交/推送/部署。[证据](docs/development/2026-10-23-practice-history-verification.md)。
+
+前批开发（2026-10-23）：普通练习入口新增5个生产文件、3个目标测试和1个wire测试；修改路由、设置返回及恢复面板注入，不改后端。基线52、最终入口41、全量814/5skip、实际HTTP1、Node58、分析/格式/发布构建与字体通过，独立审查无剩余确定问题。实际浏览器验首页/503/刷新/320键盘/设置放弃/前进后退，四项Preview已查看并保存截图。临时库最终0练习/0连接，开发库19表数量未变；临时库、凭证、脚本、API/Web/Preview和两标签均清理，原8000开工未运行且未启动。无真实模型、原生、提交/推送/部署；[证据与边界](docs/development/2026-10-23-practice-entry-verification.md)。
+
+本次文档整理（2026-10-22）：新增基础版本执行路线，明确B1–B6交付、已有模块复用、模型输入缺失时的独立工作、验收边界和交接要求；同步README、产品总纲、建设路线、交互/技术/验证及本地开发入口。9份文档286个本地链接、39张表格、B1–B6标题、围栏、空白及既有代码引用路径检查通过，`git diff --check`通过。仅调整交付顺序，未删原首版需求，未修改应用代码、调用模型、迁移数据库、提交、推送或部署；现有工作区改动保留，历史应用检查不重标为本次执行。
+
+本批见[一级重练后端计划](docs/superpowers/plans/2026-10-22-rehearsal-preparation.md)，前批见[已保存文字计划](docs/superpowers/plans/2026-10-22-saved-transcript.md)，前批见[复盘页面计划](docs/superpowers/plans/2026-10-21-review-page.md)，前批见[复盘客户端计划](docs/superpowers/plans/2026-10-21-review-client.md)，前批见[反馈任务实施计划](docs/superpowers/plans/2026-10-21-review-jobs.md)，前批见[复盘输入实施计划](docs/superpowers/plans/2026-10-21-review-input-eligibility.md)，前批见[保存状态实施计划](docs/superpowers/plans/2026-10-21-saved-status-recovery.md)，前批见[结束固化实施计划](docs/superpowers/plans/2026-10-21-practice-finalization.md)，前批见[播放证据计划](docs/superpowers/plans/2026-10-21-playback-evidence.md)、[有界收尾计划](docs/superpowers/plans/2026-10-20-bounded-media-drain.md)及[文字读取计划](docs/superpowers/plans/2026-10-20-final-transcript-read.md)；后续对照[交互](docs/design/2026-10-15-screen-and-interaction-spec.md)、[视觉](docs/design/2026-10-15-visual-design-spec.md)和[验证](docs/validation/2026-10-15-validation-plan.md)。本机已安装Flutter响应式/预览/布局排查与UI/UX Pro Max，另有design-taste-frontend；它们不随Git克隆自动安装，也不构成产品验收。
+
+前批工程工作（2026-10-22）：按[一级重练计划](docs/superpowers/plans/2026-10-22-rehearsal-preparation.md)新增3个后端模块、迁移及86项测试，四个API接完整来源目标、一次提交独立准备/幂等确认、子目标和同级seek，数据库同owner ordinary父强制一级。规格审通过；质量审发现分页索引缺口后先RED补部分索引及复审。最终API641/158.90秒，root独立全量640/153.49秒、最终目标86/34.69秒，Ruff/82格式、迁移/metadata、旧普通保留、非空拒降和实际10,000普通/40子默认planner首/seek索引无Sort通过。隔离真实HTTP验证目标/两次独立准备及纯读全行不变；开发库仅schema升级1a6de74c9f20、17项跟踪表计数/原账号不变，API8000健康且四新路径匿名401、三gateway Unavailable。专属库/API8001/凭证/脚本已清理，Flutter/锁文件未改，未提交/推送/部署。该批原定下一步为客户端目标确认/独立准备；现按基础版本路线先做普通练习入口。完整媒体/改善评价/历史/删除仍缺。[报告](docs/development/2026-10-22-rehearsal-preparation-verification.md)。
+
+前批工作（2026-10-22）：按[保存文字计划](docs/superpowers/plans/2026-10-22-saved-transcript.md)新增2个后端模块/48项测试及8个Flutter生产文件/8个测试文件，接本人sealed无job纯读、跨scope分页与精确item定位、普通/定位网址、8秒单飞账号门及AI旧prefix/生成全文分离。两端独立规格/质量依次通过，API555、Flutter773/4原skip、Chrome163、Node58、真实wire3及组件渲染4通过。实际浏览器/Preview因Work设置禁用未执行，不能标完整验收；临时库/数据/服务/凭证/脚本已清理，开发库17表/head与锁文件未变，默认API健康。详见[本批报告](docs/development/2026-10-22-saved-transcript-verification.md)。
+
+前批工作（2026-10-22）：按[页面计划](docs/superpowers/plans/2026-10-21-review-page.md)新增5个生产文件和5个测试文件，接sealed恢复入口、本人来源GET、两阶段独立8秒和既有复盘client，明确动作/真实状态/0–3项阅读；预览样例独立。先RED修入口/heading，再由真实浏览器发现push未反映网址及异步刷新焦点离屏；质量复审补未设难度账号与编码前进历史，均RED后修并最终双审通过。新连接跨时钟边界同样RED后统一stamp，额外独立库API507/107.44秒、Ruff/73格式及metadata通过并删除该库。主任务最终Flutter701/4skip（新增59，后台中断耗时不作性能）、Chrome91/16秒、分析2.0秒/132格式、Node58、最终Web33.5秒/字体30,890映射通过。实际隔离浏览器A blocked0调用→三项、断API撤旧/明确恢复，B不可评价、C非法引用失败→有效空态，初轮跨标签清旧；最终新构建URL刷新/后退前进与320 Tab/Enter焦点通过，重复跨标签受工具超时未记成功。实际Preview浅三项/深320 200%/blocked/空态均已查看。最终3调用/3任务/3尝试/5动作/2结果，三账号/邀请/子数据、凭证脚本/控制文件/API8001/Web7357/Preview及标签已清理；默认API8000按新后端重启且live/ready200，开发库head 8b2731f5ca90/17表数量未变，锁文件未改。无真实模型/原生/提交/推送/部署，原工作保留。[实测报告](docs/development/2026-10-21-review-page-verification.md)。下一步真实原话定位及保存文字回看，完整学习闭环仍缺。
+
+前一单元客户端（2026-10-21）：按[客户端计划](docs/superpowers/plans/2026-10-21-review-client.md)新增4个review生产文件、6个目标测试/fixtures及1实际wire。sealed目标固定原输入，输入模型只留摘要；严格任务/0–3item、原账号仓库和单飞client，构造/监听零请求，明确创建/GET/固定动作确认与保守重试。每操作总8秒含CSRF，多步之间查账号/截止，dispose/账号变化清正文，晚到不能发布。规格/主审先RED修复创建阶段key变化、输入hash/invalidated失效顺序及确定409恢复；冲突后needsRead门阻止未经GET的新key写入。最终双审通过；根任务完整Flutter642通过/4skip/17秒、Chrome新33/约4秒、真实HTTP1/约3秒、分析1.9秒/122格式、Node58、Web31.3秒及字体30,890映射通过。实际Dart wire丢一次已受理job回复，GET保留pending并同key确认，最终3任务/3尝试/5动作/2结果、3次fixture调用；三临时账号/邀请/子数据、凭证/脚本/控制文件及API8001清理。默认API8000仍live/ready200，开发库head 8b2731f5ca90及原17表数量未变，后端未改、不重标API506为本批重跑。无页面/媒体/后端/锁文件改动，无真实模型/原生/提交/推送/部署，原工作保留。[验证报告](docs/development/2026-10-21-review-client-verification.md)。下一步接复盘入口及真实状态/建议展示，完整学习流程仍缺。
+
+前一单元反馈任务（2026-10-21）：按[反馈任务计划](docs/superpowers/plans/2026-10-21-review-jobs.md)增加专用Job/Attempt/Action/Result、本人创建/纯读/明确重试与固定输入/生成策略；同输入复用与key别名精确绑定。短事务领取及外调前复验、事务外8秒gateway、原15秒lease/fence与完整quote门后原子结果，2/8秒退避与3次上限；无验证幂等时未知调用禁止再调。独立runner持久扫描/候选间stop，删除保留无正文attempt、不接晚结果。规格/质量审修复校验跨lease、配置幂等标志、候选SQL/关闭边界、外调前失效和候选stop五处问题，先RED再回归，最终双审通过。根任务最终API506通过106.94秒（新增44）、Ruff/73格式、最终实际HTTP三身份（3调用/3任务/3尝试/6动作/2结果）、测试库迁移降升/metadata与开发库保留原13表数量升级head 8b2731f5ca90通过；新4表均0。临时账号/邀请/子数据、凭证/脚本/测试API清理，默认Unavailable API8000最终代码重启且live/ready200、新review未登录401。客户端未改，前批Flutter/Web证据保留；无真实模型/原生/提交/推送/部署，原有工作保留。[实测报告](docs/development/2026-10-21-review-jobs-verification.md)。下一单元为客户端严格模型及原账号任务请求/纯读/明确重试；正式学习页面和真实模型仍缺。
+
+前一单元复盘输入（2026-10-21）：按[复盘输入计划](docs/superpowers/plans/2026-10-21-review-input-eligibility.md)实现独立ReviewInput投影和本人POST精确创建/重放、GET纯读，绑定原seal/input/policy及独立hash；payload→member→global→review摘要链重新核对，快照无正文。保留原话版本及三类决定，缺质量信号不编分；安全前文仅同scope，旧freeze不扩展成新final后缀，局部缺口不污染更早正常话轮。内部0–3项输出校验原用户版本/精确quote/类型与允许依据，任一非法整体拒绝。新增68回归；根任务API462通过85.66秒、Ruff/66格式、独立真实HTTP/内部引用门、迁移降升及metadata通过。规格复审修正可定位unknown、纯revoke、text_only残缺context和无final决定边界，随后独立质量审查通过。开发库保留原1用户/0练习等全部数量升级head 4c913f2d8e71，review_inputs=0；默认关闭准入/网关API8000重启且live/ready200。三临时身份/邀请/关联数据、凭证脚本及测试API8001已清理。Dart/Web/UI未改，不重跑无关构建；无模型/原生/提交/推送/部署，原有工作保留。[实测报告](docs/development/2026-10-21-review-input-eligibility-verification.md)。下一单元为持久反馈任务/有效结果存储，实际模型及正式学习流程仍缺。
+
+前一单元保存状态（2026-10-21）：按[保存状态计划](docs/superpowers/plans/2026-10-21-saved-status-recovery.md)新增原连接termination-check单SQL只读端口、严格Dart模型/仓库、历史占用与最新origin独立验证；恢复控制器原子读取、总八秒、账号/404清除和无正文end门接入真实偏好页。新增保存完整/缺口/未登记/等待封存/失败与blocked需维护状态，保留既有文字与准备清理边界。独立复核修复截止后ending文案、旧准备清理在局部失败后重新开放及预览factory，规格/质量复审通过。最终API394、Flutter609通过/3项隔离夹具默认skip、独立真实HTTP1、Node58、分析/111 Dart格式、61 Python格式、Web37.4秒及完整字体通过。浏览器实际API断开后旧摘要清除/重试恢复、A/B隔离、320/375宽及键盘焦点通过；Preview浅色与320深色200%字号已查看。测试两账号/邀请/关联数据、凭证/脚本、API/Web/Preview和浏览器标签已清理；默认开发API8000恢复，live/ready200，开发库仍head 0e1874613efa和原1用户/0练习。无供应商、原生、提交/推送/部署，全部原有改动保留；[实测报告](docs/development/2026-10-21-saved-status-recovery-verification.md)。下一单元完整复盘输入资格；正式通话/结束保存页、完整历史和可信终止仍缺。
+
+前一单元结束固化（2026-10-21）：按[结束固化计划](docs/superpowers/plans/2026-10-21-practice-finalization.md)实现原scope end、固定30秒补交、不可变manifest、双账本截止门/覆盖核验、版本1/hash/scope快照/收据、maintenance固化与blocked核验意图。客户端无正文清单、固定key/body与显式重试/纯读刷新、正常end媒体接入及receipt结清/保活已接通。修复空历史过早seal、nullable hash约束、只读刷新误POST、历史member/origin校验、GET seal快照并发及不完整固化永久保活；规格/质量复审通过。最终API387、Flutter565通过/2项隔离夹具默认skip、独立真实HTTP1、Node58、分析/103 Dart格式、60 Python格式、Web35.8秒及完整字体通过。实际A约0.058秒按清单固化，B无清单在30.355秒固化；迟到文字/manifest拒绝并以receipt标永久未保存，原unknown占用和2个blocked/0次核验任务保留。临时两账号/邀请/全部关联记录、凭证脚本和测试API已清理。开发库升级head 0e1874613efa，原1账号/0练习等数量保持，默认关闭准入/网关的API8000已重启且live/ready200。无模型/原生/新正式页面，未提交/推送/部署，原有工作保留；[实测报告](docs/development/2026-10-21-practice-finalization-verification.md)区分申报固化与可信终止。
+
+前一单元播放证据（2026-10-21）：按[播放证据计划](docs/superpowers/plans/2026-10-21-playback-evidence.md)新增alignment/freeze/revoke独立账本、原scope严格追加/分页、精确重放/独立撤销容量和最终文字双向版本核验；客户端自含事件、8秒确认journal、不可变分页和媒体/provider双队列归属已接入。规格复核后修复晚final重置unknown导致end丢历史播放边界，新增3项回归；独立质量复核未发现剩余确定问题。最终API344、Flutter534通过/隔离夹具1项跳过，独立真实HTTP1、Node58、分析/97格式、55 Python格式、Web release40.8秒及完整字体通过。测试库迁移降升/metadata通过，开发库升级head d41a7c9e2b60，原1账号/0练习等数量保持；默认关闭准入/网关的API8000已重启，live/ready均200。两临时测试账号/邀请及子数据、凭证脚本和测试服务已清理。无模型调用、原生构建、新正式页面、提交/推送/部署；原有改动保留。详细边界见[验证报告](docs/development/2026-10-21-playback-evidence-verification.md)。下一单元推进服务端end/finalize与固定补交截止，供应商/预算/设备继续暂缓。
+
+前一单元有界收尾（2026-10-21）：end/draining、TurnStarted、版本前缀/撤销与上下文确认门已实现，账号作用域保留draining/pending且确认后释放。Flutter494、Node58、分析/89格式、Web release35.3秒及完整字体通过；当批未改后端，媒体及供应商协议仍为替身，证据见[有界收尾验证](docs/development/2026-10-21-bounded-media-drain-verification.md)。
+
+前批文字读取（2026-10-20）：按[文字读取计划](docs/superpowers/plans/2026-10-20-final-transcript-read.md)实现独立严格分页模型、原连接GET仓库、不可变当前修订重建和恢复控制器串行/8秒/账号清理，接入真实偏好页只读入口；空修订覆盖旧原话、跨页冲突原子拒绝、AI播放未知，文字可滚动/选择。独立审查后用真实鼠标回归发现并修复双击/三击焦点抢占。最终Flutter435、Node51、实际HTTP1、分析/87格式通过，最终Web release34.5秒及完整字体通过。浏览器实际32+2分页、断网刷新清空与明确重试、跨标签GET409清除旧内容及B账号2段隔离通过，组件深浅色/空态预览可见；临时测试账号/邀请及关联数据、API/Web/预览服务与标签均清理。后端无变更，276项证据保留；当时开发API8000默认关闭准入/网关，开发库head b97d2a641e30、1账号/0练习/连接/观测/文字。一次构建误触发依赖解析后已恢复原锁文件/缓存配置，按原依赖复验，无依赖升级。代码已独立提交；未推送/部署。
 
 后续交接更新完成内容/证据、剩余问题、可执行下一步、缺少输入和提交/推送/部署状态。用户最新指令优先，不沿用旧阶段边界。

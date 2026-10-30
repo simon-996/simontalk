@@ -1,0 +1,68 @@
+{
+  "date": "2026-10-25 Asia/Shanghai",
+  "tests": {
+    "new_service": 25,
+    "new_page": 29,
+    "new_total": 54,
+    "account_passed": 196,
+    "flutter_passed": 1401,
+    "special_fixture_skipped": 10,
+    "flutter_reported_seconds": 43,
+    "node_passed": 58,
+    "analyze_issues": 0,
+    "formatted_dart_files": 220,
+    "web_release_seconds": 33.3,
+    "font_unicode_mappings": 30890
+  },
+  "red": {
+    "initial_service_failed": 15,
+    "initial_page_cases": 26,
+    "initial_page_failed": 18,
+    "api_only_owner_cases_failed": 6
+  },
+  "review": {
+    "static_read_only": true,
+    "reviewer_ran_flutter": false,
+    "final_definite_findings": 0
+  },
+  "preservation": {
+    "original_files": 726,
+    "missing": [],
+    "intentional_edits": [
+      "HANDOFF.md",
+      "apps/client/lib/core/api_client.dart",
+      "apps/client/lib/features/account/account_controller.dart",
+      "apps/client/lib/features/account/account_repository.dart",
+      "apps/client/lib/features/account/auth_screen.dart",
+      "docs/architecture/2026-10-15-account-api.md",
+      "docs/design/2026-10-15-screen-and-interaction-spec.md",
+      "docs/development/local-development.md",
+      "docs/validation/2026-10-15-validation-plan.md"
+    ],
+    "all_other_original_sha256_equal": true
+  },
+  "scope": {
+    "actual_api_or_database_requests": 0,
+    "real_model_calls": 0,
+    "native_builds": 0,
+    "actual_cookie_browser_rerun": false,
+    "native_storage_race_proven": false,
+    "committed_pushed_deployed": false
+  },
+  "sha256": {
+    "apps/client/lib/core/api_client.dart": "7e643443a0082f380c7bc7a6480338f0f3d4170d2ededbf3961e30bb9adbc2ac",
+    "apps/client/lib/features/account/account_repository.dart": "6c04f82f184f23a7252408106f28085d2ba61cc929ca8649557b49572e2d23c4",
+    "apps/client/lib/features/account/account_controller.dart": "f654a06e8138c9720c90b5f432c2e19c98da5f5f222f36d037f1dfa536efc144",
+    "apps/client/lib/features/account/auth_screen.dart": "5de8adf5b37872d70a16fd54edc1fbdf0b74db4590c2f499beb8e9633720872d",
+    "apps/client/test/features/account/auth_operation_scope_test.dart": "f8dc990394f8548dd8651e81134e59b2a4ca8faff717d4ed60f01e77e8dcdc6c",
+    "apps/client/test/features/account/auth_screen_guards_test.dart": "e611a0123d7c023a6a7d20428ad933da7563d5dfd95c13b72238788f364c15f2"
+  },
+  "cleanup": {
+    "temporary_files_removed": 12,
+    "services_or_databases_created": 0
+  },
+  "documents": {
+    "markdown_checked": 8,
+    "local_references_checked": 312
+  }
+}

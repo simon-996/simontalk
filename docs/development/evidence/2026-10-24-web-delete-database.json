@@ -1,0 +1,7 @@
+{
+  "development_read_only": true,
+  "development_all_public_tables_equal": true,
+  "development_business_tables": 20,
+  "development_schema_head": "4f6a58cd2e32",
+  "dedicated_test_database_removed": true
+}

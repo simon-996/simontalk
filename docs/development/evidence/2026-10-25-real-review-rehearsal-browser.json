@@ -1,0 +1,546 @@
+{
+  "children": [
+    {
+      "id": "9e028bbb-e141-4ca8-9c47-6ea694be3d57",
+      "status": "cancelled",
+      "connection_epoch": 0,
+      "source_session_id": "9a260786-3c67-4594-8545-9f432c1a4e23",
+      "source_review_item_id": "1511300b-3bfc-4410-b6e1-c08a4a12035b",
+      "configuration": {
+        "provider": {
+          "model": "test",
+          "region": "test",
+          "provider": "test-only",
+          "config_id": "test-v1"
+        },
+        "preferences": {
+          "version": 2,
+          "difficulty": "beginner",
+          "speech_pace": "normal",
+          "subtitle_default": true,
+          "translation_mode": "on_demand",
+          "chinese_hints_enabled": true
+        },
+        "schema_version": 1,
+        "effective_difficulty": "advanced"
+      },
+      "rehearsal_target": {
+        "kind": "correction",
+        "basis": "text_only",
+        "job_id": "6f2d3cd6-e478-4236-bb98-129f75468baf",
+        "source": "server_derived",
+        "item_id": "1511300b-3bfc-4410-b6e1-c08a4a12035b",
+        "revision": 1,
+        "account_id": "50333983-31ec-4a8b-8462-8ef5af965ea8",
+        "suggestion": "I went",
+        "exact_quote": "I go",
+        "explanation": "时间状语Yesterday表示过去，动词需用过去式went。",
+        "result_hash": "30b0a719b4d1319c238e510b35dee8699e3dd4bdb4ad9dc63bd92eede77d465e",
+        "source_kind": "ordinary",
+        "source_text": "Yesterday I go to the park.",
+        "source_epoch": 1,
+        "context_before": [],
+        "input_revision": 1,
+        "policy_version": "review_input_v1",
+        "schema_version": "rehearsal_target_v1",
+        "situation_mode": "source_original",
+        "source_turn_id": "c5641bc7-3bcd-4727-acc1-904ee2e5cb6a",
+        "evidence_source": "client_reported",
+        "review_input_hash": "0dcb21a1411ae8e3cbc24a29b11c0d815cf0acd8e54da731e37551a95e81d171",
+        "source_session_id": "9a260786-3c67-4594-8545-9f432c1a4e23",
+        "practice_input_hash": "5b70eee9376d4442062740306f47d12f3644526f26c64595aa7ce6b60fb28058",
+        "source_connection_id": "8fa42809-5d7c-4461-a6d9-b17ec39b803c",
+        "generation_policy_version": "review_generation_v1",
+        "source_client_instance_id": "6f7fb42d-eb78-4b4a-aa11-8c1e4935e9ac"
+      },
+      "rehearsal_target_hash": "f13ad48806ada51cb7617f3ef3ef8613099225cffed67f4bf7d27f6d30eb55c7"
+    },
+    {
+      "id": "c39da46c-91b5-4485-aa1f-55b168b156fa",
+      "status": "created",
+      "connection_epoch": 0,
+      "source_session_id": "9a260786-3c67-4594-8545-9f432c1a4e23",
+      "source_review_item_id": "1511300b-3bfc-4410-b6e1-c08a4a12035b",
+      "configuration": {
+        "provider": {
+          "model": "test",
+          "region": "test",
+          "provider": "test-only",
+          "config_id": "test-v1"
+        },
+        "preferences": {
+          "version": 2,
+          "difficulty": "beginner",
+          "speech_pace": "normal",
+          "subtitle_default": true,
+          "translation_mode": "on_demand",
+          "chinese_hints_enabled": true
+        },
+        "schema_version": 1,
+        "effective_difficulty": "beginner"
+      },
+      "rehearsal_target": {
+        "kind": "correction",
+        "basis": "text_only",
+        "job_id": "6f2d3cd6-e478-4236-bb98-129f75468baf",
+        "source": "server_derived",
+        "item_id": "1511300b-3bfc-4410-b6e1-c08a4a12035b",
+        "revision": 1,
+        "account_id": "50333983-31ec-4a8b-8462-8ef5af965ea8",
+        "suggestion": "I went",
+        "exact_quote": "I go",
+        "explanation": "时间状语Yesterday表示过去，动词需用过去式went。",
+        "result_hash": "30b0a719b4d1319c238e510b35dee8699e3dd4bdb4ad9dc63bd92eede77d465e",
+        "source_kind": "ordinary",
+        "source_text": "Yesterday I go to the park.",
+        "source_epoch": 1,
+        "context_before": [],
+        "input_revision": 1,
+        "policy_version": "review_input_v1",
+        "schema_version": "rehearsal_target_v1",
+        "situation_mode": "source_original",
+        "source_turn_id": "c5641bc7-3bcd-4727-acc1-904ee2e5cb6a",
+        "evidence_source": "client_reported",
+        "review_input_hash": "0dcb21a1411ae8e3cbc24a29b11c0d815cf0acd8e54da731e37551a95e81d171",
+        "source_session_id": "9a260786-3c67-4594-8545-9f432c1a4e23",
+        "practice_input_hash": "5b70eee9376d4442062740306f47d12f3644526f26c64595aa7ce6b60fb28058",
+        "source_connection_id": "8fa42809-5d7c-4461-a6d9-b17ec39b803c",
+        "generation_policy_version": "review_generation_v1",
+        "source_client_instance_id": "6f7fb42d-eb78-4b4a-aa11-8c1e4935e9ac"
+      },
+      "rehearsal_target_hash": "f13ad48806ada51cb7617f3ef3ef8613099225cffed67f4bf7d27f6d30eb55c7"
+    }
+  ],
+  "preferences": [
+    {
+      "version": 2,
+      "difficulty": "beginner"
+    }
+  ],
+  "child_connections": 0,
+  "counts": {
+    "users": 1,
+    "practice_sessions": 3,
+    "final_transcripts": 2,
+    "review_jobs": 1,
+    "review_attempts": 1,
+    "review_results": 1
+  },
+  "browser_requests": [
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "upstream_status": 401,
+      "seconds": 0.019,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "upstream_status": 200,
+      "seconds": 0.017,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "upstream_status": 200,
+      "seconds": 0.098,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "upstream_status": 200,
+      "seconds": 0.008,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/completion",
+      "upstream_status": 200,
+      "seconds": 0.016,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/review-input",
+      "upstream_status": 404,
+      "seconds": 0.012,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/review-input",
+      "upstream_status": 200,
+      "seconds": 0.042,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/review",
+      "upstream_status": 202,
+      "seconds": 0.037,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/completion",
+      "upstream_status": 200,
+      "seconds": 0.016,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/review-input",
+      "upstream_status": 200,
+      "seconds": 0.023,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/review",
+      "upstream_status": 200,
+      "seconds": 0.044,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23",
+      "upstream_status": 200,
+      "seconds": 0.01,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/review-items/1511300b-3bfc-4410-b6e1-c08a4a12035b/rehearsal-target",
+      "upstream_status": 200,
+      "seconds": 0.066,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/review-items/1511300b-3bfc-4410-b6e1-c08a4a12035b/rehearsals",
+      "key_sha256": "9b7edd424a798e2bfff48ae873623dbc2bf1a46037e03c337e3370d23abdb8ec",
+      "body_sha256": "1273f2bcd0500f732c6f5e28aa410922acd29e920c9cffad583c0ac001e45d29",
+      "upstream_status": 503,
+      "seconds": 0.056,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/review-items/1511300b-3bfc-4410-b6e1-c08a4a12035b/rehearsal-target",
+      "upstream_status": 200,
+      "seconds": 0.061,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/review-items/1511300b-3bfc-4410-b6e1-c08a4a12035b/rehearsals",
+      "key_sha256": "2d0c9f762bf832f393b48a8f68ba0123bf2278ecbbbab930266307eda38e8140",
+      "body_sha256": "1273f2bcd0500f732c6f5e28aa410922acd29e920c9cffad583c0ac001e45d29",
+      "upstream_status": 201,
+      "seconds": 9.086,
+      "delayed_reply_seconds": 9,
+      "client_disconnected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/review-items/1511300b-3bfc-4410-b6e1-c08a4a12035b/rehearsals",
+      "key_sha256": "2d0c9f762bf832f393b48a8f68ba0123bf2278ecbbbab930266307eda38e8140",
+      "body_sha256": "1273f2bcd0500f732c6f5e28aa410922acd29e920c9cffad583c0ac001e45d29",
+      "upstream_status": 201,
+      "seconds": 0.088,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/9e028bbb-e141-4ca8-9c47-6ea694be3d57/discard-preparation",
+      "upstream_status": 200,
+      "seconds": 0.028,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/review-items/1511300b-3bfc-4410-b6e1-c08a4a12035b/rehearsal-target",
+      "upstream_status": 200,
+      "seconds": 0.056,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/review-items/1511300b-3bfc-4410-b6e1-c08a4a12035b/rehearsals",
+      "key_sha256": "71a52e3eab2b4b46365429a213e93c5e9a7bc3147299e0850185739273a1067e",
+      "body_sha256": "e8a9f0ff43750ff7569bd67452bd70ca91441e9c44425ae259be95f385c00fde",
+      "upstream_status": 201,
+      "seconds": 0.081,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/c39da46c-91b5-4485-aa1f-55b168b156fa",
+      "upstream_status": 200,
+      "seconds": 0.014,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/c39da46c-91b5-4485-aa1f-55b168b156fa",
+      "upstream_status": 200,
+      "seconds": 0.009,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/c39da46c-91b5-4485-aa1f-55b168b156fa/rehearsal-target",
+      "upstream_status": 200,
+      "seconds": 0.047,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "upstream_status": 200,
+      "seconds": 0.012,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "upstream_status": 200,
+      "seconds": 0.007,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/c39da46c-91b5-4485-aa1f-55b168b156fa",
+      "upstream_status": 200,
+      "seconds": 0.01,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/c39da46c-91b5-4485-aa1f-55b168b156fa/rehearsal-target",
+      "upstream_status": 200,
+      "seconds": 0.06,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/c39da46c-91b5-4485-aa1f-55b168b156fa",
+      "upstream_status": 200,
+      "seconds": 0.013,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/9a260786-3c67-4594-8545-9f432c1a4e23",
+      "upstream_status": 200,
+      "seconds": 0.062,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/9a260786-3c67-4594-8545-9f432c1a4e23/rehearsals?limit=10",
+      "upstream_status": 200,
+      "seconds": 0.015,
+      "delayed_reply_seconds": 0,
+      "client_disconnected": false
+    }
+  ],
+  "provider_events": [
+    {
+      "event": "request",
+      "time": "2026-10-25T15:05:39.323260+00:00",
+      "model": "qwen3.8-flash"
+    },
+    {
+      "event": "response",
+      "time": "2026-10-25T15:05:41.559011+00:00",
+      "status": 200
+    }
+  ],
+  "test_admissions": [
+    {
+      "event": "test_only_admission",
+      "time": "2026-10-25T15:08:08.444615+00:00"
+    },
+    {
+      "event": "test_only_admission",
+      "time": "2026-10-25T15:10:33.894240+00:00"
+    }
+  ],
+  "review": [
+    {
+      "status": "succeeded",
+      "attempt_count": 1,
+      "input_tokens": 689,
+      "output_tokens": 49,
+      "snapshot": {
+        "items": [
+          {
+            "id": "1511300b-3bfc-4410-b6e1-c08a4a12035b",
+            "kind": "correction",
+            "basis": "text_only",
+            "ordinal": 1,
+            "revision": 1,
+            "suggestion": "I went",
+            "exact_quote": "I go",
+            "explanation": "时间状语Yesterday表示过去，动词需用过去式went。",
+            "source_turn_id": "c5641bc7-3bcd-4727-acc1-904ee2e5cb6a",
+            "source_connection_id": "8fa42809-5d7c-4461-a6d9-b17ec39b803c"
+          }
+        ],
+        "job_id": "6f2d3cd6-e478-4236-bb98-129f75468baf",
+        "version": 1,
+        "input_revision": 1,
+        "policy_version": "review_input_v1",
+        "schema_version": "review_result_v1",
+        "review_input_hash": "0dcb21a1411ae8e3cbc24a29b11c0d815cf0acd8e54da731e37551a95e81d171",
+        "practice_input_hash": "5b70eee9376d4442062740306f47d12f3644526f26c64595aa7ce6b60fb28058",
+        "generation_policy_version": "review_generation_v1"
+      }
+    }
+  ],
+  "default_checkpoint": {
+    "rehearsal_count_after_default_503": 0
+  },
+  "replay_checkpoint": {
+    "preparation_count": 1,
+    "same_child_after_replay": true,
+    "effective_difficulty": "advanced",
+    "daily_preferences": [
+      {
+        "version": 2,
+        "difficulty": "beginner"
+      }
+    ],
+    "child_connections": 0,
+    "test_admission_calls": 1
+  },
+  "date": "2026-10-25",
+  "scope": "Real Qwen suggestion from synthetic sealed English; desktop IAB; test-only rehearsal admission; no realtime media",
+  "standard_review_provider": "qwen",
+  "daily_default_provider": "disabled",
+  "model": "qwen3.8-flash",
+  "model_request_count": 1,
+  "input_tokens": 689,
+  "output_tokens": 49,
+  "authorized_initial_budget_cny": 20,
+  "actual_bill": "not_verified",
+  "browser_request_count": 30,
+  "initial_preparation_read_created_no_child": true,
+  "preparation_replay_same_key_and_body": true,
+  "cleanup": {
+    "development_tables_unchanged": 21,
+    "test_database_removed": true,
+    "test_database_connections_before_drop": 0,
+    "test_ports_closed": [
+      7357,
+      8001
+    ],
+    "owned_browser_tab_closed": 13,
+    "private_env_unchanged": true,
+    "private_env_mode": "0600",
+    "private_work_removed": true
+  },
+  "screenshots": {
+    "docs/development/screenshots/browser-real-rehearsal-cancelled.png": {
+      "sha256": "9a58e94de0f90ab4a9ca29960fdf79bded99574182a3c99a5115772327f8dc97",
+      "width": 65536,
+      "height": 4292542531,
+      "visually_inspected": true
+    },
+    "docs/development/screenshots/browser-real-rehearsal-prepared.png": {
+      "sha256": "3bd39e748fca6cc8e038b5fb4c2b6fe9dc3a3d9e4c283c660a27abfbb05c532e",
+      "width": 65536,
+      "height": 4292542531,
+      "visually_inspected": true
+    },
+    "docs/development/screenshots/browser-real-rehearsal-readonly.png": {
+      "sha256": "ba4c942ebe49057fd1ffdd5a7146df25362bed7ea4970aa87f23b17c8244306f",
+      "width": 65536,
+      "height": 4292542531,
+      "visually_inspected": true
+    },
+    "docs/development/screenshots/browser-real-rehearsal-related.png": {
+      "sha256": "40fa57788f52a3a47b6263db641f47f25b6e99a0fea9ee7926784c4b7f49e4ed",
+      "width": 65536,
+      "height": 4292542531,
+      "visually_inspected": true
+    },
+    "docs/development/screenshots/browser-real-rehearsal-target.png": {
+      "sha256": "f7f2a9fdd8a65dafd16a7f595b024fac7846ca11cd2c75e1faeb6e22f63537ce",
+      "width": 65536,
+      "height": 4292542531,
+      "visually_inspected": true
+    },
+    "docs/development/screenshots/browser-real-rehearsal-unavailable.png": {
+      "sha256": "791c4e7dfc3c60945099f7a12b0f129b1ab2ff2d0d01aea0d4d4d18b41f33ac4",
+      "width": 65536,
+      "height": 4292542531,
+      "visually_inspected": true
+    },
+    "docs/development/screenshots/browser-real-rehearsal-unconfirmed.png": {
+      "sha256": "cae4c443d6b898db88f5b89aa31221382208e660f5f116c82ef3c87c14e208e1",
+      "width": 65536,
+      "height": 4292542531,
+      "visually_inspected": true
+    }
+  },
+  "web_main_dart_js_sha256": "1e8efa83137f1c308687efbc7b2901eeb6a8fa4d1999ca9f6d9f2b00b74e4f42",
+  "workspace_audit": {
+    "original_files": 810,
+    "missing_original_files": 0,
+    "intentionally_changed_original_files": [
+      "HANDOFF.md",
+      "docs/development/local-development.md",
+      "docs/validation/2026-10-15-validation-plan.md"
+    ],
+    "unchanged_original_files": 807,
+    "new_files": [
+      "docs/development/2026-10-25-real-review-rehearsal-browser-verification.md",
+      "docs/development/evidence/2026-10-25-real-review-rehearsal-browser.json",
+      "docs/development/screenshots/browser-real-rehearsal-cancelled.png",
+      "docs/development/screenshots/browser-real-rehearsal-prepared.png",
+      "docs/development/screenshots/browser-real-rehearsal-readonly.png",
+      "docs/development/screenshots/browser-real-rehearsal-related.png",
+      "docs/development/screenshots/browser-real-rehearsal-target.png",
+      "docs/development/screenshots/browser-real-rehearsal-unavailable.png",
+      "docs/development/screenshots/browser-real-rehearsal-unconfirmed.png",
+      "docs/superpowers/plans/2026-10-25-real-review-rehearsal-browser.md"
+    ],
+    "local_links_checked": 310,
+    "secret_scan_file_count": 29,
+    "private_key_found": false,
+    "private_env_ignored": true
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "preexisting_files": 616,
+  "preexisting_files_missing": [],
+  "preexisting_files_changed_by_unit": [
+    "apps/client/lib/features/history/deletion_screen.dart",
+    "apps/client/test/features/history/deletion_screen_test.dart",
+    "docs/architecture/2026-10-23-practice-deletion.md",
+    "HANDOFF.md",
+    "docs/design/2026-10-15-screen-and-interaction-spec.md",
+    "docs/validation/2026-10-15-validation-plan.md"
+  ],
+  "backend_files_unchanged": 100,
+  "dependency_files_unchanged": [
+    "apps/client/pubspec.yaml",
+    "apps/client/pubspec.lock",
+    "services/api/pyproject.toml",
+    "services/api/uv.lock"
+  ],
+  "database_accessed": false,
+  "api_started": false,
+  "actual_wire_run": false,
+  "new_screenshots": false,
+  "models_called": false,
+  "native_builds": false,
+  "committed_pushed_deployed": false
+}

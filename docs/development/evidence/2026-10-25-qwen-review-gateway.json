@@ -1,0 +1,152 @@
+{
+  "date": "2026-10-25 Asia/Shanghai",
+  "development_unchanged": true,
+  "development_tables": {
+    "alembic_version": {
+      "count": 1,
+      "sha256": "a0ecf1a5d72db48d49416dfc5d8fbc4c37e71c04512b27c45e8f76b5689c2940"
+    },
+    "auth_sessions": {
+      "count": 11,
+      "sha256": "f7f3db2c7f518b8b8ddf8e61c627de24201f0f8030de30eb438a7e7a8ed827e0"
+    },
+    "completion_connections": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "connection_observations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "final_transcripts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "invites": {
+      "count": 1,
+      "sha256": "b83c427e337adb29aa26fddfccd420c3943dc0838f0f7a9ebe868a25106c30f4"
+    },
+    "password_reset_grants": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "playback_evidence": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_completions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_deletion_receipts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "rate_limit_buckets": {
+      "count": 1,
+      "sha256": "12f309768eb491e8ac9536195ab0de41795383adf901a7db3a20aa0274a2b2f2"
+    },
+    "realtime_connections": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_actions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_attempts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_inputs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_results": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "termination_checks": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_preferences": {
+      "count": 1,
+      "sha256": "821390223101b284871402950794bd6dfacf0d262c6fd1366542fd66e7656feb"
+    },
+    "users": {
+      "count": 1,
+      "sha256": "1534ab12583e4b7f50bdd1685889b47df35ee622ede6a0fc52965587d2016db4"
+    }
+  },
+  "wheel_sha256": "f90b59656b0e86157922906a6c6e11758b6299e7d574d37661140d90ee8da6d5",
+  "runtime": {
+    "wheel_matches_source": true,
+    "pytest_absent": true,
+    "httpx": "0.28.1",
+    "mock_http_calls": 1,
+    "default_gateway_unavailable": true,
+    "real_supplier_calls": 0
+  },
+  "review": {
+    "initial_findings": 1,
+    "issue": "malformed_outer_must_remain_unknown",
+    "red_failed": 16,
+    "rereview_findings": 0,
+    "independent_component_passed": 102
+  },
+  "target": {
+    "passed": 113,
+    "components": 102,
+    "real_worker_combinations": 11,
+    "seconds": 4.1
+  },
+  "full_regression": {
+    "passed": 921,
+    "seconds": 188.07,
+    "ruff": true,
+    "formatted_python_files": 103,
+    "locked_packages": 38,
+    "alembic_check": "No new upgrade operations detected"
+  },
+  "cleanup": {
+    "dedicated_database_dropped": true,
+    "no_active_connections_before_drop": true,
+    "runtime_directory_removed": true,
+    "temporary_logs_removed": 7,
+    "test_ports_closed": [
+      8000,
+      8001,
+      7357
+    ],
+    "browser_unit_resources_cleaned": true
+  },
+  "configuration_presence": {
+    "api_key": false,
+    "workspace_id": false,
+    "model_budget": false,
+    "values_not_printed": true
+  },
+  "preservation": {
+    "original_files": 418,
+    "missing": 0,
+    "intentional_existing_document_edits": [
+      "HANDOFF.md",
+      "docs/architecture/2026-10-15-technical-design.md",
+      "docs/development/local-development.md",
+      "docs/roadmap/2026-10-15-product-roadmap.md",
+      "docs/validation/2026-10-15-validation-plan.md"
+    ],
+    "all_other_original_sha256_match": true,
+    "markdown_checked": 11,
+    "local_references": 350
+  }
+}

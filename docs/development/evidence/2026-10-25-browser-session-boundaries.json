@@ -1,0 +1,512 @@
+{
+  "date": "2026-10-25",
+  "scope": "browser-session-expiry-disable-rate-limit",
+  "browser": "desktop IAB, exact version not recorded",
+  "origins": [
+    "http://127.0.0.1:7357",
+    "http://localhost:7357"
+  ],
+  "web_release": {
+    "sha256": "1e8efa83137f1c308687efbc7b2901eeb6a8fa4d1999ca9f6d9f2b00b74e4f42",
+    "source_files_older": 111
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401,
+      "code": "unauthorized",
+      "elapsed_ms": 9.1,
+      "phase": "normal",
+      "retry_after": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200,
+      "code": null,
+      "elapsed_ms": 12.8,
+      "phase": "normal",
+      "retry_after": null
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "code": null,
+      "elapsed_ms": 104.2,
+      "phase": "normal",
+      "retry_after": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "code": null,
+      "elapsed_ms": 8.1,
+      "phase": "normal",
+      "retry_after": null
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/me/preferences",
+      "status": 401,
+      "code": "unauthorized",
+      "elapsed_ms": 10.6,
+      "phase": "expired-web-save",
+      "retry_after": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401,
+      "code": "unauthorized",
+      "elapsed_ms": 10.5,
+      "phase": "expired-web-save",
+      "retry_after": null
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "code": null,
+      "elapsed_ms": 78.3,
+      "phase": "relogin-after-expiry",
+      "retry_after": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "code": null,
+      "elapsed_ms": 6.4,
+      "phase": "relogin-after-expiry",
+      "retry_after": null
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/me/preferences",
+      "status": 401,
+      "code": "unauthorized",
+      "elapsed_ms": 8.2,
+      "phase": "disabled-account-save",
+      "retry_after": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401,
+      "code": "unauthorized",
+      "elapsed_ms": 8.3,
+      "phase": "disabled-account-save",
+      "retry_after": null
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 401,
+      "code": "invalid_credentials",
+      "elapsed_ms": 71.2,
+      "phase": "disabled-account-save",
+      "retry_after": null
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "code": null,
+      "elapsed_ms": 131.7,
+      "phase": "independent-b-login",
+      "retry_after": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "code": null,
+      "elapsed_ms": 11.9,
+      "phase": "independent-b-login",
+      "retry_after": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401,
+      "code": "unauthorized",
+      "elapsed_ms": 8.7,
+      "phase": "independent-b-login",
+      "retry_after": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200,
+      "code": null,
+      "elapsed_ms": 12.3,
+      "phase": "account-rate-limit",
+      "retry_after": null
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 401,
+      "code": "invalid_credentials",
+      "elapsed_ms": 61.2,
+      "phase": "account-rate-limit",
+      "retry_after": null
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 429,
+      "code": "rate_limited",
+      "elapsed_ms": 14.9,
+      "phase": "account-rate-limit",
+      "retry_after": "600"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 401,
+      "code": "invalid_credentials",
+      "elapsed_ms": 73.6,
+      "phase": "rate-bucket-preexpired-retry",
+      "retry_after": null
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 429,
+      "code": "rate_limited",
+      "elapsed_ms": 11.2,
+      "phase": "rate-limit-verified-correct-password",
+      "retry_after": "600"
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "code": null,
+      "elapsed_ms": 74.4,
+      "phase": "verified-expired-bucket-retry",
+      "retry_after": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "code": null,
+      "elapsed_ms": 5.2,
+      "phase": "verified-expired-bucket-retry",
+      "retry_after": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 200,
+      "code": null,
+      "elapsed_ms": 6.3,
+      "phase": "verified-expired-bucket-retry",
+      "retry_after": null
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "code": null,
+      "elapsed_ms": 7.2,
+      "phase": "verified-expired-bucket-retry",
+      "retry_after": null
+    }
+  ],
+  "browser_request_count": 23,
+  "all_requests_forwarded_to_real_api": true,
+  "state_injection": [
+    "A web session expires_at set to the past",
+    "existing maintenance disable_user(A)",
+    "C account rate bucket expires_at set to the past twice"
+  ],
+  "default_limits": {
+    "account_attempts": 10,
+    "ip_attempts": 30,
+    "window_seconds": 600
+  },
+  "after_expired_save": {
+    "preferences": {
+      "difficulty": "intermediate",
+      "speech_pace": "normal",
+      "version": 2
+    },
+    "a_mobile_status": 200
+  },
+  "after_disable": {
+    "mobile_me_status": {
+      "a": 401,
+      "b": 200
+    },
+    "a_unrevoked_sessions": 0
+  },
+  "rate_prefill": {
+    "direct_http_statuses": [
+      401,
+      401,
+      401,
+      401,
+      401,
+      401,
+      401,
+      401,
+      401
+    ],
+    "account_attempts": 9,
+    "window_seconds": 600,
+    "account_limit": 10,
+    "ip_limit": 30,
+    "window_remaining_at_start": 387
+  },
+  "after_rate_limit": {
+    "c_account_attempts": 11,
+    "c_web_sessions": 0,
+    "independent_b_login_status": 200,
+    "preferences": [
+      {
+        "username": "boundary_a",
+        "difficulty": "intermediate",
+        "speech_pace": "normal",
+        "version": 2
+      },
+      {
+        "username": "boundary_b",
+        "difficulty": "beginner",
+        "speech_pace": "normal",
+        "version": 2
+      },
+      {
+        "username": "boundary_c",
+        "difficulty": "advanced",
+        "speech_pace": "normal",
+        "version": 2
+      }
+    ]
+  },
+  "rate_refill": {
+    "direct_http_statuses": [
+      401,
+      401,
+      401,
+      401,
+      401,
+      401,
+      401,
+      401,
+      401
+    ],
+    "attempts_before_verified_password_request": 10,
+    "reason": "repeat after correcting UI focus and password input"
+  },
+  "verified_rate_check": {
+    "c_account_attempts": 11,
+    "ip_attempts": 26,
+    "c_web_sessions": 0,
+    "correct_password_visually_checked": true
+  },
+  "excluded_acceptance_trial": {
+    "request_1based_index": 18,
+    "reason": "mis-entered password from automation focus, corrected and repeated"
+  },
+  "final_database": {
+    "counts": {
+      "users": 3,
+      "invites": 3,
+      "auth_sessions": 8,
+      "password_reset_grants": 0,
+      "practice_sessions": 0,
+      "realtime_connections": 0,
+      "review_jobs": 0,
+      "review_attempts": 0,
+      "review_results": 0,
+      "revoked_sessions": 3,
+      "disabled_users": 1
+    },
+    "preferences": [
+      {
+        "username": "boundary_a",
+        "difficulty": "intermediate",
+        "speech_pace": "normal",
+        "version": 2
+      },
+      {
+        "username": "boundary_b",
+        "difficulty": "beginner",
+        "speech_pace": "normal",
+        "version": 2
+      },
+      {
+        "username": "boundary_c",
+        "difficulty": "advanced",
+        "speech_pace": "normal",
+        "version": 2
+      }
+    ],
+    "c_bucket_attempts_after_recovery": 1
+  },
+  "development_tables": {
+    "alembic_version": {
+      "count": 1,
+      "sha256": "a0ecf1a5d72db48d49416dfc5d8fbc4c37e71c04512b27c45e8f76b5689c2940"
+    },
+    "auth_sessions": {
+      "count": 11,
+      "sha256": "3f36e36af849e49bc2b2b7f42ba4675ad8ad4f701a99ef5f879485ad7672188e"
+    },
+    "completion_connections": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "connection_observations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "final_transcripts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "invites": {
+      "count": 1,
+      "sha256": "b83c427e337adb29aa26fddfccd420c3943dc0838f0f7a9ebe868a25106c30f4"
+    },
+    "password_reset_grants": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "playback_evidence": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_completions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_deletion_receipts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "rate_limit_buckets": {
+      "count": 1,
+      "sha256": "12f309768eb491e8ac9536195ab0de41795383adf901a7db3a20aa0274a2b2f2"
+    },
+    "realtime_connections": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_actions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_attempts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_inputs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_results": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "termination_checks": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_preferences": {
+      "count": 1,
+      "sha256": "821390223101b284871402950794bd6dfacf0d262c6fd1366542fd66e7656feb"
+    },
+    "users": {
+      "count": 1,
+      "sha256": "1534ab12583e4b7f50bdd1685889b47df35ee622ede6a0fc52965587d2016db4"
+    }
+  },
+  "preservation": {
+    "initial_files": 762,
+    "source_changes": 0,
+    "intentionally_updated_documents": [
+      "HANDOFF.md",
+      "docs/development/local-development.md",
+      "docs/validation/2026-10-15-validation-plan.md"
+    ],
+    "unchanged_initial_files": 759,
+    "missing_files": 0
+  },
+  "cleanup": {
+    "tabs_closed": 2,
+    "api_web_stopped": true,
+    "test_database_removed": true,
+    "active_connections_before_drop": 0,
+    "ports_closed": [
+      8000,
+      8001,
+      7357
+    ],
+    "private_files_removed": 18,
+    "private_task_directory_removed": true,
+    "status_snapshot_removed": true
+  },
+  "not_performed": [
+    "application/dependency/schema changes",
+    "new build or unrelated test rerun",
+    "paid model, physical microphone, native build",
+    "commit, push, deployment"
+  ],
+  "limitations": [
+    "expiry is injected, not natural seven-day or 600-second waiting",
+    "not a full browser/device/network or concurrency matrix",
+    "not proof of B2/B5/B6 or provider termination"
+  ],
+  "screenshots": {
+    "browser-session-expired-login.jpg": {
+      "sha256": "a7726104c5ecc1216038aae0d47d95104b66484f49d4b907c6425e24a815a834",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG"
+    },
+    "browser-session-disabled-login.jpg": {
+      "sha256": "6c37adfe2e36b8651c92571f529ab095cf1abf823b6bc9a144b6748befc520e9",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG"
+    },
+    "browser-session-independent-b.jpg": {
+      "sha256": "96db1c95071cd30845c50a08b3d52e210b054f4ac8ee67eb4e944e66d68f8faf",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG"
+    },
+    "browser-session-rate-limited.jpg": {
+      "sha256": "e32617bb172a6ffad7d49eb8e83fe08b4c4e0f87e8d9f0eddf555d1ddaced548",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG"
+    },
+    "browser-session-rate-recovered.jpg": {
+      "sha256": "cfc278bb64da83870478e6fc594dc2a7a8e925288fe36f5162e7e3a81b98d785",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG"
+    }
+  },
+  "document_checks": {
+    "files": 5,
+    "local_references": 277,
+    "fences_balanced": true
+  }
+}

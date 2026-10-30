@@ -2,6 +2,8 @@
 
 日期：2026-10-17。实现范围是持久准备登记与业务失联检测；后续已新增默认关闭的[单次信令边界](2026-10-17-guarded-signalling-api.md)，尚无供应商适配、模型事件、媒体终止或费用结算。
 
+2026-10-20已明确[unknown收敛的后续契约](2026-10-20-practice-completion-and-review-contract.md#4-unknown连接的收敛与准入)：可信终止核验或可信上游失效边界才能解除已尝试连接占用；相关任务、证据字段及自动核验尚未实现。下文unknown继续占用与现有扫描结果仍是当前事实，不通过改文档开放准入。
+
 ## 准入与身份
 
 所有接口需现有登录；Web写入继续要求允许的Origin、CSRF及X-Account-ID。所有权由认证身份推导，路径中的练习和连接必须同时属于本人。写入按User→PracticeSession→RealtimeConnection加锁，User锁等待后重新检查身份；退出不承诺取消已经通过检查的在途写入。
@@ -24,6 +26,8 @@
 
 输出包括id、session_id、client_instance_id、epoch、configuration、status、termination_status、state_reason、last_seen_at、lease_expires_at、created_at、ended_at。configuration只有服务器公开配置标识，不含长期密钥或SDP。
 
+2026-10-22浏览器验收暴露初次登记的跨时钟边界：数据库默认created_at可能略晚于应用last_seen_at，导致严格客户端拒绝合法连接。新连接的created_at、last_seen_at和45秒lease现复用同一应用stamp；不放宽客户端校验、不改已有行或迁移，同key重放仍不更新时间。[回归与实测](../development/2026-10-21-review-page-verification.md)。
+
 练习详情新增connection_epoch，初始0；新登记在事务内分配epoch+1，客户端不能自行提升代次。新key必须携带当前epoch且没有占用连接。旧代次不能续租或推进新连接；对旧的已安全终结对象重放取消不会改变当前练习状态。
 
 ## 租约与终止证据
@@ -39,6 +43,8 @@
 登记可创建preparing/not_started、取消为closed/not_started、或安全到期为failed/not_started。受限信令用例另可将准备推进negotiating/unknown，成功进入configuring，失败保留unknown；真实运行的准入/网关仍关闭。未提供客户端设置状态/confirmed的入口，ready及可信终止仍待媒体集成；调用网关前必须先事务提交占用。
 
 安全取消/到期后，所有尝试均未启动上游的练习可回created；存在历史上游证据则回interrupted。原准备取消接口额外检查连接占用和上游历史，禁止将已建/未知媒体当作未开始准备取消。未知连接也独立阻止创建新练习，避免父状态错误解除占用。
+
+后续正常结束意图，以及有上游尝试的连接因租约失效/信令失败首次进入unknown，均须在状态事务中登记同一去重终止核验任务；客户端消失也有服务端启动点。核验成功只终结原attempt，期限到达无证据仍占用并显示需维护；不会把本地关闭、45秒租约、保存成功、删除正文或操作者确认当终止证据。该扩展须与正式媒体准入一起验收，不修改现有清理CLI的能力声明。
 
 ## 扫描与数据库约束
 

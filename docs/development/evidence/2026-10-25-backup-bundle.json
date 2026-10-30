@@ -1,0 +1,158 @@
+{
+  "date": "2026-10-25",
+  "scope": "manual-backup-bundle",
+  "api_tests": {
+    "added": 54,
+    "component": 43,
+    "sql_cli_integration": 11,
+    "target_passed": 82,
+    "target_seconds": 24.62,
+    "full_passed": 975,
+    "full_seconds": 189.45,
+    "real_restore_tests_enabled": 2,
+    "skipped": 0
+  },
+  "checks": {
+    "ruff": true,
+    "formatted_python_files": 106,
+    "locked_packages": 38,
+    "alembic_new_operations": 0,
+    "independent_review_remaining_findings": 0
+  },
+  "runtime": {
+    "wheel_sha256": "4ffad940ec8dd92a79b49bdad42b0762e0c2446178e2682d1e072b7586884409",
+    "wheel_source_match": true,
+    "pytest_installed": false,
+    "offline_check_with_invalid_settings": true,
+    "synthetic_restore_verified": false
+  },
+  "runtime_actual_restore": {
+    "installed_cli_create": true,
+    "offline_check_invalid_settings": true,
+    "actual_pg_restore": true,
+    "all_tables_equal": 21,
+    "source_rows_unchanged": true,
+    "cli_restore_verified": false
+  },
+  "cleanup": {
+    "source_test_database_removed": true,
+    "restore_databases_remaining": 0,
+    "active_source_connections_before_drop": 0,
+    "development_tables_unchanged": 21,
+    "private_task_directory_removed": true,
+    "pytest_unit_directories_removed": 131
+  },
+  "preservation": {
+    "initial_files": 744,
+    "changed_intentionally": [
+      "HANDOFF.md",
+      "docs/architecture/2026-10-15-technical-design.md",
+      "docs/development/local-development.md",
+      "docs/roadmap/2026-10-15-product-roadmap.md",
+      "docs/validation/2026-10-15-validation-plan.md",
+      "services/api/src/simontalk_api/cli.py",
+      "services/api/src/simontalk_api/deletion_archive.py"
+    ],
+    "unchanged_files": 737,
+    "missing": 0,
+    "development_table_hashes": {
+      "alembic_version": {
+        "count": 1,
+        "sha256": "a0ecf1a5d72db48d49416dfc5d8fbc4c37e71c04512b27c45e8f76b5689c2940"
+      },
+      "auth_sessions": {
+        "count": 11,
+        "sha256": "f7f3db2c7f518b8b8ddf8e61c627de24201f0f8030de30eb438a7e7a8ed827e0"
+      },
+      "completion_connections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "connection_observations": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "final_transcripts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "invites": {
+        "count": 1,
+        "sha256": "b83c427e337adb29aa26fddfccd420c3943dc0838f0f7a9ebe868a25106c30f4"
+      },
+      "password_reset_grants": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "playback_evidence": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "practice_completions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "practice_deletion_receipts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "practice_sessions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "rate_limit_buckets": {
+        "count": 1,
+        "sha256": "12f309768eb491e8ac9536195ab0de41795383adf901a7db3a20aa0274a2b2f2"
+      },
+      "realtime_connections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_actions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_attempts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_inputs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_jobs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_results": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "termination_checks": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "user_preferences": {
+        "count": 1,
+        "sha256": "821390223101b284871402950794bd6dfacf0d262c6fd1366542fd66e7656feb"
+      },
+      "users": {
+        "count": 1,
+        "sha256": "1534ab12583e4b7f50bdd1685889b47df35ee622ede6a0fc52965587d2016db4"
+      }
+    }
+  },
+  "source_sha256": {
+    "services/api/src/simontalk_api/backup_bundle.py": "c79bc7d61e5a66fadca058b30a8078da0ca40a977660be306c9e447bf4b93f4f",
+    "services/api/src/simontalk_api/cli.py": "f856c9ba04f0562b03fd4017af70393d417b03f3b9aa516e0ec595f0a53cb420",
+    "services/api/src/simontalk_api/deletion_archive.py": "6c1c8d09a49da3837f3d43ac17d31310c24170512feac5b641aa7ed0f5ae077b",
+    "services/api/tests/test_backup_bundle.py": "be367a158e42f1257f52cd505e793bb1999f9ab943877e6079be8c4bc775761b",
+    "services/api/tests/test_backup_bundle_integration.py": "34365c24155491b926a8198518d18dd3d64d2e313a7c63470569e210e8bf4a22"
+  },
+  "limitations": [
+    "integrity does not certify restore or latest deletion ledger",
+    "latest authoritative deletion ledger still required before reopening",
+    "no scheduling, remote storage, real-time offsite ledger or retention enforcement",
+    "no paid model, microphone, native build, commit, push or deployment"
+  ]
+}

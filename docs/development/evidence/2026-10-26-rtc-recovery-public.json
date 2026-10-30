@@ -1,0 +1,229 @@
+{
+  "date": "2026-10-26",
+  "scope": "Public documentation, unauthenticated OpenAPI metadata and pinned official SDK inspection only",
+  "authorization": "Public information only; no support ticket or external message",
+  "public_metadata_gets": 3,
+  "rtc_business_api_calls": 0,
+  "qwen_inference_calls": 0,
+  "database_access": false,
+  "app_code_changed": false,
+  "dependencies_changed": false,
+  "route_selected": false,
+  "sdk": {
+    "repository": "aliyun/alibabacloud-python-sdk",
+    "commit": "a26edd9f0f9b5797fa9270b23b7a01382c5a3b29",
+    "client_path": "rtc-20180111/alibabacloud_rtc20180111/client.py",
+    "client_blob_sha": "0bdb3477656042e1f797bc3fdb2956e184800c8e",
+    "pinned_matches_inspected_source": true,
+    "method_lines": {
+      "get_agent_with_options": 6982,
+      "start_agent_with_options": 9090,
+      "stop_agent_with_options": 10214
+    },
+    "model_paths": [
+      "rtc-20180111/alibabacloud_rtc20180111/models/_get_agent_response_body.py",
+      "rtc-20180111/alibabacloud_rtc20180111/models/_start_agent_request.py",
+      "rtc-20180111/alibabacloud_rtc20180111/models/_start_agent_response_body.py",
+      "rtc-20180111/alibabacloud_rtc20180111/models/_stop_agent_response_body.py"
+    ],
+    "observations": [
+      "RTC version 2018-01-11, RPC, HTTPS, AK authentication",
+      "StartAgent and StopAgent response models only RequestId",
+      "GetAgent fields declared string and assigned from raw map without conversion",
+      "Inspected StartAgent request model has no ClientToken or idempotency guarantee; RuntimeOptions defaults are not claimed to disable retry"
+    ]
+  },
+  "sources": [
+    {
+      "url": "https://help.aliyun.com/zh/document_detail/2709168.html",
+      "facts": [
+        "4002 agent exit event binds ChannelId and TaskId",
+        "Signature is HMAC-SHA256 over original request string and timestamp with callback secret",
+        "eventId, eventType and notifyTime are envelope fields",
+        "Duplicate and out-of-order delivery documented; limited retries, not a durable completion query"
+      ]
+    },
+    {
+      "url": "https://help.aliyun.com/zh/document_detail/2978394.html",
+      "facts": [
+        "DingRTC and dingrtc-aiagent documented for Web",
+        "message and agent-status events plus interrupt method shown",
+        "Inspected page does not define exact device playback prefix or upstream context-truncation confirmation"
+      ]
+    },
+    {
+      "url": "https://help.aliyun.com/zh/sdk/product-overview/openapi-metadata",
+      "facts": [
+        "Metadata endpoints are public and require no authentication"
+      ]
+    },
+    {
+      "url": "https://help.aliyun.com/zh/document_detail/2937117.html",
+      "facts": [
+        "StartAgent takes caller-provided TaskId; selected documentation does not define duplicate or delayed-creation recovery"
+      ]
+    },
+    {
+      "url": "https://help.aliyun.com/zh/document_detail/2937118.html",
+      "facts": [
+        "GetAgent includes status, start time and stop time; selected page does not define terminal retention or not-found lifecycle semantics"
+      ]
+    },
+    {
+      "url": "https://help.aliyun.com/zh/document_detail/2937122.html",
+      "facts": [
+        "StopAgent returns RequestId only"
+      ]
+    }
+  ],
+  "limitations": [
+    "No live RTC API or callback verification",
+    "HTTP 200 metadata retrieval is not RTC account permission or service validation",
+    "No found public duplicate-start, delayed-create or terminal-retention guarantee in inspected sources",
+    "No formal capability conclusion inferred from absent fields"
+  ],
+  "engineering_inferences": [
+    "Missing StartAgent idempotency need not require automatic retry; a future send-once/query-only recovery path may avoid duplicate creates, but must be tested",
+    "A query negative or absent callback cannot release an unresolved attempt",
+    "Persist and bind authenticated positive termination evidence to original attempt; no task ID reuse, no regression from terminal on old messages",
+    "Callback verification and durable deduplication would be necessary; no endpoint deployed or implemented"
+  ],
+  "conclusion": "RTC has a more concrete positive-evidence candidate via GetAgent and signed exit callback; existing Omni admission remains disabled. Public-only research cannot complete product acceptance or validate billing/context semantics.",
+  "metadata_observations": [
+    {
+      "api": "StartAgent",
+      "url": "https://api.aliyun.com/meta/v1/products/rtc/versions/2018-01-11/apis/StartAgent/api.json",
+      "http_status": 200,
+      "raw_response_sha256": "19bbb414d9481616924bf37094e7ee335616b280091367c00e58cbfd0ea4b460",
+      "methods": [
+        "post"
+      ],
+      "security": [
+        {
+          "AK": []
+        }
+      ],
+      "return_type_annotation": "synchronous",
+      "request_parameters": [
+        "AppId",
+        "ChannelId",
+        "TaskId",
+        "TemplateId",
+        "RtcConfig",
+        "VoiceChatConfig"
+      ],
+      "response_field_types": {
+        "RequestId": "string"
+      },
+      "errorCodes_field_present": false
+    },
+    {
+      "api": "GetAgent",
+      "url": "https://api.aliyun.com/meta/v1/products/rtc/versions/2018-01-11/apis/GetAgent/api.json",
+      "http_status": 200,
+      "raw_response_sha256": "0893d92e1a6c180482e60544cc754c8c9a370802e79922043fc80eb0788a9b74",
+      "methods": [
+        "get",
+        "post"
+      ],
+      "security": [
+        {
+          "AK": []
+        }
+      ],
+      "return_type_annotation": "synchronous",
+      "request_parameters": [
+        "AppId",
+        "ChannelId",
+        "TaskId"
+      ],
+      "response_field_types": {
+        "RequestId": "string",
+        "StartTime": "string",
+        "StopTime": "string",
+        "Status": "string",
+        "Message": "string"
+      },
+      "errorCodes_field_present": false
+    },
+    {
+      "api": "StopAgent",
+      "url": "https://api.aliyun.com/meta/v1/products/rtc/versions/2018-01-11/apis/StopAgent/api.json",
+      "http_status": 200,
+      "raw_response_sha256": "8ee9dd522063e10a53ecda8b9562e0300e20d2f27a10247100fe638dbc98fdf3",
+      "methods": [
+        "post"
+      ],
+      "security": [
+        {
+          "AK": []
+        }
+      ],
+      "return_type_annotation": "synchronous",
+      "request_parameters": [
+        "AppId",
+        "ChannelId",
+        "TaskId"
+      ],
+      "response_field_types": {
+        "RequestId": "string"
+      },
+      "errorCodes_field_present": false
+    }
+  ],
+  "web_sdk_inspection": {
+    "package": "dingrtc-aiagent",
+    "resolved_version": "1.0.10",
+    "metadata_url": "https://registry.npmjs.org/dingrtc-aiagent/latest",
+    "tarball_url": "https://registry.npmjs.org/dingrtc-aiagent/-/dingrtc-aiagent-1.0.10.tgz",
+    "registry_integrity": "sha512-fzkL9Y+4d5xeaZmT+BUKRjvu762XcoW3f9rgECKBg9BNcLD7gHHZ+xOlcxss69LY3g0ibWJntW0ZHpwkCsZ5Kw==",
+    "integrity_verified": true,
+    "tarball_sha256": "1bcd1f57d94911a07cc450ce424137283ff0889cc51ce2356292e5161043a6bb",
+    "types_sha256": "33a6dbe6d1bd15ff02a29ea806d2843a5f369617ead29adb99f808e08b9cd746",
+    "source_scope": "package.json and complete public index.d.ts only; JavaScript not executed or analyzed",
+    "interrupt_return_type": "void",
+    "message_fields": [
+      "message",
+      "uid",
+      "reasoning",
+      "userType",
+      "extra",
+      "end"
+    ],
+    "declared_agent_statuses": [
+      "listening",
+      "thinking",
+      "responding"
+    ],
+    "official_web_example_statuses": [
+      "listening",
+      "processing",
+      "responding"
+    ],
+    "exact_played_prefix_or_truncation_ack_in_public_types": false,
+    "installed": false,
+    "executed": false,
+    "app_dependencies_changed": false
+  },
+  "audit": {
+    "original_files": 822,
+    "intentionally_changed_original_files": [
+      "HANDOFF.md",
+      "docs/development/2026-10-25-qwen-control-contract-public-review.md",
+      "docs/development/2026-10-25-qwen-upstream-capability-questions.md",
+      "docs/validation/2026-10-15-validation-plan.md"
+    ],
+    "unchanged_original_files": 818,
+    "new_files": [
+      "docs/development/2026-10-26-rtc-recovery-public-review.md",
+      "docs/development/evidence/2026-10-26-rtc-recovery-public.json"
+    ],
+    "checked_local_links": 226,
+    "secret_scan_file_count": 13,
+    "private_key_found": false,
+    "private_env_unchanged": true,
+    "private_env_mode": "0600",
+    "private_env_ignored": true,
+    "private_temporary_files_removed": true
+  }
+}

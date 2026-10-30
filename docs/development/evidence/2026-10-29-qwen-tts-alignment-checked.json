@@ -1,0 +1,61 @@
+{
+  "source_sha256": "260f6675842d2c38c685edd53aaf9ab2aaa75db79fa28c1dd1e59c77611f6f12",
+  "probe_version": "tts-timestamp-v2",
+  "synthetic_text_utf8_bytes": 57,
+  "audio_duration_ms_assuming_pcm16_mono": 3810,
+  "word_count": 12,
+  "original_matches_provider_concatenation": false,
+  "candidate_boundaries": [
+    {
+      "utf8_end": 5,
+      "audio_end_ms": 320
+    },
+    {
+      "utf8_end": 11,
+      "audio_end_ms": 720
+    },
+    {
+      "utf8_end": 17,
+      "audio_end_ms": 1280
+    },
+    {
+      "utf8_end": 20,
+      "audio_end_ms": 1360
+    },
+    {
+      "utf8_end": 24,
+      "audio_end_ms": 1440
+    },
+    {
+      "utf8_end": 29,
+      "audio_end_ms": 1600
+    },
+    {
+      "utf8_end": 32,
+      "audio_end_ms": 1760
+    },
+    {
+      "utf8_end": 35,
+      "audio_end_ms": 2000
+    },
+    {
+      "utf8_end": 38,
+      "audio_end_ms": 2320
+    },
+    {
+      "utf8_end": 40,
+      "audio_end_ms": 2400
+    },
+    {
+      "utf8_end": 46,
+      "audio_end_ms": 2800
+    },
+    {
+      "utf8_end": 57,
+      "audio_end_ms": 3280
+    }
+  ],
+  "all_prefixes_decode": true,
+  "device_playback_verified": false,
+  "timestamp_accuracy_verified": false
+}

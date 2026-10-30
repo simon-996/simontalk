@@ -1,0 +1,36 @@
+{
+  "date": "2026-10-29",
+  "model": "qwen3.8-omni-flash-realtime",
+  "scenario": "two configuration-only WebSocket connections; no audio or response requests",
+  "strict_gate_probe": {
+    "connection_attempted": true,
+    "configured": false,
+    "reply_requested": false,
+    "input_complete": false,
+    "audio_bytes": 0,
+    "status": "unknown",
+    "usage": null,
+    "error": "config_mismatch",
+    "close_sent": 1000,
+    "close_received": 1000,
+    "config_mismatch": [
+      "tools"
+    ]
+  },
+  "field_presence_probe": {
+    "configured": true,
+    "tools_presence": false,
+    "tools_type": "NoneType",
+    "tools_count": null,
+    "search": false,
+    "remote_error": false,
+    "close_sent": 1000,
+    "close_received": 1000,
+    "response_requested": false,
+    "audio_uploaded": false
+  },
+  "limitations": [
+    "A session.updated acknowledgement and omitted tools field do not establish an echoed empty tool list.",
+    "Close frames do not prove upstream release or settled charges."
+  ]
+}

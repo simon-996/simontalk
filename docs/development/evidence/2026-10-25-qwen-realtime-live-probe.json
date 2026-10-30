@@ -1,0 +1,502 @@
+{
+  "date": "2026-10-25",
+  "timezone": "Asia/Shanghai",
+  "scope": "authorized controlled backend WebSocket experiment; not WebRTC or product admission",
+  "budget_authorized_cny": 20,
+  "billing_settled": false,
+  "provider_usage_is_not_invoice": true,
+  "counts": {
+    "websocket_connections": 6,
+    "response_requests": 2,
+    "audio_upload_bytes": 0,
+    "audio_received_bytes": 115200
+  },
+  "known_completed_response_estimate_cny": "0.01149",
+  "estimate_formula": "489 text input tokens * 10 CNY/M + 22 audio output tokens * 300 CNY/M; corresponding output text not charged for Qwen3.5 audio output",
+  "cancelled_response_usage": null,
+  "aggregate_spend_cny": null,
+  "probe_dependency": "websockets==15.0.1 via uv --with; no repository dependency or lock change",
+  "probe_sha256": "608db02cdc84a61eabb5bea89d5e5ce6ea9753209502504412497adb93d932c2",
+  "controls": {
+    "fixed_workspace_beijing_host": true,
+    "tls_verification": true,
+    "redirects": false,
+    "proxy_environment": false,
+    "reconnects": false,
+    "http_open_timeout_seconds": 15,
+    "per_session_receive_deadline_seconds": 25,
+    "close_timeout_seconds": 12,
+    "max_message_bytes": 131072,
+    "max_audio_received_bytes": 480000,
+    "microphone_capture": false,
+    "audio_files_saved": false,
+    "private_credentials_in_output": false
+  },
+  "runs": [
+    {
+      "started_at": "2026-10-25T12:48:19.822481+00:00",
+      "mode": "connect",
+      "transport": "backend-owned-websocket-experiment",
+      "status": "failed",
+      "connection_attempts": 1,
+      "response_requests": 0,
+      "audio_upload_bytes": 0,
+      "audio_received_bytes": 0,
+      "usage": null,
+      "events": [
+        {
+          "type": "session.created",
+          "seconds": 0.297
+        },
+        {
+          "type": "session.updated",
+          "seconds": 0.401
+        }
+      ],
+      "close_frame_received": true,
+      "billing_settled": false,
+      "production_admission_enabled": false,
+      "model": "qwen3.5-omni-plus-realtime",
+      "region": "cn-beijing",
+      "handshake_seconds": 0.291,
+      "http_status": 101,
+      "provider_session_id_sha256": "aedc9f28c856b0deb8a8a84f1136e57d7c37fe0c53fdd5cd0db41c2cfb2d1472",
+      "failure_type": "ValueError",
+      "close_seconds": 12.002,
+      "close_received_code": 1000,
+      "close_sent_code": 1000,
+      "total_seconds": 12.403
+    },
+    {
+      "started_at": "2026-10-25T12:49:07.217052+00:00",
+      "mode": "connect",
+      "transport": "backend-owned-websocket-experiment",
+      "status": "failed",
+      "connection_attempts": 1,
+      "response_requests": 0,
+      "audio_upload_bytes": 0,
+      "audio_received_bytes": 0,
+      "usage": null,
+      "events": [
+        {
+          "type": "session.created",
+          "seconds": 0.17
+        },
+        {
+          "type": "session.updated",
+          "seconds": 0.283
+        }
+      ],
+      "close_frame_received": true,
+      "billing_settled": false,
+      "production_admission_enabled": false,
+      "model": "qwen3.5-omni-plus-realtime",
+      "region": "cn-beijing",
+      "handshake_seconds": 0.158,
+      "http_status": 101,
+      "provider_session_id_sha256": "041c3f053385df75a125f494f0035132f92fd749f0fd26fa0ce686720b4b5274",
+      "config_echo": {
+        "turn_detection": "[missing]",
+        "modalities": [
+          "text",
+          "audio"
+        ],
+        "input_audio_transcription": "[missing]"
+      },
+      "failure_type": "ValueError",
+      "close_seconds": 12.002,
+      "close_received_code": 1000,
+      "close_sent_code": 1000,
+      "total_seconds": 12.285
+    },
+    {
+      "started_at": "2026-10-25T12:49:53.779351+00:00",
+      "mode": "connect",
+      "transport": "backend-owned-websocket-experiment",
+      "status": "configured",
+      "connection_attempts": 1,
+      "response_requests": 0,
+      "audio_upload_bytes": 0,
+      "audio_received_bytes": 0,
+      "usage": null,
+      "events": [
+        {
+          "type": "session.created",
+          "seconds": 0.189
+        },
+        {
+          "type": "session.updated",
+          "seconds": 0.293
+        }
+      ],
+      "close_frame_received": true,
+      "billing_settled": false,
+      "production_admission_enabled": false,
+      "model": "qwen3.5-omni-plus-realtime",
+      "region": "cn-beijing",
+      "handshake_seconds": 0.183,
+      "http_status": 101,
+      "provider_session_id_sha256": "0549ec240f445893c8c3990cc61bd78f2b4b399562ba970a366c7eafdc7910e0",
+      "config_echo": {
+        "turn_detection": "[missing]",
+        "modalities": [
+          "text",
+          "audio"
+        ],
+        "input_audio_transcription": "[missing]",
+        "max_tokens": 64
+      },
+      "manual_configuration_acknowledged": true,
+      "null_fields_explicitly_echoed": false,
+      "requested_max_tokens": 64,
+      "configuration_seconds": 0.293,
+      "close_seconds": 12.002,
+      "transport_state_after_close": "CLOSED",
+      "close_received_code": 1000,
+      "close_sent_code": 1000,
+      "total_seconds": 12.295
+    },
+    {
+      "started_at": "2026-10-25T12:50:52.210520+00:00",
+      "mode": "respond",
+      "transport": "backend-owned-websocket-experiment",
+      "status": "response_done",
+      "connection_attempts": 1,
+      "response_requests": 1,
+      "audio_upload_bytes": 0,
+      "audio_received_bytes": 84480,
+      "usage": {
+        "total_tokens": 519,
+        "input_tokens": 489,
+        "output_tokens": 30,
+        "input_tokens_details": {
+          "text_tokens": 489
+        },
+        "output_tokens_details": {
+          "text_tokens": 8,
+          "audio_tokens": 22
+        }
+      },
+      "events": [
+        {
+          "type": "session.created",
+          "seconds": 0.177
+        },
+        {
+          "type": "session.updated",
+          "seconds": 0.292
+        },
+        {
+          "type": "conversation.item.created",
+          "seconds": 0.382
+        },
+        {
+          "type": "response.created",
+          "seconds": 0.603
+        },
+        {
+          "type": "response.output_item.added",
+          "seconds": 0.603
+        },
+        {
+          "type": "conversation.item.created",
+          "seconds": 0.603
+        },
+        {
+          "type": "response.content_part.added",
+          "seconds": 0.603
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "seconds": 0.603
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "seconds": 0.777
+        },
+        {
+          "type": "response.audio.delta",
+          "seconds": 0.995
+        },
+        {
+          "type": "response.audio.delta",
+          "seconds": 0.995
+        },
+        {
+          "type": "response.audio.delta",
+          "seconds": 1.037
+        },
+        {
+          "type": "response.audio.delta",
+          "seconds": 1.89
+        },
+        {
+          "type": "response.audio.delta",
+          "seconds": 1.898
+        },
+        {
+          "type": "response.audio.delta",
+          "seconds": 1.925
+        },
+        {
+          "type": "response.audio_transcript.done",
+          "seconds": 1.926
+        },
+        {
+          "type": "response.audio.done",
+          "seconds": 1.926
+        },
+        {
+          "type": "response.content_part.done",
+          "seconds": 1.926
+        },
+        {
+          "type": "response.output_item.done",
+          "seconds": 1.926
+        },
+        {
+          "type": "response.done",
+          "seconds": 1.926
+        }
+      ],
+      "close_frame_received": true,
+      "billing_settled": false,
+      "production_admission_enabled": false,
+      "model": "qwen3.5-omni-plus-realtime",
+      "region": "cn-beijing",
+      "handshake_seconds": 0.168,
+      "http_status": 101,
+      "provider_session_id_sha256": "2917643c88275a775d2672cce047fd56e1180502a660ac39bed2a1fb62e9ef96",
+      "config_echo": {
+        "turn_detection": "[missing]",
+        "modalities": [
+          "text",
+          "audio"
+        ],
+        "input_audio_transcription": "[missing]",
+        "max_tokens": 64
+      },
+      "manual_configuration_acknowledged": true,
+      "null_fields_explicitly_echoed": false,
+      "requested_max_tokens": 64,
+      "configuration_seconds": 0.292,
+      "response_created_seconds": 0.603,
+      "first_audio_seconds": 0.995,
+      "response_status": "completed",
+      "transcript": "Hello, ready to practise.",
+      "response_done_seconds": 1.926,
+      "close_seconds": 12.002,
+      "transport_state_after_close": "CLOSED",
+      "close_received_code": 1000,
+      "close_sent_code": 1000,
+      "total_seconds": 13.927
+    },
+    {
+      "started_at": "2026-10-25T12:51:56.557398+00:00",
+      "mode": "finish",
+      "transport": "backend-owned-websocket-experiment",
+      "status": "failed",
+      "connection_attempts": 1,
+      "response_requests": 0,
+      "audio_upload_bytes": 0,
+      "audio_received_bytes": 0,
+      "usage": null,
+      "events": [
+        {
+          "type": "session.created",
+          "seconds": 0.183
+        },
+        {
+          "type": "session.updated",
+          "seconds": 0.289
+        },
+        {
+          "type": "error",
+          "seconds": 0.368
+        }
+      ],
+      "close_frame_received": true,
+      "billing_settled": false,
+      "production_admission_enabled": false,
+      "model": "qwen3.5-omni-plus-realtime",
+      "region": "cn-beijing",
+      "handshake_seconds": 0.179,
+      "http_status": 101,
+      "provider_session_id_sha256": "486d19af28948360495070139e5a76deed3ceba675b859463030be1bfc569aae",
+      "config_echo": {
+        "turn_detection": "[missing]",
+        "modalities": [
+          "text",
+          "audio"
+        ],
+        "input_audio_transcription": "[missing]",
+        "max_tokens": 64
+      },
+      "manual_configuration_acknowledged": true,
+      "null_fields_explicitly_echoed": false,
+      "requested_max_tokens": 64,
+      "configuration_seconds": 0.29,
+      "finish_requests": 1,
+      "provider_error_code": "invalid_value",
+      "failure_type": "ValueError",
+      "close_started_seconds": 0.368,
+      "close_frame_received_seconds": 0.416,
+      "transport_lost_seconds": 12.37,
+      "close_seconds": 12.002,
+      "transport_state_after_close": "CLOSED",
+      "close_received_code": 1000,
+      "close_sent_code": 1000,
+      "total_seconds": 12.371
+    },
+    {
+      "started_at": "2026-10-25T12:52:44.238391+00:00",
+      "mode": "cancel",
+      "transport": "backend-owned-websocket-experiment",
+      "status": "response_done",
+      "connection_attempts": 1,
+      "response_requests": 1,
+      "audio_upload_bytes": 0,
+      "audio_received_bytes": 30720,
+      "usage": null,
+      "events": [
+        {
+          "type": "session.created",
+          "seconds": 0.159
+        },
+        {
+          "type": "session.updated",
+          "seconds": 0.273
+        },
+        {
+          "type": "conversation.item.created",
+          "seconds": 0.355
+        },
+        {
+          "type": "response.created",
+          "seconds": 0.659
+        },
+        {
+          "type": "response.output_item.added",
+          "seconds": 0.659
+        },
+        {
+          "type": "conversation.item.created",
+          "seconds": 0.659
+        },
+        {
+          "type": "response.content_part.added",
+          "seconds": 0.659
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "seconds": 0.659
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "seconds": 0.8
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "seconds": 0.8
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "seconds": 0.8
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "seconds": 0.8
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "seconds": 0.8
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "seconds": 0.8
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "seconds": 0.816
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "seconds": 0.816
+        },
+        {
+          "type": "response.audio.delta",
+          "seconds": 1.006
+        },
+        {
+          "type": "response.audio.delta",
+          "seconds": 1.044
+        },
+        {
+          "type": "response.audio_transcript.done",
+          "seconds": 1.086
+        },
+        {
+          "type": "response.audio.done",
+          "seconds": 1.086
+        },
+        {
+          "type": "response.content_part.done",
+          "seconds": 1.087
+        },
+        {
+          "type": "response.output_item.done",
+          "seconds": 1.087
+        },
+        {
+          "type": "response.done",
+          "seconds": 1.087
+        }
+      ],
+      "close_frame_received": true,
+      "billing_settled": false,
+      "production_admission_enabled": false,
+      "model": "qwen3.5-omni-plus-realtime",
+      "region": "cn-beijing",
+      "handshake_seconds": 0.157,
+      "http_status": 101,
+      "provider_session_id_sha256": "0a6d648bbb43e4b9c9b2d6192cb30e0c3128829cdd7e3757c84a36ade8d9837a",
+      "config_echo": {
+        "turn_detection": "[missing]",
+        "modalities": [
+          "text",
+          "audio"
+        ],
+        "input_audio_transcription": "[missing]",
+        "max_tokens": 64
+      },
+      "manual_configuration_acknowledged": true,
+      "null_fields_explicitly_echoed": false,
+      "requested_max_tokens": 64,
+      "configuration_seconds": 0.273,
+      "response_created_seconds": 0.659,
+      "first_audio_seconds": 1.006,
+      "cancel_requests": 1,
+      "cancel_sent_seconds": 1.006,
+      "response_status": "cancelled",
+      "transcript": "[redacted: exceeded short test]",
+      "response_done_seconds": 1.087,
+      "close_started_seconds": 1.087,
+      "close_frame_received_seconds": 1.126,
+      "transport_lost_seconds": 13.089,
+      "close_seconds": 12.003,
+      "transport_state_after_close": "CLOSED",
+      "close_received_code": 1000,
+      "close_sent_code": 1000,
+      "total_seconds": 13.09
+    }
+  ],
+  "initial_failures_explanation": "First two probes locally required explicit null turn_detection echo. Supplier acknowledged update but omitted null fields. Third probe accepted omission only for requested null fields per successful session.updated semantics and observed max_tokens=64 echo.",
+  "sources": [
+    "https://help.aliyun.com/zh/model-studio/realtime",
+    "https://help.aliyun.com/zh/model-studio/client-events",
+    "https://help.aliyun.com/zh/model-studio/server-events",
+    "https://help.aliyun.com/zh/model-studio/realtime-websocket-overview",
+    "https://help.aliyun.com/zh/model-studio/model-pricing",
+    "https://websockets.readthedocs.io/en/15.0.1/reference/asyncio/client.html"
+  ]
+}

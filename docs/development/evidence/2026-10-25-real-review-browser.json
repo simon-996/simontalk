@@ -1,0 +1,575 @@
+{
+  "jobs": [
+    {
+      "session_id": "fd2ae124-35ad-4cf0-b057-974b615eb568",
+      "status": "succeeded",
+      "attempt_count": 1,
+      "error_code": null,
+      "outcome": "succeeded",
+      "input_tokens": 689,
+      "output_tokens": 92,
+      "result_hash": "01354c8fcda203af4c494433f3730e4f8eeb87c1f30b4df439c51f6d01b82406",
+      "snapshot": {
+        "items": [
+          {
+            "id": "6721986c-75e4-40cf-a770-78547c3b2987",
+            "kind": "correction",
+            "basis": "text_only",
+            "ordinal": 1,
+            "revision": 1,
+            "suggestion": "Yesterday I went",
+            "exact_quote": "Yesterday I go",
+            "explanation": "时间状语 Yesterday 表示过去，谓语动词应使用过去式 went。",
+            "source_turn_id": "266862e7-05d9-445d-8290-1dec51d3e76f",
+            "source_connection_id": "3934f99f-1aec-48d6-947b-6e44a1edf8f5"
+          }
+        ],
+        "job_id": "46c7e2c4-0256-4c55-96c6-4d6e38569eae",
+        "version": 1,
+        "input_revision": 1,
+        "policy_version": "review_input_v1",
+        "schema_version": "review_result_v1",
+        "review_input_hash": "65918343e5cda3286e1b51ffbe163c0ae788f0c6a2c793438f50c239cad592be",
+        "practice_input_hash": "3fc174a78afdeb2a64aac07320c6401e24da82941ab12e502f8cfcc7009c37d0",
+        "generation_policy_version": "review_generation_v1"
+      }
+    },
+    {
+      "session_id": "ab508e48-35c7-437a-9a0d-d64a70c0a364",
+      "status": "no_suggestions",
+      "attempt_count": 1,
+      "error_code": null,
+      "outcome": "no_suggestions",
+      "input_tokens": 643,
+      "output_tokens": 6,
+      "result_hash": "3915c5848ef5bfdc6428e144c63ce6a43232354f9cc61c96b0e981b9a645d955",
+      "snapshot": {
+        "items": [],
+        "job_id": "36bff99a-63d1-4dd0-b243-548a64a6db68",
+        "version": 1,
+        "input_revision": 1,
+        "policy_version": "review_input_v1",
+        "schema_version": "review_result_v1",
+        "review_input_hash": "c06e7bbb03e43d84155c806576073a342cc059ce1c4b76b74cf8f7243f572f46",
+        "practice_input_hash": "faf09d562ab792a8fce9135b369dcc54010c6d8da00a7bd2418ce13e4802d42d",
+        "generation_policy_version": "review_generation_v1"
+      }
+    }
+  ],
+  "counts": {
+    "users": 2,
+    "practice_sessions": 3,
+    "review_inputs": 2,
+    "review_jobs": 2,
+    "review_attempts": 2,
+    "review_results": 2,
+    "review_actions": 2
+  },
+  "connection_statuses": [
+    {
+      "status": "closed",
+      "count": 3
+    }
+  ],
+  "provider_events": [
+    {
+      "event": "request",
+      "time": "2026-10-25T14:44:41.958528+00:00",
+      "model": "qwen3.8-flash"
+    },
+    {
+      "event": "response",
+      "time": "2026-10-25T14:44:43.633540+00:00",
+      "status": 200
+    },
+    {
+      "event": "request",
+      "time": "2026-10-25T14:50:48.279934+00:00",
+      "model": "qwen3.8-flash"
+    },
+    {
+      "event": "response",
+      "time": "2026-10-25T14:50:49.232989+00:00",
+      "status": 200
+    }
+  ],
+  "browser_requests": [
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401,
+      "seconds": 0.018,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200,
+      "seconds": 0.013,
+      "proxy_injected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "seconds": 0.08,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "seconds": 0.01,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history?limit=10",
+      "status": 200,
+      "seconds": 0.04,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/fd2ae124-35ad-4cf0-b057-974b615eb568",
+      "status": 200,
+      "seconds": 0.012,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/completion",
+      "status": 200,
+      "seconds": 0.015,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/review-input",
+      "status": 404,
+      "seconds": 0.011,
+      "proxy_injected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/review-input",
+      "status": 200,
+      "seconds": 0.043,
+      "proxy_injected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/review",
+      "status": 202,
+      "seconds": 0.044,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/completion",
+      "status": 200,
+      "seconds": 0.06,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/review-input",
+      "status": 200,
+      "seconds": 0.068,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/review",
+      "status": 200,
+      "seconds": 0.04,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568",
+      "status": 200,
+      "seconds": 0.009,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/completion",
+      "status": 200,
+      "seconds": 0.013,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/saved-transcript?input_revision=1&input_hash=3fc174a78afdeb2a64aac07320c6401e24da82941ab12e502f8cfcc7009c37d0&limit=16&review_item_id=6721986c-75e4-40cf-a770-78547c3b2987",
+      "status": 200,
+      "seconds": 0.049,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 200,
+      "seconds": 0.006,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "seconds": 0.006,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/completion",
+      "status": 200,
+      "seconds": 0.012,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/review-input",
+      "status": 200,
+      "seconds": 0.025,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/review",
+      "status": 200,
+      "seconds": 0.047,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568",
+      "status": 200,
+      "seconds": 0.008,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/completion",
+      "status": 200,
+      "seconds": 0.059,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/review-input",
+      "status": 200,
+      "seconds": 0.02,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/review",
+      "status": 503,
+      "seconds": 0.0,
+      "proxy_injected": true
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/completion",
+      "status": 200,
+      "seconds": 0.013,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/review-input",
+      "status": 200,
+      "seconds": 0.021,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/review",
+      "status": 200,
+      "seconds": 0.035,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568",
+      "status": 200,
+      "seconds": 0.007,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/ab508e48-35c7-437a-9a0d-d64a70c0a364/completion",
+      "status": 200,
+      "seconds": 0.018,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/ab508e48-35c7-437a-9a0d-d64a70c0a364/review-input",
+      "status": 404,
+      "seconds": 0.017,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200,
+      "seconds": 0.016,
+      "proxy_injected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/ab508e48-35c7-437a-9a0d-d64a70c0a364/review-input",
+      "status": 200,
+      "seconds": 0.025,
+      "proxy_injected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/ab508e48-35c7-437a-9a0d-d64a70c0a364/review",
+      "status": 202,
+      "seconds": 0.03,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/ab508e48-35c7-437a-9a0d-d64a70c0a364/completion",
+      "status": 200,
+      "seconds": 0.014,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/ab508e48-35c7-437a-9a0d-d64a70c0a364/review-input",
+      "status": 200,
+      "seconds": 0.018,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/ab508e48-35c7-437a-9a0d-d64a70c0a364/review",
+      "status": 200,
+      "seconds": 0.027,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/completion",
+      "status": 200,
+      "seconds": 0.009,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/review-input",
+      "status": 200,
+      "seconds": 0.024,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/review",
+      "status": 200,
+      "seconds": 0.037,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568",
+      "status": 200,
+      "seconds": 0.007,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 200,
+      "seconds": 0.007,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "seconds": 0.008,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200,
+      "seconds": 0.017,
+      "proxy_injected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/logout",
+      "status": 204,
+      "seconds": 0.012,
+      "proxy_injected": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "seconds": 0.082,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "seconds": 0.006,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/completion",
+      "status": 409,
+      "seconds": 0.006,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 200,
+      "seconds": 0.007,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "seconds": 0.007,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/fd2ae124-35ad-4cf0-b057-974b615eb568/completion",
+      "status": 404,
+      "seconds": 0.015,
+      "proxy_injected": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history?limit=10",
+      "status": 200,
+      "seconds": 0.02,
+      "proxy_injected": false
+    }
+  ],
+  "date": "2026-10-25",
+  "scope": "Desktop IAB, current Flutter Web release; sealed synthetic English only; not realtime media or B6",
+  "standard_factory_provider": "qwen",
+  "model": "qwen3.8-flash",
+  "default_daily_provider": "disabled",
+  "private_env_unchanged": true,
+  "private_env_mode": "0600",
+  "initial_model_requests": 0,
+  "actual_model_requests": 2,
+  "actual_model_response_statuses": [
+    200,
+    200
+  ],
+  "browser_request_count": 52,
+  "upstream_api_request_count": 51,
+  "synthetic_proxy_failures": 1,
+  "billed_amount": "not_verified",
+  "authorized_initial_budget_cny": 20,
+  "screenshots": {
+    "docs/development/screenshots/browser-real-review-account-changed.png": {
+      "sha256": "e506e66daa742cbe9c081c58befd8d660d70ea59541cc6117e1dcd6a88fc68d6",
+      "width": 65536,
+      "height": 4292542531,
+      "visually_inspected": true
+    },
+    "docs/development/screenshots/browser-real-review-empty.png": {
+      "sha256": "dadb340dcf565bd18449c34987d4e69deff7caf18db6594e0386819a3b06c9da",
+      "width": 65536,
+      "height": 4292542531,
+      "visually_inspected": true
+    },
+    "docs/development/screenshots/browser-real-review-other-owner.png": {
+      "sha256": "53c87ecf433ff3da955a66a6bbe2c496d0f9b454049da0a750857f2f5c57cbed",
+      "width": 65536,
+      "height": 4292542531,
+      "visually_inspected": true
+    },
+    "docs/development/screenshots/browser-real-review-positive.png": {
+      "sha256": "65dc820f2c4f7461338994b35e30ad482a9358ae170fe5036286049ca458cdb1",
+      "width": 65536,
+      "height": 4292542531,
+      "visually_inspected": true
+    },
+    "docs/development/screenshots/browser-real-review-quote.png": {
+      "sha256": "00250616650660c41c819c485975c59aefdf52886c2c4e556b667a7000eecddc",
+      "width": 65536,
+      "height": 4292542531,
+      "visually_inspected": true
+    },
+    "docs/development/screenshots/browser-real-review-read-failure.png": {
+      "sha256": "8e3d12d0e10e790a81b8ba5de1cdf0114ffc58bb9f41a5cdaeeb5ea723e68a1c",
+      "width": 65536,
+      "height": 4292542531,
+      "visually_inspected": true
+    }
+  },
+  "web_main_dart_js_sha256": "1e8efa83137f1c308687efbc7b2901eeb6a8fa4d1999ca9f6d9f2b00b74e4f42",
+  "development_database": {
+    "tables_checked": 21,
+    "all_rows_unchanged": true,
+    "serialization_matches": [
+      {
+        "ensure_ascii": true,
+        "separators": [
+          ",",
+          ":"
+        ]
+      }
+    ]
+  },
+  "test_database_cleanup": {
+    "database": "simontalk_review_browser_20261025_test",
+    "connections_before_drop": 0,
+    "test_database_removed": true
+  },
+  "cleanup": {
+    "owned_browser_tabs_closed": [
+      11,
+      12
+    ],
+    "owned_test_ports_closed": [
+      7357,
+      8001
+    ],
+    "voice_provider_unavailable": true,
+    "no_microphone_permission_requested": true,
+    "private_work_directory_removed": true
+  },
+  "workspace_audit": {
+    "original_files": 801,
+    "missing_original_files": 0,
+    "intentional_original_changes": [
+      "HANDOFF.md",
+      "docs/development/local-development.md",
+      "docs/validation/2026-10-15-validation-plan.md"
+    ],
+    "unchanged_original_files": 798,
+    "new_files": [
+      "docs/development/2026-10-25-real-review-browser-verification.md",
+      "docs/development/evidence/2026-10-25-real-review-browser.json",
+      "docs/development/screenshots/browser-real-review-account-changed.png",
+      "docs/development/screenshots/browser-real-review-empty.png",
+      "docs/development/screenshots/browser-real-review-other-owner.png",
+      "docs/development/screenshots/browser-real-review-positive.png",
+      "docs/development/screenshots/browser-real-review-quote.png",
+      "docs/development/screenshots/browser-real-review-read-failure.png",
+      "docs/superpowers/plans/2026-10-25-real-review-browser.md"
+    ],
+    "checked_local_links": 303,
+    "private_key_scan_files": 25,
+    "private_key_found": false,
+    "private_env_git_ignored": true
+  }
+}

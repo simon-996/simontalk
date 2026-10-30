@@ -37,3 +37,11 @@ TTL是后台清理资格，受进程运行、批次数量和锁竞争影响，�
 `simontalk-admin cleanup-preparations --limit 100`执行同一完整批次，limit严格1–1000，提交后输出两类计数；原expire-connections只执行连接扫描。命令依赖本机数据库维护权限，没有远程管理API。
 
 扫描不会调用供应商、结束媒体、退款或确认费用。unknown继续占用。跨刷新原始未知请求的精确重放、持久用户操作恢复、媒体协调器、SDP网关、供应商配置确认和结束证据均不在本批。实测证据见[验证记录](../development/2026-10-17-preparation-recovery-verification.md)。
+
+## 共享恢复面板的当前操作资格（2026-10-24）
+
+首页、设置及准备页共享的Panel在每次显式操作时核对宿主当前ModalRoute和完整URI、当前登录owner、账号非busy、当前provider或注入controller及控制器非busy。读取附属内容与复盘绑定本次展示recovery/completion，刷新后旧入口不能操作随后读取的来源。账号确认保留API身份已失效时的当前账号明确恢复路径。
+
+清理在打开确认前及确认返回后再次核对同一原准备、当前账号/页面和当前controller。对话框保留/确认按钮在pop前核对自身Route、宿主URI和mounted，旧按钮不弹出新页面或访问已销毁祖先。无GoRouter的独立组件/Preview使用自身Route检查，正常确认清理仍走既有服务端完整复验。Controller、Repository和HTTP协议未变。
+
+账号busy使用中性提示并保留已读内容，禁用操作但不冒充读取；准备页父层已提示时抑制嵌入Panel重复提示，禁用仍生效。见[验证](../development/2026-10-24-recovery-action-guards-verification.md)。

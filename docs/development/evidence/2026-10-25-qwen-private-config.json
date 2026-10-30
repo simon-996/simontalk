@@ -1,0 +1,158 @@
+{
+  "date": "2026-10-25",
+  "scope": "qwen-private-configuration",
+  "budget": {
+    "authorized_first_test_limit_cny": 20,
+    "estimated_first_tests_cny": [
+      5,
+      15
+    ],
+    "provider_hard_stop_verified": false
+  },
+  "credential_persisted_privately": true,
+  "private_env_mode": "0600",
+  "configuration_offline_checked": true,
+  "provider_inference_requests": 0,
+  "new_voice_sessions": 0,
+  "audio_uploaded": false,
+  "checks": {
+    "new_tests": 13,
+    "target_passed": 194,
+    "target_seconds": 0.34,
+    "full_passed": 1004,
+    "full_seconds": 191.98,
+    "full_skipped": 0,
+    "ruff": true,
+    "formatted_files": 110,
+    "locked_packages": 38,
+    "alembic_new_operations": 0,
+    "independent_review_passed": 13,
+    "independent_review_findings": 0
+  },
+  "wheel": {
+    "loader_packaged": true,
+    "source_matches": true,
+    "private_env_excluded": true,
+    "private_key_excluded": true
+  },
+  "preservation": {
+    "initial_files": 777,
+    "intentionally_changed": [
+      "HANDOFF.md",
+      "docs/development/local-development.md",
+      "docs/validation/2026-10-15-validation-plan.md",
+      "services/api/.env.example"
+    ],
+    "unchanged_files": 773,
+    "development_tables": {
+      "alembic_version": {
+        "count": 1,
+        "sha256": "a0ecf1a5d72db48d49416dfc5d8fbc4c37e71c04512b27c45e8f76b5689c2940"
+      },
+      "auth_sessions": {
+        "count": 11,
+        "sha256": "3f36e36af849e49bc2b2b7f42ba4675ad8ad4f701a99ef5f879485ad7672188e"
+      },
+      "completion_connections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "connection_observations": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "final_transcripts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "invites": {
+        "count": 1,
+        "sha256": "b83c427e337adb29aa26fddfccd420c3943dc0838f0f7a9ebe868a25106c30f4"
+      },
+      "password_reset_grants": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "playback_evidence": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "practice_completions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "practice_deletion_receipts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "practice_sessions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "rate_limit_buckets": {
+        "count": 1,
+        "sha256": "12f309768eb491e8ac9536195ab0de41795383adf901a7db3a20aa0274a2b2f2"
+      },
+      "realtime_connections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_actions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_attempts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_inputs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_jobs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_results": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "termination_checks": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "user_preferences": {
+        "count": 1,
+        "sha256": "821390223101b284871402950794bd6dfacf0d262c6fd1366542fd66e7656feb"
+      },
+      "users": {
+        "count": 1,
+        "sha256": "1534ab12583e4b7f50bdd1685889b47df35ee622ede6a0fc52965587d2016db4"
+      }
+    }
+  },
+  "source_sha256": {
+    "services/api/src/simontalk_api/qwen_config.py": "ac49bbe42862dd6812a22bb43c06bd715625add53701befa98e2c82d996e79d4",
+    "services/api/tests/test_qwen_config.py": "1b0ca0b842a39924431c4c86827cbe645fb7531da4d4fc7fdf09b5f9c9c6b965",
+    "services/api/.env.example": "507045f439f1a6ce52d9abea0fdbef34f0a838bd085a4aec3ff5285f06ad9c0b"
+  },
+  "cleanup": {
+    "source_test_database_removed": true,
+    "restore_databases_remaining": 0,
+    "active_connections_before_drop": 0,
+    "pytest_task_directories_removed": 98,
+    "private_task_files_removed": 12,
+    "private_task_directory_removed": true
+  },
+  "not_performed": [
+    "real inference or voice session",
+    "automatic production admission",
+    "client/native build",
+    "commit/push/deployment"
+  ],
+  "document_checks": {
+    "files": 6,
+    "local_references": 281,
+    "fences_balanced": true
+  }
+}

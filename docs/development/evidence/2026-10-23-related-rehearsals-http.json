@@ -1,0 +1,19 @@
+{
+  "kind": "actual_loopback_http",
+  "page_sizes": [
+    10,
+    10,
+    1
+  ],
+  "distinct_children": 21,
+  "same_timestamp_uuid_descending": true,
+  "invalidated_source_review_still_lists": true,
+  "other_account_source_status": 404,
+  "child_as_source_status": 409,
+  "foreign_cursor_status": 404,
+  "other_owner_empty_status": 200,
+  "all_20_business_tables_unchanged": true,
+  "business_table_count": 20,
+  "get_only": true,
+  "gateway_calls": 0
+}

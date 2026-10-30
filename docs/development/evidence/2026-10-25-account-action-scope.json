@@ -1,0 +1,78 @@
+{
+  "date": "2026-10-25 Asia/Shanghai",
+  "production_files": [
+    "apps/client/lib/features/account/preferences_screen.dart",
+    "apps/client/lib/features/account/account_controller.dart",
+    "apps/client/lib/features/account/account_repository.dart"
+  ],
+  "tests": {
+    "new_page": 89,
+    "new_async": 22,
+    "new_total": 111,
+    "account_target_passed": 142,
+    "flutter_passed": 1347,
+    "flutter_special_fixture_skipped": 10,
+    "flutter_reported_seconds": 44,
+    "node_passed": 58,
+    "node_failed": 0,
+    "analyze_issues": 0,
+    "formatted_dart_files": 218,
+    "web_release_seconds": 34.5,
+    "font_unicode_mappings": 30890
+  },
+  "red_evidence": {
+    "initial_page_business_failures": 2,
+    "first_matrix_total": 62,
+    "first_matrix_failed": 36,
+    "first_matrix_animation_wait_failures": 10,
+    "first_async_failed": 12,
+    "review_cleanup_recovery_failed": 6,
+    "dual_restore_cases": 4,
+    "dual_restore_failed": 2
+  },
+  "review": {
+    "read_only_static": true,
+    "reviewer_ran_flutter": false,
+    "final_definite_findings": 0
+  },
+  "preservation": {
+    "initial_dirty_files": 435,
+    "missing": 0,
+    "intentional_edits_to_initial_dirty": [
+      "HANDOFF.md",
+      "apps/client/lib/features/account/preferences_screen.dart",
+      "docs/architecture/2026-10-15-account-api.md",
+      "docs/design/2026-10-15-screen-and-interaction-spec.md",
+      "docs/development/local-development.md",
+      "docs/validation/2026-10-15-validation-plan.md"
+    ],
+    "other_initial_dirty_sha256_equal": true,
+    "additional_intentional_clean_tracked_edits": [
+      "apps/client/lib/features/account/account_controller.dart",
+      "apps/client/lib/features/account/account_repository.dart"
+    ],
+    "markdown_checked": 10,
+    "local_references_checked": 309
+  },
+  "scope": {
+    "real_api_requests": 0,
+    "database_requests": 0,
+    "real_model_requests": 0,
+    "native_builds": 0,
+    "browser_cookie_acceptance_rerun": false,
+    "native_token_io_race_verified": false,
+    "dependencies_schema_changed": false,
+    "committed_pushed_deployed": false
+  },
+  "sha256": {
+    "apps/client/lib/features/account/preferences_screen.dart": "525ca849b46a89953d36601c2ee0b67ccc682294e62097635a9333cb5403d9c7",
+    "apps/client/lib/features/account/account_controller.dart": "d360be1f3ab6c5c54cd8b423c84102afd14407ff358ff1a3435c71aaaf42427f",
+    "apps/client/lib/features/account/account_repository.dart": "ed05b978eccf1d8750cf427ee38a10bcb6c33ed8e93bad4dd8ff7a70a8f2a844",
+    "apps/client/test/features/account/preferences_action_guards_test.dart": "370b05a8485de36244de182c641a4b2b33ef2d7e9d2a81432c562c5fd155b058",
+    "apps/client/test/features/account/account_async_scope_test.dart": "5e2a47650927dff28b4680c95d220eefb76b80b2765b5038349f3e5108ae0f76"
+  },
+  "cleanup": {
+    "temporary_files_removed": 19,
+    "test_services_or_databases_created": 0
+  }
+}

@@ -1,0 +1,86 @@
+{
+  "date": "2026-10-25",
+  "scope": "standard app review provider opt-in; default disabled; offline ASR replay in isolated test DB, not real-time application media",
+  "feature": {
+    "default": "disabled",
+    "explicit_provider": "qwen",
+    "production_loader_model": "qwen3.8-flash",
+    "startup_network_calls": 0,
+    "private_credentials_in_general_settings": false,
+    "voice_admission_changed": false,
+    "actual_private_env_unchanged": true
+  },
+  "verification": {
+    "new_component_red": "23 failed before loader/factory/settings integration",
+    "components_after": "143 passed in 0.31s",
+    "target_with_real_SQL": "164 passed in 7.38s",
+    "full_API": "1042 passed in 191.31s; zero skips; real PG17 restore required",
+    "independent_review": "143 passed in 0.32s; no functional findings; two stale docstrings fixed",
+    "ruff": "passed",
+    "format": "113 files formatted",
+    "offline_lock": "38 packages unchanged",
+    "full_api_log_sha256": "48cddc1975aec078dc426d835e51857095ddf146f9bde7cf949b6d5aaf9ecb34"
+  },
+  "real_standard_startup": {
+    "started_at": "2026-10-25T14:18:47.949847+00:00",
+    "status": "passed",
+    "composition": "standard create_app + explicit Settings, no gateway replacement",
+    "provider": "qwen",
+    "model": "qwen3.8-flash",
+    "media_source": "test admission for offline ASR replay only",
+    "http_client_constructions": 1,
+    "upstream_http_requests": 1,
+    "usage": {
+      "input_tokens": 650,
+      "output_tokens": 6
+    },
+    "checks": [
+      "construction_zero_HTTP",
+      "voice_still_503",
+      "configured_background_runner_one_real_generation_and_usage",
+      "GET_pure_and_foreign_account_404",
+      "disabled_restart_reads_same_result_without_private_file",
+      "delete_hides_real_result_and_history"
+    ],
+    "actual_private_env_modified": false,
+    "default_voice_admission_enabled": false,
+    "billing_settled": false,
+    "job_status": "no_suggestions",
+    "attempt_count": 1,
+    "items": [],
+    "elapsed_seconds": 3.08
+  },
+  "wheel": {
+    "wheel_contains_current_source": true,
+    "wheel_contains_private_env_or_key": false,
+    "actual_private_review_settings_offline_valid": true,
+    "actual_default_mode": "disabled",
+    "actual_private_env_unchanged": true,
+    "final_source_files_verified": 6
+  },
+  "database_cleanup": {
+    "development_tables_all_rows_unchanged": 21,
+    "isolated_test_database_removed": true,
+    "real_restore_databases_remaining": 0,
+    "active_test_connections_before_drop": 0
+  },
+  "production_source_sha256": {
+    "services/api/src/simontalk_api/qwen_config.py": "8ff8e03ae317600c2b0cf982e370362d0afff3d9b5423c9a0f5d580cd67a654a",
+    "services/api/src/simontalk_api/config.py": "ed3f77135afe59b4896987ca3b1dc8f779b0f62f9a68af8409727bf5ba034f14",
+    "services/api/src/simontalk_api/review_providers.py": "7e3735de3283e798ab1c29f36a4b8bb7fdb3f95e73dbe702a9bd46fac8f51206",
+    "services/api/src/simontalk_api/main.py": "8bf9bfeda9496fcc940831c764bdc978d50b7c5620d313e03b439b5a66fb22cc",
+    "services/api/src/simontalk_api/qwen_review_gateway.py": "5ee94dff12e95e474cfeea1695f8dbb09ddfcb13fc5e4ece953ba4522f04f101",
+    "services/api/src/simontalk_api/review_gateway.py": "14aed5eac0c91f8df1379dfb5feb523156bb695f4bb0f646de3151c8ebbc6ee3"
+  },
+  "no_commit_push_deploy_native_build": true,
+  "billing_settled": false,
+  "preservation": {
+    "original_files": 793,
+    "intended_changed_originals": 11,
+    "unchanged_originals": 782,
+    "local_links_checked": 311,
+    "new_files": 8
+  },
+  "private_key_scan": "19 changed/new workspace files, owned temporary files and unpacked wheel passed; .env unchanged/0600",
+  "owned_temporary_tools_wheels_and_probe_removed": true
+}

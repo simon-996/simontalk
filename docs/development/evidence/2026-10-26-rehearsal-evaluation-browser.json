@@ -1,0 +1,305 @@
+{
+  "http_metadata": [
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401,
+      "seconds": 0.0281,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200,
+      "seconds": 0.0259,
+      "test_fault": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "seconds": 0.07,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "seconds": 0.0069,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/aa11f31f-4248-4934-bb1a-6d9fe268553b/completion",
+      "status": 200,
+      "seconds": 0.0237,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/aa11f31f-4248-4934-bb1a-6d9fe268553b/review-input",
+      "status": 200,
+      "seconds": 0.044,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/aa11f31f-4248-4934-bb1a-6d9fe268553b/review",
+      "status": 200,
+      "seconds": 0.1522,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/aa11f31f-4248-4934-bb1a-6d9fe268553b",
+      "status": 200,
+      "seconds": 0.006,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/55a7bf17-d28f-4e18-82f0-299542dfd9e3/completion",
+      "status": 200,
+      "seconds": 0.0198,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/55a7bf17-d28f-4e18-82f0-299542dfd9e3/review-input",
+      "status": 200,
+      "seconds": 0.0209,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/55a7bf17-d28f-4e18-82f0-299542dfd9e3/review",
+      "status": 200,
+      "seconds": 0.1768,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/55a7bf17-d28f-4e18-82f0-299542dfd9e3",
+      "status": 200,
+      "seconds": 0.0042,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/ddfb662b-c300-4002-88f0-98763b5107fe/completion",
+      "status": 200,
+      "seconds": 0.0553,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/ddfb662b-c300-4002-88f0-98763b5107fe/review-input",
+      "status": 200,
+      "seconds": 0.02,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/ddfb662b-c300-4002-88f0-98763b5107fe/review",
+      "status": 200,
+      "seconds": 0.1225,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/ddfb662b-c300-4002-88f0-98763b5107fe",
+      "status": 200,
+      "seconds": 0.0079,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871/completion",
+      "status": 200,
+      "seconds": 0.0136,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871/review-input",
+      "status": 200,
+      "seconds": 0.0202,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871/review",
+      "status": 200,
+      "seconds": 0.1681,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871",
+      "status": 200,
+      "seconds": 0.0089,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871/completion",
+      "status": 200,
+      "seconds": 0.0099,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871/review-input",
+      "status": 200,
+      "seconds": 0.0166,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871/review",
+      "status": 503,
+      "seconds": 0.0002,
+      "test_fault": true
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871/completion",
+      "status": 200,
+      "seconds": 0.0228,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871/review-input",
+      "status": 200,
+      "seconds": 0.0191,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871/review",
+      "status": 200,
+      "seconds": 0.1156,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871",
+      "status": 200,
+      "seconds": 0.0062,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871/completion",
+      "status": 200,
+      "seconds": 0.014,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871/saved-transcript",
+      "status": 200,
+      "seconds": 0.0178,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 200,
+      "seconds": 0.0069,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "seconds": 0.009,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200,
+      "seconds": 0.0127,
+      "test_fault": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/logout",
+      "status": 204,
+      "seconds": 0.0235,
+      "test_fault": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "seconds": 0.0804,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "seconds": 0.0061,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871/completion",
+      "status": 409,
+      "seconds": 0.0095,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 200,
+      "seconds": 0.0059,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "seconds": 0.0063,
+      "test_fault": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/42870b2f-1869-4239-a01f-113178b37871/completion",
+      "status": 404,
+      "seconds": 0.0111,
+      "test_fault": false
+    }
+  ],
+  "http_status_counts": {
+    "200": 34,
+    "204": 1,
+    "401": 1,
+    "404": 1,
+    "409": 1,
+    "503": 1
+  },
+  "requests": 39,
+  "new_model_attempts_during_browser": 0,
+  "review_counts_after": {
+    "review_jobs": 8,
+    "review_attempts": 9,
+    "review_results": 7,
+    "practice_sessions": 8
+  },
+  "original_unknown_job_after": [
+    {
+      "status": "failed",
+      "error_code": "outcome_unknown",
+      "attempt_count": 1
+    }
+  ],
+  "viewport_observed": "1280x720",
+  "rendered_previews": 4,
+  "preview_api_calls": false,
+  "real_media": false,
+  "web_main_sha256": "71a0e15ca0bd4727c9684403cfb9c0438c6dd983521f6dfdbc1c4febb2b9b37d"
+}

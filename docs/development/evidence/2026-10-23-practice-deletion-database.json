@@ -1,0 +1,46 @@
+{
+  "head": "3e5947bc0d21",
+  "metadata": "passed",
+  "old_19_business_tables_full_rows_unchanged": true,
+  "new_receipts": 0,
+  "business_tables": 20,
+  "counts": {
+    "auth_sessions": 11,
+    "completion_connections": 0,
+    "connection_observations": 0,
+    "final_transcripts": 0,
+    "invites": 1,
+    "password_reset_grants": 0,
+    "playback_evidence": 0,
+    "practice_completions": 0,
+    "practice_deletion_receipts": 0,
+    "practice_sessions": 0,
+    "rate_limit_buckets": 1,
+    "realtime_connections": 0,
+    "review_actions": 0,
+    "review_attempts": 0,
+    "review_inputs": 0,
+    "review_jobs": 0,
+    "review_results": 0,
+    "termination_checks": 0,
+    "user_preferences": 1,
+    "users": 1
+  },
+  "test_migration_roundtrip": "passed",
+  "nonempty_test_downgrade_refused": true,
+  "cleanup": {
+    "dedicated_database_dropped": true,
+    "temporary_credentials_scripts_removed": true,
+    "original_19_business_tables_full_rows_unchanged": true,
+    "new_receipts_empty": true,
+    "temporary_api_web_preview_stopped": true,
+    "default_api_8000_remains_stopped": true
+  },
+  "workspace": {
+    "baseline_files": 524,
+    "no_baseline_files_missing": true,
+    "dependencies_unchanged": true,
+    "markdown_files": 14,
+    "local_links": 329
+  }
+}

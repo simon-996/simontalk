@@ -1,0 +1,718 @@
+{
+  "history_by_user": [
+    {
+      "username": "browser_alice",
+      "visible": 21,
+      "deleted": 3
+    },
+    {
+      "username": "browser_bob",
+      "visible": 1,
+      "deleted": 0
+    }
+  ],
+  "body_counts": {
+    "final_transcripts": 0,
+    "review_jobs": 0,
+    "review_inputs": 0,
+    "review_results": 0,
+    "practice_deletion_receipts": 2
+  },
+  "connections": [
+    {
+      "status": "unknown",
+      "termination_status": "unknown"
+    }
+  ],
+  "termination_checks": [],
+  "default_gateways": {
+    "practice_admission": "UnavailableAdmission",
+    "signalling_gateway": "UnavailableSignallingGateway",
+    "review_gateway": "UnavailableReviewGateway"
+  },
+  "development_unchanged": true,
+  "development_tables": {
+    "alembic_version": {
+      "count": 1,
+      "sha256": "a0ecf1a5d72db48d49416dfc5d8fbc4c37e71c04512b27c45e8f76b5689c2940"
+    },
+    "auth_sessions": {
+      "count": 11,
+      "sha256": "f7f3db2c7f518b8b8ddf8e61c627de24201f0f8030de30eb438a7e7a8ed827e0"
+    },
+    "completion_connections": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "connection_observations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "final_transcripts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "invites": {
+      "count": 1,
+      "sha256": "b83c427e337adb29aa26fddfccd420c3943dc0838f0f7a9ebe868a25106c30f4"
+    },
+    "password_reset_grants": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "playback_evidence": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_completions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_deletion_receipts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "rate_limit_buckets": {
+      "count": 1,
+      "sha256": "12f309768eb491e8ac9536195ab0de41795383adf901a7db3a20aa0274a2b2f2"
+    },
+    "realtime_connections": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_actions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_attempts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_inputs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_results": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "termination_checks": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_preferences": {
+      "count": 1,
+      "sha256": "821390223101b284871402950794bd6dfacf0d262c6fd1366542fd66e7656feb"
+    },
+    "users": {
+      "count": 1,
+      "sha256": "1534ab12583e4b7f50bdd1685889b47df35ee622ede6a0fc52965587d2016db4"
+    }
+  },
+  "request_summary": {
+    "GET 401": 1,
+    "GET 200": 59,
+    "POST 200": 2,
+    "GET 503": 3,
+    "POST 409": 1,
+    "DELETE 200": 1,
+    "DELETE 403": 1,
+    "DELETE lost_200": 1,
+    "GET 404": 4,
+    "POST 403": 1,
+    "POST 204": 1,
+    "GET 409": 1,
+    "POST 503": 1
+  },
+  "requests": [
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/25591960-089d-4dbf-be39-37c5a1314a80",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/25591960-089d-4dbf-be39-37c5a1314a80",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/completion",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/25591960-089d-4dbf-be39-37c5a1314a80",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/completion",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/25591960-089d-4dbf-be39-37c5a1314a80",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/completion",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/saved-transcript",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/saved-transcript",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/saved-transcript",
+      "status": 503
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/completion",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/saved-transcript",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/saved-transcript",
+      "status": 503
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/completion",
+      "status": 503
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/completion",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/saved-transcript",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/completion",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/review-input",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/review",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/completion",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/saved-transcript",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/completion",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/saved-transcript",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/review-items/3f9d453d-1fbc-4442-894e-b3d2000416a1/rehearsal-target",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/review-items/3f9d453d-1fbc-4442-894e-b3d2000416a1/rehearsals",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/rehearsals",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/19efb1b7-334a-4151-ab70-94a0553c5df5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/19efb1b7-334a-4151-ab70-94a0553c5df5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/19efb1b7-334a-4151-ab70-94a0553c5df5/rehearsal-target",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/25591960-089d-4dbf-be39-37c5a1314a80",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/25591960-089d-4dbf-be39-37c5a1314a80/deletion-scope",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/19efb1b7-334a-4151-ab70-94a0553c5df5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/19efb1b7-334a-4151-ab70-94a0553c5df5/deletion-scope",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/practice-history/19efb1b7-334a-4151-ab70-94a0553c5df5",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/practice-history/25591960-089d-4dbf-be39-37c5a1314a80",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/25591960-089d-4dbf-be39-37c5a1314a80/deletion-scope",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "DELETE",
+      "path": "/v1/practice-history/25591960-089d-4dbf-be39-37c5a1314a80",
+      "status": "lost_200"
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/25591960-089d-4dbf-be39-37c5a1314a80/deletion",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/rehearsals",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/completion",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/25591960-089d-4dbf-be39-37c5a1314a80/completion",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history/25591960-089d-4dbf-be39-37c5a1314a80",
+      "status": 404
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/logout",
+      "status": 403
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/logout",
+      "status": 204
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "status": 409
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-sessions/current",
+      "status": 200
+    },
+    {
+      "method": "POST",
+      "path": "/v1/practice-sessions",
+      "status": 503
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200
+    }
+  ],
+  "date": "2026-10-24 Asia/Shanghai",
+  "web_build": {
+    "passed": true,
+    "compile_seconds": 38.2,
+    "font_mappings": 30890,
+    "transport_source_equals_bundle": true,
+    "transport_sha256": "94a1bc1df50cf2127834948a411282898d941c352a88dcb28231b36bd5b33a66"
+  },
+  "browser": {
+    "browser": "ChatGPT in-app browser on macOS; engine version not verified",
+    "desktopScreenshot": {
+      "width": 1280,
+      "height": 720
+    },
+    "narrowViewport": {
+      "width": 320,
+      "height": 740,
+      "dpr": 1
+    },
+    "loopback": "通过：真实浏览器 ICE/SDP、客户端及服务端 DataChannel、配置确认后合成音轨上行、静音恢复、本地关闭和信令取消。\n输入：合成静音；物理麦克风：未申请；供应商：未连接。",
+    "previewWarnings": [
+      {
+        "level": "warn",
+        "message": "Font fallback service has reached the maximum number of global failures without a single success. This may indicate a problem with the fontFallbackBaseUrl (currently \"assets/font_fallback/\"). Disabling service for this session.",
+        "timestamp": "2026-10-24T15:40:35.522Z",
+        "url": "http://localhost:53027/dart_sdk.js"
+      },
+      {
+        "level": "warn",
+        "message": "Permanent HTTP failure (status 404) for Noto Sans TC 86 at assets/font_fallback/notosanstc/v36/-nFuOG829Oofr2wohFbTp9ifNAn722rq0MXz76Cy_C8mrWSt1KeqzFVoizG-KdWhyhvKuGOf8EUcrq3YKp7nxxk.105.woff2.",
+        "timestamp": "2026-10-24T15:40:35.522Z",
+        "url": "http://localhost:53027/dart_sdk.js"
+      },
+      {
+        "level": "warn",
+        "message": "Font Noto Sans TC 86 at assets/font_fallback/notosanstc/v36/-nFuOG829Oofr2wohFbTp9ifNAn722rq0MXz76Cy_C8mrWSt1KeqzFVoizG-KdWhyhvKuGOf8EUcrq3YKp7nxxk.105.woff2 is permanently unavailable.",
+        "timestamp": "2026-10-24T15:40:35.522Z",
+        "url": "http://localhost:53027/dart_sdk.js"
+      },
+      {
+        "level": "warn",
+        "message": "Font fallback service has reached the maximum number of global failures without a single success. This may indicate a problem with the fontFallbackBaseUrl (currently \"assets/font_fallback/\"). Disabling service for this session.",
+        "timestamp": "2026-10-24T15:40:35.523Z",
+        "url": "http://localhost:53027/dart_sdk.js"
+      },
+      {
+        "level": "warn",
+        "message": "Permanent HTTP failure (status 404) for Noto Sans TC 92 at assets/font_fallback/notosanstc/v36/-nFuOG829Oofr2wohFbTp9ifNAn722rq0MXz76Cy_C8mrWSt1KeqzFVoizG-KdWhyhvKuGOf8EUcrq3YKp7nxxk.111.woff2.",
+        "timestamp": "2026-10-24T15:40:35.523Z",
+        "url": "http://localhost:53027/dart_sdk.js"
+      },
+      {
+        "level": "warn",
+        "message": "Font Noto Sans TC 92 at assets/font_fallback/notosanstc/v36/-nFuOG829Oofr2wohFbTp9ifNAn722rq0MXz76Cy_C8mrWSt1KeqzFVoizG-KdWhyhvKuGOf8EUcrq3YKp7nxxk.111.woff2 is permanently unavailable.",
+        "timestamp": "2026-10-24T15:40:35.523Z",
+        "url": "http://localhost:53027/dart_sdk.js"
+      },
+      {
+        "level": "warn",
+        "message": "Font fallback service has reached the maximum number of global failures without a single success. This may indicate a problem with the fontFallbackBaseUrl (currently \"assets/font_fallback/\"). Disabling service for this session.",
+        "timestamp": "2026-10-24T15:40:35.524Z",
+        "url": "http://localhost:53027/dart_sdk.js"
+      },
+      {
+        "level": "warn",
+        "message": "Could not find a set of Noto fonts to display all missing characters. Please add a font asset for the missing characters. See: https://docs.flutter.dev/cookbook/design/fonts",
+        "timestamp": "2026-10-24T15:40:35.539Z",
+        "url": "http://localhost:53027/dart_sdk.js"
+      }
+    ]
+  },
+  "previews": {
+    "registered": 49,
+    "visually_inspected": 5,
+    "initial_no_previews": "resolved after official clean and restart",
+    "font_fallback_warning": "retained; inspected screenshots render Chinese/English"
+  },
+  "screenshots": {
+    "browser-acceptance-default-unavailable.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "fa52d5684028b3f4c20d8912f525af9b3ddebfa76347d77daecd6c78644497f2"
+    },
+    "browser-acceptance-delete-scope-320.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "40dbf424848e4f574a75049ceda05e8a68dad8167928072c1e972cc983832a6c"
+    },
+    "browser-acceptance-delete-unknown-320.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "241ed83e07c055e49ceee647af5b420fdc6933ca21f0e4297de181062dda602b"
+    },
+    "browser-acceptance-deleted-unknown-320.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "ba8b381bfd196f7ad0912d76edd7c6a61563bc88b5e16af11cc9d42e48e13590"
+    },
+    "browser-acceptance-history.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "dd04c2883671de7a3253953d72bb4ca7b6cf2692aaa45d9b820de62c56cf741d"
+    },
+    "browser-acceptance-preview-delete-320-200-bottom.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "467f24d0929a493acfe58574582e400ca93406dc4873b972affa25ed4d615e9b"
+    },
+    "browser-acceptance-preview-delete-320-200.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "fe6068e0b32dda698f5c34470d3e7fd90ced7530959702f4814a431c72853759"
+    },
+    "browser-acceptance-preview-generated-text-320-200.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "a6b23af6e8e891d00da4b6a528421d7ba3985ccc8bf498ba769fd245609b484f"
+    },
+    "browser-acceptance-preview-history-320-200-bottom.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "442fa31cce1063849116b5a51c97664530ddb7786b9e1d96f1b60367cc054222"
+    },
+    "browser-acceptance-preview-history-320-200.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "611b3b60144564538d9a1fabefdbb140b918abcbde8b9ed7ab0ca459fed294e8"
+    },
+    "browser-acceptance-preview-history-light.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "5100cf5efa7f42f431100463241e0c092471ed0baada3de5707f499ea8bdd8be"
+    },
+    "browser-acceptance-preview-save-gap-320-200-bottom.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "83fb33c9e0bdc33e03b7367447061186a5e792b7d6b229c75d21a72907b67001"
+    },
+    "browser-acceptance-preview-save-gap-320-200.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "65aebea0e4b9ec8bfba7bce46a0049f06d8554ea23e71912969ba4689cec1e5f"
+    },
+    "browser-acceptance-preview-transcript-320-200.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "ed0b8ddf07386984db3acd3e8360948a2dc5cbd36896e6cc65760f17740fb350"
+    },
+    "browser-acceptance-save-status.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "3fbe4bc6482db06cf8cfdf12496c4a6fbfe561e884b77910d001adb3728c0ac6"
+    },
+    "browser-acceptance-target-320.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "231fa6a941bd13ccbdea02bab8e01dbbd2278d7b991ab03d943d8bea6434c19a"
+    },
+    "browser-acceptance-transcript-focus.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "2c4884a54e14679e130305a8544251a59b6dc8de743192d8c5ee3eb73bc22f0b"
+    },
+    "browser-acceptance-transcript-page-failure.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "1b4b9f9ed03055d5704bfcb966b47911e1149cdd29f1829d83a7dbb2be60ab6a"
+    },
+    "browser-acceptance-webrtc-loopback.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "b099ce6398978ed7513308e5f7fe258ed3eb2e7154de05fc730bb218fbfa55b9"
+    }
+  },
+  "preservation": {
+    "start_status_files": 396,
+    "missing": [],
+    "application_source_edited_by_this_run": false,
+    "schema_changed": false,
+    "dependencies_changed": false
+  },
+  "cleanup": {
+    "temporary_database_removed": true,
+    "ports_closed": {
+      "8000": true,
+      "8001": true,
+      "7357": true,
+      "7358": true,
+      "52739": true,
+      "53027": true
+    },
+    "four_active_test_tabs_closed": true,
+    "initial_failed_error_tab": "unmarked temporary tab; close API blocked on internal data URL, auto-cleanup at turn end not independently verified",
+    "private_files_removed": true,
+    "temporary_files_removed": 16
+  }
+}

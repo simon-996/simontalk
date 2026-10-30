@@ -1,0 +1,164 @@
+{
+  "date": "2026-10-25",
+  "scope": "require-real-backup-restore-in-ci",
+  "tests": {
+    "added": 16,
+    "components_passed": 16,
+    "component_seconds": 0.2,
+    "actual_restore_passed": 2,
+    "actual_restore_seconds": 2.7,
+    "full_passed": 991,
+    "full_seconds": 187.5,
+    "full_skipped": 0,
+    "required_mode": true
+  },
+  "red": {
+    "failed": 3,
+    "passed": 1,
+    "missing_generator_setup_assertions": 12
+  },
+  "checks": {
+    "ruff": true,
+    "formatted_python_files": 108,
+    "locked_packages": 38,
+    "alembic_new_operations": 0,
+    "actionlint_version": "1.7.7",
+    "actionlint_archive_sha256": "2693315b9093aeacb4ebd91a993fea54fc215057bf0da2659056b4bc033873db",
+    "actionlint_archive_verified_with_official_checksums": true,
+    "actionlint_exit_code": 0,
+    "actionlint_diagnostics": 0,
+    "independent_review_components_passed": 16,
+    "independent_review_findings": 0,
+    "remote_github_run_performed": false
+  },
+  "preservation": {
+    "initial_files": 770,
+    "intentionally_changed": [
+      ".github/workflows/checks.yml",
+      "HANDOFF.md",
+      "docs/development/local-development.md",
+      "docs/validation/2026-10-15-validation-plan.md",
+      "services/api/tests/test_backup_bundle_integration.py"
+    ],
+    "unchanged_files": 765,
+    "missing_files": 0,
+    "development_table_hashes": {
+      "alembic_version": {
+        "count": 1,
+        "sha256": "a0ecf1a5d72db48d49416dfc5d8fbc4c37e71c04512b27c45e8f76b5689c2940"
+      },
+      "auth_sessions": {
+        "count": 11,
+        "sha256": "3f36e36af849e49bc2b2b7f42ba4675ad8ad4f701a99ef5f879485ad7672188e"
+      },
+      "completion_connections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "connection_observations": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "final_transcripts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "invites": {
+        "count": 1,
+        "sha256": "b83c427e337adb29aa26fddfccd420c3943dc0838f0f7a9ebe868a25106c30f4"
+      },
+      "password_reset_grants": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "playback_evidence": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "practice_completions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "practice_deletion_receipts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "practice_sessions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "rate_limit_buckets": {
+        "count": 1,
+        "sha256": "12f309768eb491e8ac9536195ab0de41795383adf901a7db3a20aa0274a2b2f2"
+      },
+      "realtime_connections": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_actions": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_attempts": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_inputs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_jobs": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "review_results": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "termination_checks": {
+        "count": 0,
+        "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "user_preferences": {
+        "count": 1,
+        "sha256": "821390223101b284871402950794bd6dfacf0d262c6fd1366542fd66e7656feb"
+      },
+      "users": {
+        "count": 1,
+        "sha256": "1534ab12583e4b7f50bdd1685889b47df35ee622ede6a0fc52965587d2016db4"
+      }
+    }
+  },
+  "cleanup": {
+    "source_test_database_removed": true,
+    "restore_databases_remaining": 0,
+    "active_connections_before_drop": 0,
+    "development_tables_unchanged": 21,
+    "pytest_unit_directories_removed": 73,
+    "private_files_removed": 16,
+    "private_task_directory_removed": true
+  },
+  "source_sha256": {
+    ".github/workflows/checks.yml": "581c0ddb01fc854c67acfac1360fddf0c1d6ff4c8181c00b56abfaa7f73bf6a2",
+    "scripts/prepare_test_postgres_tools.py": "0757ef5c8bfbde44e7c0f3237e0259bbd38ad47031c4cae3d1f042b59ebd285a",
+    "services/api/tests/test_postgres_test_tools.py": "1cd7b8049fc6f69866dcf76400772d92bd9e7decfc8070d460636b3acda63086",
+    "services/api/tests/test_backup_bundle_integration.py": "bcd9e68298da8c71e2bb4bc1f85d6bb52a687da5d46fc8790dbd47a560bb8fa9"
+  },
+  "not_performed": [
+    "production API/package changes",
+    "dependency/schema/client changes",
+    "wheel/client build or unrelated tests",
+    "paid model/microphone/native build",
+    "commit/push/deployment/GitHub run"
+  ],
+  "limitations": [
+    "local verification does not certify remote Actions execution",
+    "Docker tools are for isolated test containers, not a production recovery security boundary",
+    "no backup scheduling/offsite ledger/retention enforcement or B2/B5/B6 completion"
+  ],
+  "document_checks": {
+    "files": 6,
+    "local_references": 277,
+    "fences_balanced": true
+  }
+}

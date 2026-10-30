@@ -1,0 +1,16 @@
+{
+  "default_admission": "UnavailableAdmission",
+  "default_signalling": "UnavailableSignallingGateway",
+  "default_review": "UnavailableReviewGateway",
+  "wire_requests": [
+    "GET /v1/practice-sessions/current",
+    "POST /v1/practice-sessions"
+  ],
+  "wire_status": "realtime_unavailable",
+  "practice_sessions": 0,
+  "realtime_connections": 0,
+  "development_table_count": 19,
+  "development_counts_unchanged": true,
+  "isolated_users": 1,
+  "isolated_auth_sessions": 2
+}

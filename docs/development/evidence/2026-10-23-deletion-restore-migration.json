@@ -1,0 +1,7 @@
+{
+  "source_legacy_receipts_preserved": 2,
+  "damaged_legacy_scope_refused_atomically": true,
+  "target_legacy_receipts_preserved": 2,
+  "empty_downgrade_upgrade_metadata": true,
+  "nonempty_downgrade_refused_head_unchanged": true
+}

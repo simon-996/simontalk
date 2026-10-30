@@ -1,0 +1,35 @@
+{
+  "preexisting_files": 622,
+  "preexisting_files_missing": [],
+  "preexisting_files_changed_by_unit": [
+    "HANDOFF.md",
+    "docs/architecture/2026-10-15-account-api.md",
+    "docs/architecture/2026-10-23-practice-deletion.md",
+    "docs/superpowers/plans/2026-10-22-basic-version-development.md",
+    "docs/validation/2026-10-15-validation-plan.md",
+    "services/api/src/simontalk_api/main.py",
+    "services/api/src/simontalk_api/security.py",
+    "services/api/tests/test_error_boundaries.py",
+    "services/api/tests/test_practice_deletion.py"
+  ],
+  "new_files": [
+    "docs/development/2026-10-24-web-delete-verification.md",
+    "docs/development/evidence/2026-10-24-web-delete-database.json",
+    "docs/development/evidence/2026-10-24-web-delete-preservation.json",
+    "services/api/tests/test_deletion_cors.py"
+  ],
+  "client_files_unchanged": 294,
+  "dependency_files_unchanged": [
+    "apps/client/pubspec.yaml",
+    "apps/client/pubspec.lock",
+    "services/api/pyproject.toml",
+    "services/api/uv.lock"
+  ],
+  "dedicated_test_database_removed": true,
+  "development_database_all_public_tables_unchanged": true,
+  "api_started": false,
+  "actual_browser_run": false,
+  "models_called": false,
+  "native_builds": false,
+  "committed_pushed_deployed": false
+}

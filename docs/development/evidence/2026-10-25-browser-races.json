@@ -1,0 +1,775 @@
+{
+  "date": "2026-10-25 Asia/Shanghai",
+  "development_unchanged": true,
+  "development_tables": {
+    "alembic_version": {
+      "count": 1,
+      "sha256": "a0ecf1a5d72db48d49416dfc5d8fbc4c37e71c04512b27c45e8f76b5689c2940"
+    },
+    "auth_sessions": {
+      "count": 11,
+      "sha256": "f7f3db2c7f518b8b8ddf8e61c627de24201f0f8030de30eb438a7e7a8ed827e0"
+    },
+    "completion_connections": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "connection_observations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "final_transcripts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "invites": {
+      "count": 1,
+      "sha256": "b83c427e337adb29aa26fddfccd420c3943dc0838f0f7a9ebe868a25106c30f4"
+    },
+    "password_reset_grants": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "playback_evidence": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_completions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_deletion_receipts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "rate_limit_buckets": {
+      "count": 1,
+      "sha256": "12f309768eb491e8ac9536195ab0de41795383adf901a7db3a20aa0274a2b2f2"
+    },
+    "realtime_connections": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_actions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_attempts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_inputs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_results": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "termination_checks": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_preferences": {
+      "count": 1,
+      "sha256": "821390223101b284871402950794bd6dfacf0d262c6fd1366542fd66e7656feb"
+    },
+    "users": {
+      "count": 1,
+      "sha256": "1534ab12583e4b7f50bdd1685889b47df35ee622ede6a0fc52965587d2016db4"
+    }
+  },
+  "fixture_facts": {
+    "history": [
+      {
+        "username": "qa25_alice",
+        "visible": 11,
+        "deleted": 3
+      },
+      {
+        "username": "qa25_bob",
+        "visible": 11,
+        "deleted": 1
+      }
+    ],
+    "body_counts": {
+      "final_transcripts": 23,
+      "review_jobs": 1,
+      "review_inputs": 1,
+      "review_results": 1,
+      "practice_deletion_receipts": 3
+    },
+    "connection_statuses": [
+      [
+        "unknown",
+        "unknown"
+      ],
+      [
+        "closed",
+        "confirmed"
+      ]
+    ]
+  },
+  "scope_change": {
+    "before_count": 3,
+    "after_count": 2,
+    "version_changed": true,
+    "mobile_delete_status": 200
+  },
+  "browser": {
+    "pageTimeoutMs": 8082,
+    "totalReadMs": 8241,
+    "saveTimeoutMs": 8132,
+    "deleteTimeoutMs": 8076,
+    "latePageRouteUnchanged": true,
+    "latePageFocusUnchanged": true,
+    "lateDeleteRouteUnchanged": true,
+    "notes": [
+      "First parent DELETE used a locator wait that ended early; only final unknown state was observed, not a precise timing.",
+      "First save-status locator used incorrect expected text; repeated with observed text for timing.",
+      "Offscreen Flutter semantic return button required scrolling before pointer click; no production defect inferred."
+    ],
+    "console": [
+      {
+        "level": "error",
+        "message": "Bad state: Using \"ref\" when a widget is about to or has been unmounted is unsafe.\nRef relies on BuildContext, and BuildContext is unsafe to use when the widget is deactivated.\nTo safely refer to the state of providers inside State.dispose(), save the provider state in a field of your State class.",
+        "timestamp": "2026-10-24T16:22:35.815Z",
+        "url": "http://127.0.0.1:7357/main.dart.js"
+      },
+      {
+        "level": "error",
+        "message": "at Object.P (http://127.0.0.1:7357/main.dart.js:3926:29)\n    at Be.aY (http://127.0.0.1:7357/main.dart.js:93719:27)\n    at Ja.gvv (http://127.0.0.1:7357/main.dart.js:98473:24)\n    at aA1.$1 (http://127.0.0.1:7357/main.dart.js:98537:32)\n    at dB.L (http://127.0.0.1:7357/main.dart.js:76393:20)\n    at TN.im (http://127.0.0.1:7357/main.dart.js:81125:18)\n    at TN.jb (http://127.0.0.1:7357/main.dart.js:81100:9)\n    at TN.yn (http://127.0.0.1:7357/main.dart.js:81048:10)\n    at TN.ct (http://127.0.0.1:7357/main.dart.js:81127:6)\n    at TN.dQ (http://127.0.0.1:7357/main.dart.js:80842:3)",
+        "timestamp": "2026-10-24T16:22:35.815Z",
+        "url": "http://127.0.0.1:7357/main.dart.js"
+      }
+    ]
+  },
+  "requests": [
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401,
+      "seconds": 0.032
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401,
+      "outcome": "sent",
+      "seconds": 0.032
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200,
+      "seconds": 0.017
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.018
+    },
+    {
+      "phase": "upstream",
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "seconds": 0.079
+    },
+    {
+      "phase": "delivery",
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.079
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "seconds": 0.016
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.017
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200,
+      "seconds": 0.025
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.025
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history/eeb8f1f6-fbb6-4bc6-92a9-05ad896f36fb",
+      "status": 200,
+      "seconds": 0.012
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history/eeb8f1f6-fbb6-4bc6-92a9-05ad896f36fb",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.013
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history/eeb8f1f6-fbb6-4bc6-92a9-05ad896f36fb/deletion-scope",
+      "status": 200,
+      "seconds": 0.015
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history/eeb8f1f6-fbb6-4bc6-92a9-05ad896f36fb/deletion-scope",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.016
+    },
+    {
+      "phase": "upstream",
+      "method": "DELETE",
+      "path": "/v1/practice-history/eeb8f1f6-fbb6-4bc6-92a9-05ad896f36fb",
+      "status": 409,
+      "seconds": 0.016,
+      "body_sha256": "e1c13440284b54f6fa4d66b591061b1819fc846cf98e3cc62e31864fa83bf588",
+      "key_sha256": "72def17fadb49753ba5c3e03287de8e72b3f3ff7644b3075fafd9e016f331808"
+    },
+    {
+      "phase": "delivery",
+      "method": "DELETE",
+      "path": "/v1/practice-history/eeb8f1f6-fbb6-4bc6-92a9-05ad896f36fb",
+      "status": 409,
+      "outcome": "sent",
+      "seconds": 0.017
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history/eeb8f1f6-fbb6-4bc6-92a9-05ad896f36fb/deletion-scope",
+      "status": 200,
+      "seconds": 0.01
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history/eeb8f1f6-fbb6-4bc6-92a9-05ad896f36fb/deletion-scope",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.01
+    },
+    {
+      "phase": "upstream",
+      "method": "DELETE",
+      "path": "/v1/practice-history/eeb8f1f6-fbb6-4bc6-92a9-05ad896f36fb",
+      "status": 200,
+      "seconds": 0.084,
+      "body_sha256": "037afb0c94b91d9a1a8a20a0a7518122688136a9dffbbf69adc7d9338a02a23e",
+      "key_sha256": "7482b6a9497319952d851de0a2cb4ebb093b3d1bd24b23aa00284a1b6f23178f"
+    },
+    {
+      "phase": "delivery",
+      "method": "DELETE",
+      "path": "/v1/practice-history/eeb8f1f6-fbb6-4bc6-92a9-05ad896f36fb",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 10.095
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history/eeb8f1f6-fbb6-4bc6-92a9-05ad896f36fb/deletion",
+      "status": 200,
+      "seconds": 0.008
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history/eeb8f1f6-fbb6-4bc6-92a9-05ad896f36fb/deletion",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.009
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200,
+      "seconds": 0.013
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.013
+    },
+    {
+      "phase": "upstream",
+      "method": "POST",
+      "path": "/v1/auth/logout",
+      "status": 204,
+      "seconds": 0.011
+    },
+    {
+      "phase": "delivery",
+      "method": "POST",
+      "path": "/v1/auth/logout",
+      "status": 204,
+      "outcome": "sent",
+      "seconds": 0.011
+    },
+    {
+      "phase": "upstream",
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "seconds": 0.079
+    },
+    {
+      "phase": "delivery",
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.079
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "seconds": 0.007
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.007
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200,
+      "seconds": 0.01
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.01
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history/c37ec95e-8688-48ea-847d-505b1677c3db",
+      "status": 200,
+      "seconds": 0.012
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history/c37ec95e-8688-48ea-847d-505b1677c3db",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.012
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/completion",
+      "status": 200,
+      "seconds": 0.022
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/completion",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.023
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/saved-transcript",
+      "status": 200,
+      "seconds": 0.034
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/saved-transcript",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.034
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/saved-transcript",
+      "status": 200,
+      "seconds": 0.022
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/saved-transcript",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 10.033
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/completion",
+      "status": 200,
+      "seconds": 0.01
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/completion",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 5.019
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/saved-transcript",
+      "status": 200,
+      "seconds": 0.032
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/saved-transcript",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 5.043
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/completion",
+      "status": 200,
+      "seconds": 0.006
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/completion",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.007
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/saved-transcript",
+      "status": 200,
+      "seconds": 0.014
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/saved-transcript",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.014
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/saved-transcript",
+      "status": 200,
+      "seconds": 0.018
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/saved-transcript",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 10.027
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history/c37ec95e-8688-48ea-847d-505b1677c3db",
+      "status": 200,
+      "seconds": 0.009
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history/c37ec95e-8688-48ea-847d-505b1677c3db",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.009
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/completion",
+      "status": 200,
+      "seconds": 0.007
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/completion",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.008
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history/c37ec95e-8688-48ea-847d-505b1677c3db",
+      "status": 200,
+      "seconds": 0.01
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history/c37ec95e-8688-48ea-847d-505b1677c3db",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 5.021
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/completion",
+      "status": 200,
+      "seconds": 0.015
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/completion",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 5.026
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history/c37ec95e-8688-48ea-847d-505b1677c3db",
+      "status": 200,
+      "seconds": 0.024
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history/c37ec95e-8688-48ea-847d-505b1677c3db",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 5.036
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/completion",
+      "status": 200,
+      "seconds": 0.013
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/completion",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 5.025
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history/c37ec95e-8688-48ea-847d-505b1677c3db",
+      "status": 200,
+      "seconds": 0.009
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history/c37ec95e-8688-48ea-847d-505b1677c3db",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.011
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/completion",
+      "status": 200,
+      "seconds": 0.01
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-sessions/c37ec95e-8688-48ea-847d-505b1677c3db/completion",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.011
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history/f8f85e05-a35b-4eaf-bac6-3f72f1ec28dc",
+      "status": 200,
+      "seconds": 0.01
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history/f8f85e05-a35b-4eaf-bac6-3f72f1ec28dc",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.012
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history/f8f85e05-a35b-4eaf-bac6-3f72f1ec28dc/deletion-scope",
+      "status": 200,
+      "seconds": 0.009
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history/f8f85e05-a35b-4eaf-bac6-3f72f1ec28dc/deletion-scope",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.01
+    },
+    {
+      "phase": "upstream",
+      "method": "DELETE",
+      "path": "/v1/practice-history/f8f85e05-a35b-4eaf-bac6-3f72f1ec28dc",
+      "status": 200,
+      "seconds": 0.032,
+      "body_sha256": "0cf3709a3f3eacaf3b867d030903eb5e766b636d3e5264b7b76447e7506fba67",
+      "key_sha256": "f20a2330b3e2db38c9e707ac4752b588df67e51a7538cf73cad68acda451c4a3"
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history/f8f85e05-a35b-4eaf-bac6-3f72f1ec28dc/deletion",
+      "status": 200,
+      "seconds": 0.011
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history/f8f85e05-a35b-4eaf-bac6-3f72f1ec28dc/deletion",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.011
+    },
+    {
+      "phase": "upstream",
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200,
+      "seconds": 0.019
+    },
+    {
+      "phase": "delivery",
+      "method": "GET",
+      "path": "/v1/practice-history",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 0.02
+    },
+    {
+      "phase": "delivery",
+      "method": "DELETE",
+      "path": "/v1/practice-history/f8f85e05-a35b-4eaf-bac6-3f72f1ec28dc",
+      "status": 200,
+      "outcome": "sent",
+      "seconds": 10.042
+    }
+  ],
+  "screenshots": {
+    "browser-races-delete-timeout.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "355e5c571b48c16f5fca5664d36485d5bbdc6ce4b95c2aa389f7bfaf7df1b0ce"
+    },
+    "browser-races-late-return.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "e6f28b7ab7bf2ec1fff923501516706fd15c36da4a2315e7b29b8008e97f7f20"
+    },
+    "browser-races-page-timeout.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "336a11a08d50a5fabf7c04dabee5d9c2a65e66aa0ab6cb7312123660eacc1684"
+    },
+    "browser-races-save-status-timeout.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "766467be79d126b86beddec18e165e8a756a5a62904d4c77c98dedfc5fd6c45c"
+    },
+    "browser-races-scope-409.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "8b41cddf4a123c564d5210d5f38671af943e70bd7b36d305c627ae9d1b221283"
+    },
+    "browser-races-shared-deadline.png": {
+      "width": 65536,
+      "height": 4292542531,
+      "sha256": "0ca673e05d2e73b44724e618c2db6735d4370798b18147ff9f2c53928b81ec53"
+    }
+  },
+  "cleanup": {
+    "database_removed": true,
+    "ports_closed": {
+      "8000": true,
+      "8001": true,
+      "7357": true
+    },
+    "browser_tab_closed": true,
+    "temporary_files_removed": 13
+  }
+}

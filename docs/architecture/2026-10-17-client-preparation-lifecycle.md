@@ -36,3 +36,15 @@ ApiClient的专用accountId和idempotencyKey参数分别写X-Account-ID与Idempo
 ## 验证边界
 
 成功登记、续租与取消目前由真实ApiClient加HTTP/时钟替身测试验证；没有打开开发库语音准入。实际本地HTTP仅验证匿名401和readiness200。此前后端独立PostgreSQL事务测试提供服务端证据，二者不能合并称为客户端到供应商的真实语音闭环。详见[本轮验证](../development/2026-10-17-client-preparation-verification.md)。
+
+## 普通入口的本次难度与点击资格（2026-10-23）
+
+Entry在明确开始、current预检前冻结本次难度；页面显示优先已知服务端practice配置、其次本次请求快照，尚无请求才采用当前偏好。预检未进入准备则释放，后续按新偏好；未知/已登记/停止过程不随全局偏好漂移。准备标题为“本次难度”，首页仍显示当前偏好，不修改后端配置、原key/body或全局设置。
+
+首页进入准备、准备开始与原请求确认在点击时重新核对当前账号/忙碌、原owner及资格，新开始不使用已变化的显示难度。原请求确认不套用新偏好，允许保留原难度完成核对；取消/离页和恢复仍沿原清理流程。见[验证](../development/2026-10-23-preparation-snapshot-verification.md)。
+
+## 普通入口路由资格（2026-10-24）
+
+首页的开始/设置/记录、准备页的开始/原请求核对/取消/返回均在实际点击时核对当前ModalRoute、最新URI、当前账号非busy及owner/provider。切页go/push尚未销毁、被覆盖或销毁后的旧回调无操作。开始继续复验展示难度和当前准入资格，重试继续原key/body，取消/返回不改变既有后台和离页清理协议；当前页真实准备中仍允许取消及返回。
+
+首页显示资格不依赖初帧尚未完成的路由过渡；点击才严格检查当前页面，避免初次加载后开始按钮停留禁用。准备View区分accountBusy与真实entry.busy，账号操作单独提示并禁用动作，不显示准备spinner。账号确认允许当前页面/账号/provider通过而源API身份已失效的明确恢复。见[验证](../development/2026-10-24-entry-route-guards-verification.md)。

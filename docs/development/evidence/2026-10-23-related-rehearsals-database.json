@@ -1,0 +1,16 @@
+{
+  "kind": "isolated_post_wire_database",
+  "counts": {
+    "practice_sessions": 23,
+    "practice_deletion_receipts": 2,
+    "final_transcripts": 0,
+    "review_jobs": 0,
+    "review_results": 0,
+    "realtime_connections": 1
+  },
+  "tombstoned_practices": 22,
+  "remaining_nonempty_rehearsal_targets": 0,
+  "other_owner_ordinary_preserved": true,
+  "test_connection_preserved": true,
+  "gateway_calls": 0
+}

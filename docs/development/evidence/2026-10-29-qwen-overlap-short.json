@@ -1,0 +1,40 @@
+{
+  "started_at_utc": "2026-10-29T00:41:21.644160+00:00",
+  "reason": "session_returned",
+  "connection_attempted": true,
+  "session": {
+    "reason": "supervision_returned",
+    "configured": true,
+    "response_requested": true,
+    "overlap": {
+      "reason": "reader_finished",
+      "reader": {
+        "reason": "overlap_window_observed",
+        "audio_bytes_observed": 499200,
+        "cancel_sent": false,
+        "response_status": "completed",
+        "usage": {
+          "input_tokens": 701,
+          "output_tokens": 171,
+          "total_tokens": 872,
+          "input_tokens_details": {
+            "text_tokens": 701
+          },
+          "output_tokens_details": {
+            "text_tokens": 41,
+            "audio_tokens": 130
+          }
+        },
+        "stop_feeding_failed": false,
+        "speech_started_before_done": true,
+        "speech_stopped": true
+      },
+      "feeder_stopped": true,
+      "input_chunks_sent": 56,
+      "input_complete": true
+    },
+    "cancel_attempted_before_supervision": false,
+    "close_sent": 1000,
+    "close_received": 1000
+  }
+}

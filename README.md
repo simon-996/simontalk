@@ -6,7 +6,9 @@ GitHub 仓库：[simon-996/simontalk](https://github.com/simon-996/simontalk)。
 
 当前阶段、完成情况和下一步统一见 [HANDOFF.md](HANDOFF.md)。技术栈中 Flutter 已确认，其余方案的决策状态见产品总纲。
 
-已建立Flutter客户端、FastAPI与PostgreSQL账号基础，支持邀请码注册、登录、密码重设和独立练习偏好。Web提供本机麦克风检查；AI实时语音和学习记录尚未接入。当前Web优先，原生构建暂停。启动、维护和检查命令见[本地开发](docs/development/local-development.md)。
+已建立Flutter客户端、FastAPI与PostgreSQL账号基础，支持邀请码注册、登录、密码重设和独立练习偏好。另有准备/恢复、文字保存、复盘阅读和原话回看等模块；真实AI语音、完整学习流程与历史管理的最新接入和验收状态以HANDOFF为准。当前Web优先，原生构建暂停。启动、维护和检查命令见[本地开发](docs/development/local-development.md)。
+
+后续开发从[基础版本开发路线](docs/superpowers/plans/2026-10-22-basic-version-development.md)确定下一单元：普通练习首页与准备已交付（[B1证据](docs/development/2026-10-23-practice-entry-verification.md)），本人历史/详情及文字/复盘回看已接通（[B3证据及待补浏览器验收](docs/development/2026-10-23-practice-history-verification.md)）；本人范围确认与删除也已接通（[B4证据及边界](docs/development/2026-10-23-practice-deletion-verification.md)）。另补人工停服后的独立删除清单/旧备份原子重放（[恢复证据及边界](docs/development/2026-10-23-deletion-restore-verification.md)）。模型输入暂缺时继续保留真实语音/反馈待验，实际浏览器可用时补页面验收。另有[重练目标确认与独立准备客户端](docs/architecture/2026-10-23-rehearsal-client.md)，实际语音和改善评价尚未接入。真实自由聊天/结束保存、简单反馈及完整重练按路线后续接入。此顺序不缩减完整首版需求。
 
 偏好页可明确查看未结束练习/客户端连接记录，并在确认后安全清理未开始上游的准备；unknown保留占用，不冒充已结束。契约与验证见[准备清理](docs/architecture/2026-10-18-preparation-discard-api.md)。
 
@@ -30,6 +32,8 @@ AI 接手先读根目录 [AGENTS.md](AGENTS.md)，再读 [HANDOFF.md](HANDOFF.md
 各目录随对应开发阶段建立；实际已有内容以仓库文件和交接状态为准。
 
 ## 阅读顺序
+
+开始前先完整阅读[HANDOFF.md](HANDOFF.md)，核对Git，再读[基础版本开发路线](docs/superpowers/plans/2026-10-22-basic-version-development.md)；按具体单元查阅下列规格，旧单元计划不代表当前优先级。
 
 1. [产品与决策总纲](docs/superpowers/specs/2026-10-15-simontalk-mvp-design.md)：已确认方向、首版功能、建议和开发前输入。
 2. [页面与交互规格](docs/design/2026-10-15-screen-and-interaction-spec.md)：各页面、状态、导航、退出、辅助、复盘、重练与异常。

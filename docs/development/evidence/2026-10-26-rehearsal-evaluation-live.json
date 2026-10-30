@@ -1,0 +1,255 @@
+{
+  "standard_factory": true,
+  "real_gateway": "QwenReviewGateway",
+  "test_admission": true,
+  "real_media": false,
+  "parent_items": [
+    {
+      "id": "bc536944-e1b6-4450-aab8-ca4336420546",
+      "kind": "correction",
+      "basis": "text_only",
+      "ordinal": 1,
+      "revision": 1,
+      "suggestion": "Yesterday I went to the park.",
+      "exact_quote": "I go",
+      "explanation": "时间状语Yesterday表示过去，动词需用过去式went。",
+      "source_turn_id": "b745e5de-27e9-49f5-bc3f-0fb126b2fdb4",
+      "source_connection_id": "a5b9009e-0f23-40ea-bd60-697823e8c07b"
+    }
+  ],
+  "records": [
+    {
+      "case": "different_wording",
+      "text": "Yesterday I visited the park.",
+      "child_id": "aa11f31f-4248-4934-bb1a-6d9fe268553b",
+      "job_status": "succeeded",
+      "error_code": null,
+      "suggestions": [],
+      "evaluation": {
+        "intent": {
+          "status": "conveyed",
+          "evidence": [
+            {
+              "revision": 1,
+              "exact_quote": "Yesterday I visited the park.",
+              "source_turn_id": "22d53754-259e-45c3-b9fe-bf9c134af9c9",
+              "source_connection_id": "46922012-25ef-41e1-b8cb-45c509707493"
+            }
+          ],
+          "explanation": "用户保留了原句的时间状语（Yesterday）和地点/活动核心信息（visited the park），交际目的未变。"
+        },
+        "target_hash": "135f24874437106dbb765c123fdb162a0941fcf7ab02daace1091890e61f88f1",
+        "target_issue": {
+          "status": "demonstrated",
+          "evidence": [
+            {
+              "revision": 1,
+              "exact_quote": "visited",
+              "source_turn_id": "22d53754-259e-45c3-b9fe-bf9c134af9c9",
+              "source_connection_id": "46922012-25ef-41e1-b8cb-45c509707493"
+            }
+          ],
+          "explanation": "用户将原句错误的现在时 'go' 修正为过去式动词 'visited'，正确展示了目标语法点（过去时态）。虽然词汇从 'go to' 变为 'visit'，但这是同义改写且符合语境，关键在于时态错误已纠正。"
+        },
+        "schema_version": "rehearsal_evaluation_v1"
+      }
+    },
+    {
+      "case": "still_present",
+      "text": "Yesterday I go to the park.",
+      "child_id": "55a7bf17-d28f-4e18-82f0-299542dfd9e3",
+      "job_status": "succeeded",
+      "error_code": null,
+      "suggestions": [
+        {
+          "id": "d4029fb6-0dc6-4a26-8ae7-95c600904af9",
+          "kind": "correction",
+          "basis": "text_only",
+          "ordinal": 1,
+          "revision": 1,
+          "suggestion": "Yesterday I went to the park.",
+          "exact_quote": "I go",
+          "explanation": "时间状语Yesterday表示过去，动词需用过去式went。",
+          "source_turn_id": "b2e10ec5-f0f3-45f6-9277-e920d6dc6a8e",
+          "source_connection_id": "44587836-bec2-4254-80d1-73e4905f5ce4"
+        }
+      ],
+      "evaluation": {
+        "intent": {
+          "status": "conveyed",
+          "evidence": [
+            {
+              "revision": 1,
+              "exact_quote": "Yesterday I go to the park.",
+              "source_turn_id": "b2e10ec5-f0f3-45f6-9277-e920d6dc6a8e",
+              "source_connection_id": "44587836-bec2-4254-80d1-73e4905f5ce4"
+            }
+          ],
+          "explanation": "本次重练文字与原句完全一致，保留了所有关键事实（昨天、去公园）。"
+        },
+        "target_hash": "135f24874437106dbb765c123fdb162a0941fcf7ab02daace1091890e61f88f1",
+        "target_issue": {
+          "status": "still_present",
+          "evidence": [
+            {
+              "revision": 1,
+              "exact_quote": "I go",
+              "source_turn_id": "b2e10ec5-f0f3-45f6-9277-e920d6dc6a8e",
+              "source_connection_id": "44587836-bec2-4254-80d1-73e4905f5ce4"
+            }
+          ],
+          "explanation": "原句中的语法错误（go未变为went）在重练中依然存在，未展示目标改善。"
+        },
+        "schema_version": "rehearsal_evaluation_v1"
+      }
+    },
+    {
+      "case": "changed_meaning",
+      "text": "Yesterday I went to the library.",
+      "child_id": "ddfb662b-c300-4002-88f0-98763b5107fe",
+      "job_status": "succeeded",
+      "error_code": null,
+      "suggestions": [],
+      "evaluation": {
+        "intent": {
+          "status": "changed",
+          "evidence": [
+            {
+              "revision": 1,
+              "exact_quote": "library",
+              "source_turn_id": "0abe3831-545b-4ed5-b56e-1d6f0aa55961",
+              "source_connection_id": "6b12df8e-9583-444c-9a2f-193341d8b795"
+            }
+          ],
+          "explanation": "原句地点为公园(park)，重练句地点变为图书馆(library)，关键事实发生变化。"
+        },
+        "target_hash": "135f24874437106dbb765c123fdb162a0941fcf7ab02daace1091890e61f88f1",
+        "target_issue": {
+          "status": "demonstrated",
+          "evidence": [
+            {
+              "revision": 1,
+              "exact_quote": "went",
+              "source_turn_id": "0abe3831-545b-4ed5-b56e-1d6f0aa55961",
+              "source_connection_id": "6b12df8e-9583-444c-9a2f-193341d8b795"
+            }
+          ],
+          "explanation": "使用者正确使用了过去式动词went，展示了目标语法技能的改善。"
+        },
+        "schema_version": "rehearsal_evaluation_v1"
+      }
+    },
+    {
+      "case": "not_demonstrated",
+      "text": "Could you say that again?",
+      "child_id": "42870b2f-1869-4239-a01f-113178b37871",
+      "job_status": "succeeded",
+      "error_code": null,
+      "suggestions": [],
+      "evaluation": {
+        "intent": {
+          "status": "insufficient_evidence",
+          "evidence": [
+            {
+              "revision": 1,
+              "exact_quote": "Could you say that again?",
+              "source_turn_id": "b29bcb44-8cfb-4f55-9c3c-1af1ba46f18c",
+              "source_connection_id": "6ec1822f-48fa-4cb5-bab0-d0205ab6a0e4"
+            }
+          ],
+          "explanation": "用户仅请求重复问题，未重新表达原事件的关键事实（如去公园、时间等），无法判断是否保留原意。"
+        },
+        "target_hash": "135f24874437106dbb765c123fdb162a0941fcf7ab02daace1091890e61f88f1",
+        "target_issue": {
+          "status": "not_demonstrated",
+          "evidence": [
+            {
+              "revision": 1,
+              "exact_quote": "Could you say that again?",
+              "source_turn_id": "b29bcb44-8cfb-4f55-9c3c-1af1ba46f18c",
+              "source_connection_id": "6ec1822f-48fa-4cb5-bab0-d0205ab6a0e4"
+            }
+          ],
+          "explanation": "本次文字仅为请求重复的指令，未尝试使用目标句式（过去式动词），因此无法展示对时态错误的改善或确认错误仍在。"
+        },
+        "schema_version": "rehearsal_evaluation_v1"
+      },
+      "first_status": "failed",
+      "first_error_code": "invalid_output",
+      "explicit_known_failure_retry": true
+    }
+  ],
+  "usage": [
+    {
+      "ordinal": 1,
+      "input_tokens": 641,
+      "output_tokens": 54,
+      "outcome": "succeeded"
+    },
+    {
+      "ordinal": 1,
+      "input_tokens": 540,
+      "output_tokens": 193,
+      "outcome": "succeeded"
+    },
+    {
+      "ordinal": 1,
+      "input_tokens": 541,
+      "output_tokens": 128,
+      "outcome": "succeeded"
+    },
+    {
+      "ordinal": 1,
+      "input_tokens": null,
+      "output_tokens": null,
+      "outcome": "outcome_unknown"
+    },
+    {
+      "ordinal": 1,
+      "input_tokens": 1014,
+      "output_tokens": 236,
+      "outcome": "succeeded"
+    },
+    {
+      "ordinal": 1,
+      "input_tokens": 1015,
+      "output_tokens": 273,
+      "outcome": "succeeded"
+    },
+    {
+      "ordinal": 1,
+      "input_tokens": 1015,
+      "output_tokens": 179,
+      "outcome": "succeeded"
+    },
+    {
+      "ordinal": 1,
+      "input_tokens": 1015,
+      "output_tokens": 166,
+      "outcome": "invalid_output"
+    },
+    {
+      "ordinal": 2,
+      "input_tokens": 1015,
+      "output_tokens": 216,
+      "outcome": "succeeded"
+    }
+  ],
+  "counts": {
+    "review_jobs": 8,
+    "review_attempts": 9,
+    "review_results": 7,
+    "practice_sessions": 8
+  },
+  "original_unknown_job_retried": false,
+  "unknown_jobs": [
+    {
+      "status": "failed",
+      "error_code": "outcome_unknown",
+      "attempt_count": 1
+    }
+  ],
+  "manual_semantics_checked": true,
+  "known_input_tokens": 6796,
+  "known_output_tokens": 1445
+}

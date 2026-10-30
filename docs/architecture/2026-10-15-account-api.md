@@ -8,7 +8,7 @@
 - 用户名规范化为小写，3–32 位 ASCII 字母/数字/下划线，首位为字母；展示名 1–60 字符；密码 12–128 字符，允许粘贴和密码管理器。
 - 时间保存为 UTC；登录 7 天、邀请码 72 小时一次、密码重设 15 分钟一次。
 - Web 仅 Cookie 身份，HttpOnly、SameSite=Lax；生产必须 Secure。本地开发允许明确的 HTTP 环境。移动端使用 Bearer token，安全存储；Web 不把业务 token 存 localStorage。
-- 客户端从注册/登录或 GET me 得到本人ID后，对偏好GET/PATCH及退出携带 `X-Account-ID`。服务端将其与实际凭证身份比较；Web已认证的PATCH/退出必须提供，缺失或不匹配返回 `409 account_changed`，不执行原动作。失效身份退出仍幂等204。客户端重新识别当前账号，按用户ID重置草稿并提示确认，不自动重放旧操作，防多标签共享Cookie串改设置。
+- 客户端从注册/登录或 GET me 得到本人ID后，对偏好GET/PATCH及退出携带 `X-Account-ID`。服务端将其与实际凭证身份比较；Web通过session_identity校验的已认证POST/PATCH/DELETE必须提供，缺失或不匹配返回 `409 account_changed`，不执行原动作（DELETE于2026-10-24补齐）。失效身份退出仍幂等204。客户端重新识别当前账号，按用户ID重置草稿并提示确认，不自动重放旧操作，防多标签共享Cookie串改设置。
 - Web 先 GET /v1/auth/csrf，得到 csrf_token JSON 和配对 Cookie；状态改变请求使用 X-CSRF-Token。服务端校验 Cookie/header 和允许的 Origin。跨来源默认拒绝，开发仅允许配置的 localhost/127.0.0.1 Web 来源；移动 Bearer 无需浏览器 CSRF。
 - 同一客户端及其账号作用域HTTP分支共享CSRF缓存与进行中的获取，避免轮换共享Cookie使兄弟请求使用旧令牌；各分支仍独立取消。csrf_invalid只清除仍匹配该请求令牌的缓存，不自动重放。不同页面的轮换仍可能导致拒绝，由本人明确重试。
 - 本地 API 127.0.0.1:8000，Web 开发端口 7357。Android 模拟器 API 地址用 10.0.2.2:8000，真机地址通过非密钥构建参数配置。
@@ -48,3 +48,9 @@ Preferences：difficulty 为 null 或 beginner/intermediate/advanced；speech_pa
 - 登录、注册、重设提交期间禁止重复操作，成功后清空密码和一次性凭证输入。移动端退出清理本机凭证并尽力撤销服务端会话；撤销失败必须清楚说明。Web 的 HttpOnly Cookie 只能由服务端清除，退出失败时保留当前状态、明确提示并提供重试，不声称已退出。
 - 修改偏好失败保留选择并提示未保存。409 重新加载服务端实际版本并提示用户核对，不能覆盖他人或旧版本。
 - 本批只提供真实账号与偏好界面，不伪造通话、话题记录或学习成绩。语音功能在后续真实接入时增加。
+
+
+2026-10-25客户端增加[操作与异步身份范围](2026-10-25-account-action-scope.md)：preferences读取/保存与logout显式冻结accountId，沿用现有X-Account-ID/CSRF及409规则；save/logout/restore只发布同pending的结果，恢复写共享身份前另核stillCurrent。退出清理前后查身份。未改服务端接口、Cookie、会话和偏好版本；底层已开始的原生清理不可撤回，实际设备并发仍待验。
+
+
+2026-10-25后续[认证操作范围](2026-10-25-auth-operation-scope.md)将相同保护扩展到登录/注册/重设：CSRF及凭据等待固定原owner（包括null），过时认证不发布身份/凭据或控制器状态，空身份变化也进入明确恢复；认证页面旧提交/导航和迟到reset提示受当前页门保护。服务端端点及会话语义未改。

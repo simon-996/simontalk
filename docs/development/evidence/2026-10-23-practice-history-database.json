@@ -1,0 +1,32 @@
+{
+  "test_migration_roundtrip": "passed",
+  "metadata": "passed",
+  "dev_head": "2d4836ab9c10",
+  "dev_business_tables": 19,
+  "dev_full_rows_unchanged": true,
+  "development_counts": {
+    "auth_sessions": 11,
+    "completion_connections": 0,
+    "connection_observations": 0,
+    "final_transcripts": 0,
+    "invites": 1,
+    "password_reset_grants": 0,
+    "playback_evidence": 0,
+    "practice_completions": 0,
+    "practice_sessions": 0,
+    "rate_limit_buckets": 1,
+    "realtime_connections": 0,
+    "review_actions": 0,
+    "review_attempts": 0,
+    "review_inputs": 0,
+    "review_jobs": 0,
+    "review_results": 0,
+    "termination_checks": 0,
+    "user_preferences": 1,
+    "users": 1
+  },
+  "index_plans_20000_rolled_back": {
+    "first": "Limit  (cost=0.56..94.31 rows=11 width=182) (actual time=0.046..0.056 rows=11 loops=1)\n  Buffers: shared hit=11\n  ->  Nested Loop Left Join  (cost=0.56..85425.93 rows=10023 width=182) (actual time=0.045..0.054 rows=11 loops=1)\n        Join Filter: (practice_completions.session_id = practice_sessions.id)\n        Rows Removed by Join Filter: 10\n        Buffers: shared hit=11\n        ->  Index Scan Backward using practice_history_owner_seek on practice_sessions  (cost=0.41..3329.40 rows=10023 width=124) (actual time=0.010..0.015 rows=11 loops=1)\n              Index Cond: (user_id = 'c05d79cf-a0f2-42e7-b854-6e460fc56197'::uuid)\n              Buffers: shared hit=8\n        ->  Materialize  (cost=0.14..8.17 rows=1 width=132) (actual time=0.002..0.002 rows=1 loops=11)\n              Buffers: shared hit=2\n              ->  Index Scan using completion_end_key on practice_completions  (cost=0.14..8.16 rows=1 width=132) (actual time=0.016..0.016 rows=1 loops=1)\n                    Index Cond: (user_id = 'c05d79cf-a0f2-42e7-b854-6e460fc56197'::uuid)\n                    Buffers: shared hit=2\n        SubPlan 2\n          ->  Seq Scan on realtime_connections  (cost=0.00..12.20 rows=7 width=32) (actual time=0.008..0.008 rows=0 loops=1)\n                Filter: (((status)::text = ANY ('{preparing,negotiating,configuring,ready,closing,unknown}'::text[])) OR ((termination_status)::text = 'unknown'::text))\n                Rows Removed by Filter: 2\n                Buffers: shared hit=1\nPlanning:\n  Buffers: shared hit=388\nPlanning Time: 1.829 ms\nExecution Time: 0.090 ms",
+    "seek": "Limit  (cost=0.56..95.64 rows=11 width=182) (actual time=0.030..0.037 rows=11 loops=1)\n  Buffers: shared hit=7\n  ->  Nested Loop Left Join  (cost=0.56..55380.18 rows=6407 width=182) (actual time=0.030..0.035 rows=11 loops=1)\n        Join Filter: (practice_completions.session_id = practice_sessions.id)\n        Rows Removed by Join Filter: 11\n        Buffers: shared hit=7\n        ->  Index Scan Backward using practice_history_owner_seek on practice_sessions  (cost=0.41..2898.68 rows=6407 width=124) (actual time=0.010..0.011 rows=11 loops=1)\n              Index Cond: ((user_id = 'c05d79cf-a0f2-42e7-b854-6e460fc56197'::uuid) AND (ROW(created_at, id) < ROW('2026-10-19 11:00:00+00'::timestamp with time zone, '00000000-0000-0000-0000-000000000000'::uuid)))\n              Buffers: shared hit=4\n        ->  Materialize  (cost=0.14..8.17 rows=1 width=132) (actual time=0.001..0.001 rows=1 loops=11)\n              Buffers: shared hit=2\n              ->  Index Scan using completion_end_key on practice_completions  (cost=0.14..8.16 rows=1 width=132) (actual time=0.006..0.006 rows=1 loops=1)\n                    Index Cond: (user_id = 'c05d79cf-a0f2-42e7-b854-6e460fc56197'::uuid)\n                    Buffers: shared hit=2\n        SubPlan 2\n          ->  Seq Scan on realtime_connections  (cost=0.00..12.20 rows=7 width=32) (actual time=0.006..0.006 rows=0 loops=1)\n                Filter: (((status)::text = ANY ('{preparing,negotiating,configuring,ready,closing,unknown}'::text[])) OR ((termination_status)::text = 'unknown'::text))\n                Rows Removed by Filter: 2\n                Buffers: shared hit=1\nPlanning Time: 0.278 ms\nExecution Time: 0.095 ms"
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-30",
+  "time_utc_approx": "2026-10-30 00:10",
+  "scenario": "One actual WebRTC configuration-only connection via compiled QwenGuardedProtocol and QwenWebRtcSignallingGateway, no retry",
+  "model_requested": "qwen3.8-omni-flash-realtime",
+  "protocol_source_sha256": "358270d680b999d4941dffa3c9286d043cdbe29dff3011d757b2230de9c2ea8a",
+  "browser": "Edge on macOS",
+  "source": "Page accessibility text manually transcribed",
+  "result": {
+    "dartReady": true,
+    "offerSent": true,
+    "answerReceived": true,
+    "connected": true,
+    "openedChannels": 3,
+    "serverTxtOpened": true,
+    "sessionCreated": true,
+    "updateSent": true,
+    "requestToolsPresent": false,
+    "updatedReceived": true,
+    "echoToolsPresent": false,
+    "echoSearch": false,
+    "confirmed": true,
+    "confirmedOnSessionChannel": true,
+    "failed": false,
+    "error": null,
+    "localClosed": true,
+    "audioAttached": false,
+    "responseRequested": false,
+    "timedOut": false
+  },
+  "limitations": [
+    "Compiled Dart candidate and real gateway in an isolated page; not the production media controller or a full conversation.",
+    "No audio track, microphone, audio upload, response request, playback or real human speech was used.",
+    "Local closure is not independently verified upstream termination, settlement or a hard spending limit.",
+    "No response usage was returned and actual billed cost is not independently verified."
+  ]
+}

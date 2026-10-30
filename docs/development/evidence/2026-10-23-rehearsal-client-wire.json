@@ -1,0 +1,11 @@
+{
+  "default_503_no_new_record": true,
+  "lost_accepted_reply": "unconfirmed",
+  "original_key_body_replayed": true,
+  "two_independent_children": true,
+  "admission_calls": 2,
+  "read_only_fixed_target": true,
+  "safe_discard_both_children": true,
+  "cross_owner_source": "practice_not_found",
+  "connection_requests": 0
+}

@@ -1,0 +1,8 @@
+{
+  "request_count": 8,
+  "all_requests_get": true,
+  "sealed_incomplete_and_gap_verified": true,
+  "unregistered_explicit_404_verified": true,
+  "cross_account_and_deleted_rejected": true,
+  "refresh_preserves_sealed_input_hash": true
+}

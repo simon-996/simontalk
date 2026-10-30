@@ -1,0 +1,59 @@
+{
+  "environment": "isolated_test_database_unavailable_gateways",
+  "first": {
+    "stage": "first",
+    "page_sizes": [
+      10,
+      10,
+      3
+    ],
+    "unique_records": 23,
+    "other_detail": 404,
+    "foreign_cursor": 400,
+    "business_tables": 19,
+    "zero_write": true,
+    "restart_same_response": false
+  },
+  "after_api_restart": {
+    "stage": "restarted",
+    "page_sizes": [
+      10,
+      10,
+      3
+    ],
+    "unique_records": 23,
+    "other_detail": 404,
+    "foreign_cursor": 400,
+    "business_tables": 19,
+    "zero_write": true,
+    "restart_same_response": true
+  },
+  "dart_wire": {
+    "passed": 1,
+    "methods": [
+      "GET"
+    ],
+    "account_a_pages": [
+      10,
+      10,
+      3
+    ],
+    "saved_text_pages": [
+      16,
+      7
+    ],
+    "review_items": 1,
+    "account_b_records": 1,
+    "cross_owner_detail": 404
+  },
+  "fixture_only": true,
+  "browser_and_previewer": "blocked_by_work_settings",
+  "cleanup": {
+    "dedicated_database_dropped": true,
+    "dev_19_business_tables_full_rows_unchanged": true,
+    "dev_migration_head": "2d4836ab9c10",
+    "temporary_api_web_preview_stopped": true,
+    "temporary_credentials_scripts_removed": true,
+    "default_api_8000_remains_stopped": true
+  }
+}

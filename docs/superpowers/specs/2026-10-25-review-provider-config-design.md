@@ -1,0 +1,13 @@
+# 复盘供应商显式配置接入
+
+用户已授权持续开发、私有配置和首轮20元实测。前批真实语义样本及API/SQL/worker验证已完成，当前缺口是标准应用工厂无法从受控配置构造复盘网关，需要测试脚本直接修改app.state。
+
+采用默认关闭的显式后端选择：SIMONTALK_REVIEW_PROVIDER=disabled（默认）或qwen；文件位置SIMONTALK_QWEN_ENV_FILE默认.env，也可关闭文件仅用进程环境。禁用时不读取Qwen私有配置或构造HTTP客户端。启用时读取私有API_KEY/WORKSPACE_ID、REVIEW_MODEL及REVIEW_CONFIG_ID；应用接入路径仅接受已抽查的qwen3.8-flash，旧qwen-flash继续作为候选类可构造但不进入此启用路径。
+
+私有读取复用现有密钥保护，SecretStr/repr隐藏、环境覆盖、稳定错误且无原异常context。无效或缺失启用配置在数据库引擎/后台runner创建前失败；不静默退回另一型号或Unavailable。非秘密模式/文件路径留在Settings，Key不加入通用Settings/API/客户端。
+
+create_app通过独立review_providers工厂构造一次网关。已有ReviewJob/worker、配置签名、显式创建/重试、非幂等未知不重派及删除门均不改。构造应用不调用模型；启用后业务已排队任务可由既有runner处理，所以实际私有.env本轮不写启用开关。被阻断的旧任务仍须明确操作，不因切换配置自动恢复。
+
+不采用Key存在即启用，避免配置文件意外触发计费；不保留脚本修改app.state作为常规启动方式，因为这不能形成可维护的产品配置入口。保持语音准入/信令关闭，反馈配置不声明退出或截断能力。没有新端点、schema、依赖、前端或原生改动。
+
+验证：先用新测试复现缺少复盘loader/模式/工厂的失败，再补私有配置、工厂和应用装配；独立测试库验证标准工厂到worker、配置变化与默认关闭。完整API含真实恢复检查，wheel源码/无私有配置检查，实际私有配置仅在独立环境作受控验证；最后更新交接并清理本轮资源，无提交、推送或部署。

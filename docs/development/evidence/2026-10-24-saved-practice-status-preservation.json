@@ -1,0 +1,48 @@
+{
+  "preexisting_files": 629,
+  "preexisting_files_missing": [],
+  "preexisting_files_changed_by_unit": [
+    "HANDOFF.md",
+    "apps/client/lib/app.dart",
+    "apps/client/lib/features/history/deletion_screen.dart",
+    "apps/client/lib/features/history/history_screen.dart",
+    "apps/client/lib/features/history/history_view.dart",
+    "apps/client/test/features/history/deletion_screen_test.dart",
+    "docs/architecture/2026-10-23-practice-deletion.md",
+    "docs/design/2026-10-15-screen-and-interaction-spec.md",
+    "docs/superpowers/plans/2026-10-22-basic-version-development.md",
+    "docs/validation/2026-10-15-validation-plan.md"
+  ],
+  "new_files": [
+    "apps/client/lib/features/practice/saved_practice_status_controller.dart",
+    "apps/client/lib/features/practice/saved_practice_status_previews.dart",
+    "apps/client/lib/features/practice/saved_practice_status_providers.dart",
+    "apps/client/lib/features/practice/saved_practice_status_screen.dart",
+    "apps/client/lib/features/practice/saved_practice_status_view.dart",
+    "apps/client/test/features/practice/saved_practice_status_previews_test.dart",
+    "apps/client/test/features/practice/saved_practice_status_screen_test.dart",
+    "apps/client/test/features/practice/saved_practice_status_test.dart",
+    "apps/client/test/integration/saved_practice_status_wire_test.dart",
+    "docs/architecture/2026-10-24-saved-practice-status.md",
+    "docs/development/2026-10-24-saved-practice-status-verification.md",
+    "docs/development/evidence/2026-10-24-saved-practice-status-database.json",
+    "docs/development/evidence/2026-10-24-saved-practice-status-preservation.json",
+    "docs/development/evidence/2026-10-24-saved-practice-status-wire.json",
+    "docs/superpowers/plans/2026-10-24-saved-practice-status.md",
+    "docs/superpowers/specs/2026-10-24-saved-practice-status-design.md"
+  ],
+  "backend_files_unchanged": 101,
+  "dependency_files_unchanged": [
+    "apps/client/pubspec.yaml",
+    "apps/client/pubspec.lock",
+    "services/api/pyproject.toml",
+    "services/api/uv.lock"
+  ],
+  "flutter_passed": 1094,
+  "special_fixture_skipped": 10,
+  "actual_wire_runs": 2,
+  "api_and_database_cleaned": true,
+  "models_called": false,
+  "native_builds": false,
+  "committed_pushed_deployed": false
+}

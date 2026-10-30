@@ -42,3 +42,7 @@ ApiRealtimeSignaller实现已有RealtimeSignaller接口，每实例绑定账号�
 该适配已由独立[媒体业务协调器](2026-10-17-practice-media-coordinator.md)组合，仍未接到页面；实际协议工厂与网关保持关闭。PracticePreparationController继续只管理信令前准备，不复用来控制已发SDP的媒体连接。协调器的配置/后台/账号/业务失联路径由替身验证；真实供应商配置和可信上游终止仍待后续。
 
 实现方案见[设计](../superpowers/specs/2026-10-17-guarded-signalling-design.md)，实测见[验证记录](../development/2026-10-17-guarded-signalling-verification.md)。
+
+## 候选SDP实现（2026-10-24）
+
+新增[千问候选网关](2026-10-24-qwen-webrtc-signalling.md)遵守本契约：固定北京workspace HTTPS、7秒独立HTTP/上层8秒、单次不重试/重定向、64KiB/UTF-8及资源关闭。default factory和准入未接该类，仍Unavailable。实际API/SQL证明该类成功、失败及重启仍经原claim/unknown门，不具有单独终止或占用释放权限；[验证](../development/2026-10-24-qwen-webrtc-signalling-verification.md)区分替身与真实能力。

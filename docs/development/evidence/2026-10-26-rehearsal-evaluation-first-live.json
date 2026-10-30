@@ -1,0 +1,174 @@
+{
+  "standard_factory": true,
+  "test_admission": true,
+  "real_media": false,
+  "assessment": "semantic_failed_and_transport_unknown",
+  "samples": [
+    "parent: Yesterday I go to the park.",
+    "child: Yesterday I visited the park.",
+    "child: Yesterday I go to the park.",
+    "child: Yesterday I went to the library."
+  ],
+  "results": [
+    {
+      "status": "succeeded",
+      "error_code": null,
+      "snapshot": {
+        "items": [
+          {
+            "id": "bc536944-e1b6-4450-aab8-ca4336420546",
+            "kind": "correction",
+            "basis": "text_only",
+            "ordinal": 1,
+            "revision": 1,
+            "suggestion": "Yesterday I went to the park.",
+            "exact_quote": "I go",
+            "explanation": "时间状语Yesterday表示过去，动词需用过去式went。",
+            "source_turn_id": "b745e5de-27e9-49f5-bc3f-0fb126b2fdb4",
+            "source_connection_id": "a5b9009e-0f23-40ea-bd60-697823e8c07b"
+          }
+        ],
+        "job_id": "99b2053e-4df1-42c4-b263-06490257497c",
+        "version": 1,
+        "input_revision": 1,
+        "policy_version": "review_input_v1",
+        "schema_version": "review_result_v1",
+        "review_input_hash": "41fb2e3e8ad000c75c703288b13a2ffe3104ca77b1d185d709bd47ee669041ce",
+        "practice_input_hash": "539423fdd5630136d24230618f88ec64e7d851ee31cdf581be1d1a40d11ad42d",
+        "generation_policy_version": "review_generation_v1"
+      }
+    },
+    {
+      "status": "succeeded",
+      "error_code": null,
+      "snapshot": {
+        "items": [],
+        "job_id": "4435104e-67d2-414c-ad61-62e55d73ce26",
+        "version": 1,
+        "input_revision": 1,
+        "policy_version": "review_input_v1",
+        "schema_version": "review_result_v1",
+        "review_input_hash": "fee4f6a0516fcf2b1958ea8c942885023b6e532ef953cafab8266a29da5e4fe6",
+        "practice_input_hash": "e53164dbb17fe9a61426dcd0129323ca7fa72385993098c96c47da287fac0a13",
+        "rehearsal_evaluation": {
+          "intent": {
+            "status": "changed",
+            "evidence": [
+              {
+                "revision": 1,
+                "exact_quote": "visited",
+                "source_turn_id": "d1bfe1c1-d273-4b00-8626-3463fc23c398",
+                "source_connection_id": "5c02f58a-d39a-4906-9679-e019f988c884"
+              }
+            ],
+            "explanation": "用户将原句中的动词时态从一般现在时修正为过去式，准确表达了“昨天”发生的动作。"
+          },
+          "target_hash": "135f24874437106dbb765c123fdb162a0941fcf7ab02daace1091890e61f88f1",
+          "target_issue": {
+            "status": "demonstrated",
+            "evidence": [
+              {
+                "revision": 1,
+                "exact_quote": "visited",
+                "source_turn_id": "d1bfe1c1-d273-4b00-8626-3463fc23c398",
+                "source_connection_id": "5c02f58a-d39a-4906-9679-e019f988c884"
+              }
+            ],
+            "explanation": "用户成功使用了过去式动词（visited），解决了原句中因时间状语Yesterday导致的时态错误问题。"
+          },
+          "schema_version": "rehearsal_evaluation_v1"
+        },
+        "generation_policy_version": "review_generation_v1"
+      }
+    },
+    {
+      "status": "succeeded",
+      "error_code": null,
+      "snapshot": {
+        "items": [],
+        "job_id": "4e32c9c0-d455-4fca-b633-bfdc2558c6c2",
+        "version": 1,
+        "input_revision": 1,
+        "policy_version": "review_input_v1",
+        "schema_version": "review_result_v1",
+        "review_input_hash": "d0011ca28b40367e59e8180fa825597f4e7937444211998954a9d7a3afc09bb9",
+        "practice_input_hash": "c7aca3c0c44e9767dd5c7b9f40df1e7b3b9541ac9bc0a7e7e88cdfb217ed0b42",
+        "rehearsal_evaluation": {
+          "intent": {
+            "status": "insufficient_evidence",
+            "evidence": [],
+            "explanation": "未提供儿童当前的练习文本，无法判断其意图或表达内容。"
+          },
+          "target_hash": "135f24874437106dbb765c123fdb162a0941fcf7ab02daace1091890e61f88f1",
+          "target_issue": {
+            "status": "insufficient_evidence",
+            "evidence": [],
+            "explanation": "缺少儿童的实际输出数据，无法评估是否已纠正时态错误（go -> went）。"
+          },
+          "schema_version": "rehearsal_evaluation_v1"
+        },
+        "generation_policy_version": "review_generation_v1"
+      }
+    },
+    {
+      "status": "failed",
+      "error_code": "outcome_unknown",
+      "snapshot": null
+    }
+  ],
+  "jobs_and_attempts": {
+    "jobs": [
+      {
+        "status": "succeeded",
+        "error_code": null,
+        "attempt_count": 1,
+        "outcome_unknown": false
+      },
+      {
+        "status": "succeeded",
+        "error_code": null,
+        "attempt_count": 1,
+        "outcome_unknown": false
+      },
+      {
+        "status": "succeeded",
+        "error_code": null,
+        "attempt_count": 1,
+        "outcome_unknown": false
+      },
+      {
+        "status": "failed",
+        "error_code": "outcome_unknown",
+        "attempt_count": 1,
+        "outcome_unknown": true
+      }
+    ],
+    "attempts": [
+      {
+        "outcome": "succeeded",
+        "input_tokens": 641,
+        "output_tokens": 54,
+        "elapsed": "1.510375"
+      },
+      {
+        "outcome": "succeeded",
+        "input_tokens": 540,
+        "output_tokens": 193,
+        "elapsed": "3.332875"
+      },
+      {
+        "outcome": "succeeded",
+        "input_tokens": 541,
+        "output_tokens": 128,
+        "elapsed": "2.951561"
+      },
+      {
+        "outcome": "outcome_unknown",
+        "input_tokens": null,
+        "output_tokens": null,
+        "elapsed": "7.270849"
+      }
+    ]
+  },
+  "unknown_job_retried": false
+}

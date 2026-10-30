@@ -1,0 +1,19 @@
+{
+  "kind": "actual_dart_controllers_to_loopback_http",
+  "page_sizes": [
+    10,
+    10,
+    1
+  ],
+  "distinct_children": 21,
+  "back_to_page_1": true,
+  "read_phase_get_only": true,
+  "other_account_denied": true,
+  "other_source_empty": true,
+  "deleted_cursor_clears_old_page": true,
+  "refresh_restarts_head": true,
+  "deleted_parent_clears_old_page": true,
+  "other_owner_preserved": true,
+  "explicit_fixture_deletions": 2,
+  "gateway_calls": 0
+}

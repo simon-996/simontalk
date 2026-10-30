@@ -1,0 +1,30 @@
+{
+  "preexisting_files": 619,
+  "preexisting_files_missing": [],
+  "preexisting_files_changed_by_unit": [
+    "apps/client/lib/features/practice/practice_entry_controller.dart",
+    "apps/client/lib/features/practice/practice_entry_screen.dart",
+    "apps/client/lib/features/practice/practice_entry_view.dart",
+    "apps/client/test/features/practice/practice_entry_previews_test.dart",
+    "apps/client/test/features/practice/practice_entry_screen_test.dart",
+    "docs/superpowers/specs/2026-10-23-practice-entry-design.md",
+    "HANDOFF.md",
+    "docs/architecture/2026-10-17-client-preparation-lifecycle.md",
+    "docs/design/2026-10-15-screen-and-interaction-spec.md",
+    "docs/validation/2026-10-15-validation-plan.md"
+  ],
+  "backend_files_unchanged": 100,
+  "dependency_files_unchanged": [
+    "apps/client/pubspec.yaml",
+    "apps/client/pubspec.lock",
+    "services/api/pyproject.toml",
+    "services/api/uv.lock"
+  ],
+  "database_accessed": false,
+  "api_started": false,
+  "actual_wire_run": false,
+  "new_screenshots": false,
+  "models_called": false,
+  "native_builds": false,
+  "committed_pushed_deployed": false
+}

@@ -1,0 +1,49 @@
+{
+  "preexisting_files": 666,
+  "preexisting_files_missing": [],
+  "preexisting_files_changed_by_unit": [
+    "HANDOFF.md",
+    "docs/architecture/2026-10-17-guarded-signalling-api.md",
+    "docs/superpowers/plans/2026-10-22-basic-version-development.md",
+    "docs/validation/2026-10-15-validation-plan.md",
+    "services/api/pyproject.toml",
+    "services/api/uv.lock"
+  ],
+  "new_files": [
+    "docs/architecture/2026-10-24-qwen-webrtc-signalling.md",
+    "docs/development/2026-10-24-qwen-webrtc-signalling-verification.md",
+    "docs/development/evidence/2026-10-24-qwen-webrtc-signalling-database.json",
+    "docs/development/evidence/2026-10-24-qwen-webrtc-signalling-flow-database.json",
+    "docs/development/evidence/2026-10-24-qwen-webrtc-signalling-preservation.json",
+    "docs/development/evidence/2026-10-24-qwen-webrtc-signalling-runtime.json",
+    "docs/development/evidence/2026-10-24-qwen-webrtc-signalling-target-database.json",
+    "docs/superpowers/plans/2026-10-24-qwen-webrtc-signalling.md",
+    "docs/superpowers/specs/2026-10-24-qwen-webrtc-signalling-design.md",
+    "services/api/src/simontalk_api/qwen_webrtc_signalling.py",
+    "services/api/tests/test_qwen_practice_flow.py",
+    "services/api/tests/test_qwen_webrtc_signalling.py",
+    "services/api/tests/test_qwen_webrtc_signalling_integration.py"
+  ],
+  "client_files_unchanged": 304,
+  "locked_package_versions_unchanged": 38,
+  "httpx_version": "0.28.1",
+  "dependency_change": "existing httpx promoted dev to runtime; no version upgrade",
+  "api_passed": 808,
+  "api_seconds": 186.41,
+  "target_passed": 111,
+  "flow_passed": 1,
+  "python_files_formatted": 100,
+  "wheel_and_isolated_runtime_verified": true,
+  "default_admission_and_gateway": "Unavailable",
+  "remaining_test_databases": [],
+  "real_supplier_calls": 0,
+  "schema_modified": false,
+  "committed_pushed_deployed": false,
+  "documentation_checks": {
+    "documents": 8,
+    "local_links": 196,
+    "errors": []
+  },
+  "temporary_artifacts_removed": 16,
+  "isolated_runtime_and_wheel_cleaned": true
+}

@@ -1,0 +1,72 @@
+{
+  "date": "2026-10-30",
+  "time_local_approx": "12:07 Asia/Shanghai",
+  "scenario": "single_synthetic_turn_via_product_controller_and_browser_transport",
+  "model_requested": "qwen3.8-omni-flash-realtime",
+  "region": "cn-beijing",
+  "source_sha256": {
+    "practice_media_controller.dart": "8032255acf5bdc9ef2413fe15a2b0ee2efc27d86194374de2f52bf2a5e97cede",
+    "qwen_guarded_protocol.dart": "358270d680b999d4941dffa3c9286d043cdbe29dff3011d757b2230de9c2ea8a",
+    "realtime_transport_web.dart": "00741e401f23e43ddc7df308bcd3b2f4a9dc591d33c4bd4d238198a0dfa9d1c0",
+    "realtime_transport.js": "51725dd14d88a16cddd8f8be2759b23c93652bd0d692453cb1f216d79b8173a6",
+    "temporary_entry.dart": "4eaa472bf5dc4e1c895617b5ec6227e430f65f2215eeff1f54d8a8aba6ea504c"
+  },
+  "synthetic_duration_seconds": 5.5799375,
+  "source": "Edge page accessibility output manually transcribed; gateway stdout reported one exchange started and returned",
+  "result": {
+    "controller_active": true,
+    "phase_before_stop": "active",
+    "playback_observation_before_stop": "waiting",
+    "request_tools_present": false,
+    "response_requests": 1,
+    "response_status": "completed",
+    "turn_count": 2,
+    "user_final": true,
+    "assistant_final": true,
+    "recognized_two_synthetic_markers": true,
+    "assistant_playback_evidence_unknown": true,
+    "remote_inbound_audio_bytes": 213081,
+    "remote_inbound_audio_reports": 1,
+    "synthetic_media_stream": true,
+    "output_element_muted_by_harness": true,
+    "physical_microphone_used": false,
+    "local_closed": true,
+    "release_status": "unconfirmed",
+    "timed_out": false,
+    "error": null,
+    "event_counts": {
+      "session.created": 1,
+      "session.updated": 1,
+      "input_audio_buffer.speech_started": 1,
+      "conversation.item.created": 2,
+      "conversation.item.input_audio_transcription.delta": 20,
+      "input_audio_buffer.speech_stopped": 1,
+      "input_audio_buffer.committed": 1,
+      "conversation.item.input_audio_transcription.completed": 1,
+      "response.created": 1,
+      "response.output_item.added": 1,
+      "response.content_part.added": 1,
+      "response.audio_transcript.delta": 11,
+      "response.audio_transcript.done": 1,
+      "response.audio.done": 1,
+      "response.content_part.done": 1,
+      "response.output_item.done": 1,
+      "response.done": 1
+    },
+    "usage": {
+      "input_text_tokens": 726,
+      "input_audio_tokens": 28,
+      "output_text_tokens": 21,
+      "output_audio_tokens": 74,
+      "total_tokens": 849
+    }
+  },
+  "estimated_known_usage_cny": 0.0022395,
+  "limitations": [
+    "practice and account HTTP responses were local test doubles, not a production backend",
+    "experimental Web page and synthetic media injection are not the production page or real microphone",
+    "muted audio element, inbound RTP bytes and waiting observation do not establish audible playback",
+    "one turn does not establish interruption, multiple turns, alignment or safe context truncation",
+    "local closure and mock backend do not establish remote termination or settled cost"
+  ]
+}

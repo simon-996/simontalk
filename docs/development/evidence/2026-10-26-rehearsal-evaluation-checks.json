@@ -1,0 +1,103 @@
+{
+  "api": {
+    "passed": 1094,
+    "skipped": 0,
+    "seconds": 238.55,
+    "real_postgres_backup_restores_required": true
+  },
+  "ruff": {
+    "check": "passed",
+    "formatted_python_files": 99
+  },
+  "uv_lock": {
+    "offline_check": "passed",
+    "packages": 38
+  },
+  "wheel": {
+    "sha256": "f2972a50172d37281fd23ee479829630c6892d186d7c003511b6762d3e5fcb10",
+    "source_files_equal": 56,
+    "private_key_absent": true,
+    "independent_runtime_packages": 30,
+    "pytest_absent": true,
+    "installed_source_files_equal": 56
+  },
+  "scope": {
+    "new_migrations": 0,
+    "dependency_changes": false,
+    "commit": false,
+    "push": false,
+    "deployment": false,
+    "native_build": false
+  },
+  "flutter": {
+    "passed": 1439,
+    "dedicated_skipped": 10,
+    "displayed_test_seconds": 56,
+    "analyze": "No issues found",
+    "analyze_seconds": 2.2,
+    "dart_files_formatted": 223,
+    "dart_format_changes": 0,
+    "node_passed": 58,
+    "node_seconds": 0.623750583,
+    "web_build_seconds": 35.5,
+    "unicode_mappings_preserved": 30890
+  },
+  "reviews": {
+    "backend_spec": "PASS",
+    "backend_quality": "PASS",
+    "flutter_spec": "PASS",
+    "flutter_quality": "PASS",
+    "final_integration": "PASS"
+  },
+  "cleanup": {
+    "development_tables_unchanged": 21,
+    "owned_test_databases_removed": 3,
+    "temporary_server_ports_closed": [
+      7357,
+      55466
+    ],
+    "temporary_browser_tabs_closed": 3,
+    "private_temporary_directory": "removed",
+    "private_file_unchanged": true,
+    "private_mode": "0600",
+    "git_ignored": true,
+    "private_key_absent_from_repository": true
+  },
+  "workspace": {
+    "original_files_retained": 824,
+    "original_files_unchanged": 808,
+    "changed_original_files": [
+      "HANDOFF.md",
+      "apps/client/lib/features/review/review_models.dart",
+      "apps/client/lib/features/review/review_page_preview_fixtures.dart",
+      "apps/client/lib/features/review/review_page_previews.dart",
+      "apps/client/lib/features/review/review_page_view.dart",
+      "apps/client/test/features/review/review_page_previews_test.dart",
+      "apps/client/test/features/review/review_screen_test.dart",
+      "docs/architecture/2026-10-15-technical-design.md",
+      "docs/design/2026-10-15-screen-and-interaction-spec.md",
+      "docs/roadmap/2026-10-15-product-roadmap.md",
+      "docs/validation/2026-10-15-validation-plan.md",
+      "services/api/README.md",
+      "services/api/src/simontalk_api/qwen_review_gateway.py",
+      "services/api/src/simontalk_api/review_gateway.py",
+      "services/api/src/simontalk_api/review_jobs.py",
+      "services/api/src/simontalk_api/review_worker.py"
+    ],
+    "new_files": 29
+  },
+  "browser_images": {
+    "count": 12,
+    "encoding": "JPEG",
+    "dimensions": [
+      1280,
+      720
+    ]
+  },
+  "documentation": {
+    "markdown_files_checked": 10,
+    "local_links_checked": 409,
+    "json_files_parsed": 6,
+    "screenshots_verified": 12
+  }
+}

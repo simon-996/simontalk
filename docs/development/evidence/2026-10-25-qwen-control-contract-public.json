@@ -1,0 +1,131 @@
+{
+  "date": "2026-10-25",
+  "scope": "Read-only public official documentation and pinned DashScope SDK source inspection; no supplier API or inference calls",
+  "sdk": {
+    "repository": "dashscope/dashscope-sdk-python",
+    "commit": "4d3e9506e4470602664c8b5288c8b7c6fbe682a9",
+    "files": [
+      {
+        "path": "dashscope/audio/qwen_omni/omni_realtime.py",
+        "blob_sha": "8f5251a2b421106589bfd6e64355041cffaccddc"
+      },
+      {
+        "path": "dashscope/v2/resources/audio/realtime.py",
+        "blob_sha": "a45fca85d5d1540c02bb960b35d2981d280a6e02"
+      },
+      {
+        "path": "tests/v2/test_audio_omni_session.py",
+        "blob_sha": "380c46b2356b21a711e35e397ce223563d9d7cd5"
+      }
+    ],
+    "observations": [
+      {
+        "file": "dashscope/audio/qwen_omni/omni_realtime.py",
+        "lines": [
+          535,
+          556,
+          710,
+          736
+        ],
+        "finding": "end_session sends session.finish and waits for session.finished; close delegates to the socket"
+      },
+      {
+        "file": "dashscope/v2/resources/audio/realtime.py",
+        "lines": [
+          610,
+          648,
+          738,
+          820
+        ],
+        "finding": "delete_item only sends conversation.item.delete; finish ACK check differs for omni_v38; no independent session close/query REST resource in this inspected module"
+      },
+      {
+        "file": "tests/v2/test_audio_omni_session.py",
+        "lines": [
+          28,
+          70,
+          701,
+          717,
+          1060
+        ],
+        "finding": "Inspected tests use FakeWebSocket and injected connectors; do not prove live model support"
+      }
+    ]
+  },
+  "official_pages": [
+    {
+      "url": "https://help.aliyun.com/zh/model-studio/client-events",
+      "finding": "Omni event reference documents response.cancel; inspected page has no truncate/delete confirmation or session.finish definition"
+    },
+    {
+      "url": "https://help.aliyun.com/zh/model-studio/server-events",
+      "finding": "Inspected Omni server reference has no truncation acknowledgement"
+    },
+    {
+      "url": "https://help.aliyun.com/zh/model-studio/realtime",
+      "finding": "Omni guide mentions finish or disconnection and a 120-minute session limit; not a proven orphan reclamation bound with trusted start"
+    },
+    {
+      "url": "https://help.aliyun.com/zh/model-studio/realtime-websocket-overview",
+      "finding": "Model comparison gives connection close for Omni and finish/finished for ASR/TTS/LiveTranslate"
+    },
+    {
+      "url": "https://help.aliyun.com/zh/model-studio/fun-audiochat-client-events",
+      "finding": "Qwen-Audio-specific item retrieve/delete; cannot assume Omni equivalence"
+    },
+    {
+      "url": "https://help.aliyun.com/zh/model-studio/qwen-audio-realtime-server-events",
+      "finding": "Qwen-Audio-specific item.deleted confirmation; no claim of Omni compatibility"
+    },
+    {
+      "url": "https://help.aliyun.com/zh/model-studio/openai-compatible-conversations",
+      "finding": "Conversations persistence integrates with Responses; no mapping to realtime session shutdown shown"
+    }
+  ],
+  "conclusion": "No newly verified termination, orphan reclamation, or exact played-prefix reconciliation contract for the chosen Beijing Qwen3.5 Omni configuration. Existing admission remains unavailable.",
+  "authorization": {
+    "support_ticket": "user_requested_public_information_only",
+    "message_sent": false
+  },
+  "supplier_requests": 0,
+  "inference_requests": 0,
+  "physical_microphone": false,
+  "app_code_changed": false,
+  "database_access": false,
+  "rtc_comparison": [
+    {
+      "url": "https://help.aliyun.com/zh/document_detail/2937117.html",
+      "finding": "StartAgent requires caller TaskId plus AppId/ChannelId/TemplateId; UserInactivityTimeout default30 range5-180; no duplicate creation guarantee established from this page"
+    },
+    {
+      "url": "https://help.aliyun.com/zh/document_detail/2937118.html",
+      "finding": "GetAgent exposes Status0-5, StartTime and StopTime; Status3 stopping differs from4 ended; not_found/delayed_create semantics not established"
+    },
+    {
+      "url": "https://help.aliyun.com/zh/document_detail/2937122.html",
+      "finding": "StopAgent returns RequestId only; acceptance is not proof of termination or billing settlement"
+    }
+  ],
+  "public_research_decision": "Existing Omni route not newly eligible; RTC remains unselected candidate pending idempotency, not-found and delayed-create semantics, context reconciliation, credentials/fees and actual Web validation. No service switch.",
+  "audit": {
+    "original_files": 820,
+    "intentionally_changed": [
+      "HANDOFF.md",
+      "docs/development/2026-10-24-qwen-realtime-readiness-review.md",
+      "docs/development/2026-10-25-qwen-upstream-capability-questions.md",
+      "docs/validation/2026-10-15-validation-plan.md"
+    ],
+    "unchanged_original_files": 816,
+    "new_files": [
+      "docs/development/2026-10-25-qwen-control-contract-public-review.md",
+      "docs/development/evidence/2026-10-25-qwen-control-contract-public.json"
+    ],
+    "local_links_checked": 225,
+    "private_key_scan_file_count": 8,
+    "private_key_found": false,
+    "private_env_unchanged": true,
+    "private_env_mode": "0600",
+    "private_env_ignored": true,
+    "temporary_audit_removed": true
+  }
+}

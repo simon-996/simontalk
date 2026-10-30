@@ -1,0 +1,142 @@
+{
+  "model": "qwen3.8-omni-flash-realtime",
+  "connections_requested": 1,
+  "responses_requested": 1,
+  "events": [
+    {
+      "at": 0.3052,
+      "type": "session.created",
+      "session": {
+        "model": "qwen3.8-omni-flash-realtime",
+        "modalities": [
+          "text",
+          "audio"
+        ],
+        "turn_detection": {
+          "silence_duration_ms": 800,
+          "type": "server_vad",
+          "create_response": true,
+          "threshold": 0.5,
+          "interrupt_response": true,
+          "prefix_padding_ms": 300
+        }
+      }
+    },
+    {
+      "at": 0.4158,
+      "type": "session.updated",
+      "session": {
+        "model": "qwen3.8-omni-flash-realtime",
+        "modalities": [
+          "text",
+          "audio"
+        ],
+        "max_tokens": 64,
+        "audio": {
+          "input": {
+            "format": {
+              "type": "pcm",
+              "sample_rate": 16000,
+              "sample_format": "s16le",
+              "channels": 1,
+              "packing": "interleaved",
+              "channel_layout": "mono"
+            }
+          },
+          "output": {
+            "format": {
+              "type": "pcm",
+              "sample_rate": 24000
+            },
+            "voice": "Tina"
+          }
+        }
+      }
+    },
+    {
+      "at": 0.506,
+      "type": "conversation.item.created"
+    },
+    {
+      "at": 0.839,
+      "type": "response.created"
+    },
+    {
+      "at": 0.8391,
+      "type": "response.output_item.added"
+    },
+    {
+      "at": 0.8391,
+      "type": "conversation.item.created"
+    },
+    {
+      "at": 0.8391,
+      "type": "response.content_part.added"
+    },
+    {
+      "at": 1.1249,
+      "type": "response.audio_transcript.done"
+    },
+    {
+      "at": 1.1249,
+      "type": "response.audio.done"
+    },
+    {
+      "at": 1.1249,
+      "type": "response.content_part.done"
+    },
+    {
+      "at": 1.1249,
+      "type": "response.output_item.done"
+    },
+    {
+      "at": 1.125,
+      "type": "response.done",
+      "status": "completed"
+    },
+    {
+      "at": 1.2119,
+      "type": "conversation.item.deleted",
+      "matches_requested_item": true
+    },
+    {
+      "at": 1.2981,
+      "type": "error",
+      "error": {
+        "type": "invalid_request_error",
+        "code": "invalid_value",
+        "param": "type"
+      }
+    }
+  ],
+  "audio_bytes": 46080,
+  "usage": {
+    "total_tokens": 720,
+    "input_tokens": 704,
+    "output_tokens": 16,
+    "input_tokens_details": {
+      "text_tokens": 704
+    },
+    "output_tokens_details": {
+      "text_tokens": 4,
+      "audio_tokens": 12
+    }
+  },
+  "microphone": false,
+  "audio_saved": false,
+  "automatic_retries": 0,
+  "http_status": 101,
+  "session_sha256": "c3e3fda21e873dc80596f9e388d147a53b498f10add790aa27ddf981f2873d19",
+  "response_status": "completed",
+  "assistant_item_sha256": "58bf0c06715106fed0892fe836c9c10b71c03ad1a9a940e27fe3838e250b0f15",
+  "delete_sent_at": 1.1252,
+  "delete_outcome": "conversation.item.deleted",
+  "finish_sent_at": 1.2123,
+  "finish_outcome": "error",
+  "local_close_returned": true,
+  "close_seconds": 5.0034,
+  "close_frame_received": 1000,
+  "close_frame_sent": 1000,
+  "event_count": 19,
+  "elapsed_seconds": 6.3016
+}

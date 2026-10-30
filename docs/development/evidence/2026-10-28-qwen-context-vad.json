@@ -1,0 +1,2317 @@
+{
+  "result": {
+    "model": "qwen3.8-omni-flash-realtime",
+    "connections": 1,
+    "responses_requested": 1,
+    "usage": [
+      {
+        "total_tokens": 51,
+        "input_tokens": 39,
+        "output_tokens": 12,
+        "input_tokens_details": {
+          "text_tokens": 39
+        },
+        "output_tokens_details": {
+          "text_tokens": 12
+        }
+      }
+    ],
+    "events": [
+      {
+        "at": 0.2303,
+        "type": "session.created"
+      },
+      {
+        "at": 0.3437,
+        "type": "session.updated"
+      },
+      {
+        "at": 0.4254,
+        "type": "conversation.item.created",
+        "role": "user",
+        "item_type": "message"
+      },
+      {
+        "at": 0.6919,
+        "type": "response.created"
+      },
+      {
+        "at": 0.692,
+        "type": "response.output_item.added"
+      },
+      {
+        "at": 0.692,
+        "type": "conversation.item.created",
+        "role": "assistant",
+        "item_type": "message"
+      },
+      {
+        "at": 0.692,
+        "type": "response.content_part.added"
+      },
+      {
+        "at": 0.7609,
+        "type": "response.text.done"
+      },
+      {
+        "at": 0.7609,
+        "type": "response.content_part.done"
+      },
+      {
+        "at": 0.7609,
+        "type": "response.output_item.done"
+      },
+      {
+        "at": 0.7609,
+        "type": "response.done",
+        "status": "completed"
+      },
+      {
+        "at": 0.842,
+        "type": "conversation.item.deleted"
+      },
+      {
+        "at": 0.9228,
+        "type": "conversation.item.created",
+        "role": "assistant",
+        "item_type": "message"
+      }
+    ],
+    "audio_sent": false,
+    "audio_output": false,
+    "microphone": false,
+    "automatic_retries": 0,
+    "http_status": 101,
+    "config_confirmed": true,
+    "generated_status": "completed",
+    "generated_prefix_matches": true,
+    "generated_contains_marker": true,
+    "original_item_hash": "399613ae407f953445bda13536c1912e6c29cb4f09302c02022640108675f1ef",
+    "delete_ack_matches": true,
+    "replacement_outcome": "created",
+    "replacement_id_matches": false,
+    "replacement_role_matches": true,
+    "replacement_content_matches": true,
+    "replacement_item_hash": "11eb635c55c0a91343de81e1f32b30c096c09637b4d8e1c9604eee01da4ba7e6",
+    "failure_class": "ValueError",
+    "failure_reason": "replacement_ack_mismatch",
+    "close_returned": true,
+    "close_seconds": 5.0017,
+    "close_received": 1000,
+    "close_sent": 1000,
+    "elapsed_seconds": 5.9246
+  },
+  "result2": {
+    "model": "qwen3.8-omni-flash-realtime",
+    "connections": 1,
+    "responses_requested": 2,
+    "usage": [
+      {
+        "total_tokens": 51,
+        "input_tokens": 39,
+        "output_tokens": 12,
+        "input_tokens_details": {
+          "text_tokens": 39
+        },
+        "output_tokens_details": {
+          "text_tokens": 12
+        }
+      },
+      {
+        "total_tokens": 88,
+        "input_tokens": 76,
+        "output_tokens": 12,
+        "input_tokens_details": {
+          "text_tokens": 76
+        },
+        "output_tokens_details": {
+          "text_tokens": 12
+        }
+      }
+    ],
+    "events": [
+      {
+        "at": 0.1628,
+        "type": "session.created"
+      },
+      {
+        "at": 0.2772,
+        "type": "session.updated"
+      },
+      {
+        "at": 0.3622,
+        "type": "conversation.item.created",
+        "role": "user",
+        "item_type": "message"
+      },
+      {
+        "at": 0.6184,
+        "type": "response.created"
+      },
+      {
+        "at": 0.6238,
+        "type": "response.output_item.added"
+      },
+      {
+        "at": 0.6238,
+        "type": "conversation.item.created",
+        "role": "assistant",
+        "item_type": "message"
+      },
+      {
+        "at": 0.6238,
+        "type": "response.content_part.added"
+      },
+      {
+        "at": 0.6891,
+        "type": "response.text.done"
+      },
+      {
+        "at": 0.6891,
+        "type": "response.content_part.done"
+      },
+      {
+        "at": 0.6892,
+        "type": "response.output_item.done"
+      },
+      {
+        "at": 0.6892,
+        "type": "response.done",
+        "status": "completed"
+      },
+      {
+        "at": 0.7729,
+        "type": "conversation.item.deleted"
+      },
+      {
+        "at": 0.8548,
+        "type": "conversation.item.created",
+        "role": "assistant",
+        "item_type": "message"
+      },
+      {
+        "at": 0.9359,
+        "type": "error",
+        "error": {
+          "type": "invalid_request_error",
+          "code": "invalid_value",
+          "param": "type"
+        }
+      },
+      {
+        "at": 1.0166,
+        "type": "conversation.item.created",
+        "role": "user",
+        "item_type": "message"
+      },
+      {
+        "at": 1.2874,
+        "type": "response.created"
+      },
+      {
+        "at": 1.2875,
+        "type": "response.output_item.added"
+      },
+      {
+        "at": 1.2875,
+        "type": "conversation.item.created",
+        "role": "assistant",
+        "item_type": "message"
+      },
+      {
+        "at": 1.2875,
+        "type": "response.content_part.added"
+      },
+      {
+        "at": 1.3505,
+        "type": "response.text.done"
+      },
+      {
+        "at": 1.3505,
+        "type": "response.content_part.done"
+      },
+      {
+        "at": 1.3505,
+        "type": "response.output_item.done"
+      },
+      {
+        "at": 1.3505,
+        "type": "response.done",
+        "status": "completed"
+      }
+    ],
+    "audio_sent": false,
+    "audio_output": false,
+    "microphone": false,
+    "automatic_retries": 0,
+    "http_status": 101,
+    "config_confirmed": true,
+    "generated_status": "completed",
+    "generated_prefix_matches": true,
+    "generated_contains_marker": true,
+    "original_item_hash": "110aaa1089128ef555de089e2542dfbf475e24d9106d3a3ec3f5b4424f2ea123",
+    "delete_ack_matches": true,
+    "replacement_outcome": "created",
+    "replacement_id_matches": false,
+    "replacement_server_id_present": true,
+    "replacement_server_id_hash": "1d45922ea0c977bdbc41a54782febe11c121687dba91f09b4dc22da8881456b0",
+    "replacement_role_matches": true,
+    "replacement_content_matches": true,
+    "replacement_item_hash": "51a459b20af2f221093da5e7ccb5591b8486a6e150d64f09a483f07ddf5116ad",
+    "retrieve_outcome": "error",
+    "followup_status": "completed",
+    "followup_fixed_test_text": "The lantern is blue. The password is ORANGE.",
+    "followup_mentions_deleted_marker": true,
+    "followup_mentions_blue": true,
+    "followup_mentions_none": false,
+    "close_returned": true,
+    "close_seconds": 5.0018,
+    "close_received": 1000,
+    "close_sent": 1000,
+    "elapsed_seconds": 6.3524
+  },
+  "control": {
+    "model": "qwen3.8-omni-flash-realtime",
+    "runs": [
+      {
+        "mode": "kept_assistant_control",
+        "responses_requested": 2,
+        "events": [
+          {
+            "type": "session.created",
+            "at": 0.176
+          },
+          {
+            "type": "session.updated",
+            "at": 0.292
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.376,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 0.639
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 0.639
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.639,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 0.641
+          },
+          {
+            "type": "response.text.done",
+            "at": 0.73
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 0.73
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 0.731
+          },
+          {
+            "type": "response.done",
+            "at": 0.731,
+            "status": "completed"
+          },
+          {
+            "type": "conversation.item.deleted",
+            "at": 0.817
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.901,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 1.199
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 1.199
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 1.199,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 1.199
+          },
+          {
+            "type": "response.text.done",
+            "at": 1.222
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 1.222
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 1.222
+          },
+          {
+            "type": "response.done",
+            "at": 1.222,
+            "status": "completed"
+          }
+        ],
+        "usage": [
+          {
+            "total_tokens": 71,
+            "input_tokens": 57,
+            "output_tokens": 14,
+            "input_tokens_details": {
+              "text_tokens": 57
+            },
+            "output_tokens_details": {
+              "text_tokens": 14
+            }
+          },
+          {
+            "total_tokens": 48,
+            "input_tokens": 46,
+            "output_tokens": 2,
+            "input_tokens_details": {
+              "text_tokens": 46
+            },
+            "output_tokens_details": {
+              "text_tokens": 2
+            }
+          }
+        ],
+        "http_status": 101,
+        "configuration_confirmed": true,
+        "generated_expected_format": true,
+        "original_text_synthetic": "The lantern is blue. Code: 1234.",
+        "original_user_delete_confirmed": true,
+        "answer_synthetic": "NONE",
+        "answer_repeats_original_code": false,
+        "answer_contains_none": true,
+        "close_returned": true,
+        "close_sent": 1000,
+        "close_received": 1000,
+        "elapsed_seconds": 6.224
+      },
+      {
+        "mode": "deleted_then_replaced",
+        "responses_requested": 2,
+        "events": [
+          {
+            "type": "session.created",
+            "at": 0.159
+          },
+          {
+            "type": "session.updated",
+            "at": 0.261
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.344,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 0.608
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 0.608
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.608,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 0.608
+          },
+          {
+            "type": "response.text.done",
+            "at": 0.702
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 0.702
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 0.702
+          },
+          {
+            "type": "response.done",
+            "at": 0.702,
+            "status": "completed"
+          },
+          {
+            "type": "conversation.item.deleted",
+            "at": 0.783
+          },
+          {
+            "type": "conversation.item.deleted",
+            "at": 0.865
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.947,
+            "role": "assistant"
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 1.029,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 1.369
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 1.369
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 1.369,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 1.37
+          },
+          {
+            "type": "response.text.done",
+            "at": 1.393
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 1.393
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 1.393
+          },
+          {
+            "type": "response.done",
+            "at": 1.393,
+            "status": "completed"
+          }
+        ],
+        "usage": [
+          {
+            "total_tokens": 71,
+            "input_tokens": 57,
+            "output_tokens": 14,
+            "input_tokens_details": {
+              "text_tokens": 57
+            },
+            "output_tokens_details": {
+              "text_tokens": 14
+            }
+          },
+          {
+            "total_tokens": 48,
+            "input_tokens": 46,
+            "output_tokens": 2,
+            "input_tokens_details": {
+              "text_tokens": 46
+            },
+            "output_tokens_details": {
+              "text_tokens": 2
+            }
+          }
+        ],
+        "http_status": 101,
+        "configuration_confirmed": true,
+        "generated_expected_format": true,
+        "original_text_synthetic": "The lantern is blue. Code: 1234.",
+        "original_user_delete_confirmed": true,
+        "assistant_delete_confirmed": true,
+        "replacement_confirmed": true,
+        "answer_synthetic": "NONE",
+        "answer_repeats_original_code": false,
+        "answer_contains_none": true,
+        "close_returned": true,
+        "close_sent": 1000,
+        "close_received": 1000,
+        "elapsed_seconds": 6.395
+      }
+    ],
+    "microphone": false,
+    "audio_input": false,
+    "audio_output": false,
+    "automatic_retries": 0
+  },
+  "control-retain-user": {
+    "model": "qwen3.8-omni-flash-realtime",
+    "runs": [
+      {
+        "mode": "kept_assistant_control",
+        "responses_requested": 2,
+        "events": [
+          {
+            "type": "session.created",
+            "at": 0.174
+          },
+          {
+            "type": "session.updated",
+            "at": 0.284
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.368,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 0.626
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 0.626
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.626,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 0.626
+          },
+          {
+            "type": "response.text.done",
+            "at": 0.713
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 0.713
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 0.713
+          },
+          {
+            "type": "response.done",
+            "at": 0.713,
+            "status": "completed"
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.798,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 1.073
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 1.073
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 1.073,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 1.073
+          },
+          {
+            "type": "response.text.done",
+            "at": 1.094
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 1.094
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 1.094
+          },
+          {
+            "type": "response.done",
+            "at": 1.094,
+            "status": "completed"
+          }
+        ],
+        "usage": [
+          {
+            "total_tokens": 71,
+            "input_tokens": 57,
+            "output_tokens": 14,
+            "input_tokens_details": {
+              "text_tokens": 57
+            },
+            "output_tokens_details": {
+              "text_tokens": 14
+            }
+          },
+          {
+            "total_tokens": 107,
+            "input_tokens": 102,
+            "output_tokens": 5,
+            "input_tokens_details": {
+              "text_tokens": 102
+            },
+            "output_tokens_details": {
+              "text_tokens": 5
+            }
+          }
+        ],
+        "http_status": 101,
+        "configuration_confirmed": true,
+        "generated_expected_format": true,
+        "original_text_synthetic": "The lantern is blue. Code: 1234.",
+        "original_user_retained": true,
+        "answer_synthetic": "1234",
+        "answer_repeats_original_code": true,
+        "answer_contains_none": false,
+        "close_returned": true,
+        "close_sent": 1000,
+        "close_received": 1000,
+        "elapsed_seconds": 6.096
+      },
+      {
+        "mode": "deleted_then_replaced",
+        "responses_requested": 2,
+        "events": [
+          {
+            "type": "session.created",
+            "at": 0.147
+          },
+          {
+            "type": "session.updated",
+            "at": 0.254
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.329,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 0.586
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 0.586
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.586,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 0.586
+          },
+          {
+            "type": "response.text.done",
+            "at": 0.678
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 0.678
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 0.678
+          },
+          {
+            "type": "response.done",
+            "at": 0.678,
+            "status": "completed"
+          },
+          {
+            "type": "conversation.item.deleted",
+            "at": 0.753
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.827,
+            "role": "assistant"
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.901,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 1.156
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 1.156
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 1.156,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 1.156
+          },
+          {
+            "type": "response.text.done",
+            "at": 1.221
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 1.221
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 1.221
+          },
+          {
+            "type": "response.done",
+            "at": 1.221,
+            "status": "completed"
+          }
+        ],
+        "usage": [
+          {
+            "total_tokens": 71,
+            "input_tokens": 57,
+            "output_tokens": 14,
+            "input_tokens_details": {
+              "text_tokens": 57
+            },
+            "output_tokens_details": {
+              "text_tokens": 14
+            }
+          },
+          {
+            "total_tokens": 98,
+            "input_tokens": 89,
+            "output_tokens": 9,
+            "input_tokens_details": {
+              "text_tokens": 89
+            },
+            "output_tokens_details": {
+              "text_tokens": 9
+            }
+          }
+        ],
+        "http_status": 101,
+        "configuration_confirmed": true,
+        "generated_expected_format": true,
+        "original_text_synthetic": "The lantern is blue. Code: 1234.",
+        "original_user_retained": true,
+        "assistant_delete_confirmed": true,
+        "replacement_confirmed": true,
+        "answer_synthetic": "Code: 1234.",
+        "answer_repeats_original_code": true,
+        "answer_contains_none": false,
+        "close_returned": true,
+        "close_sent": 1000,
+        "close_received": 1000,
+        "elapsed_seconds": 6.222
+      }
+    ],
+    "microphone": false,
+    "audio_input": false,
+    "audio_output": false,
+    "automatic_retries": 0
+  },
+  "control-random": {
+    "model": "qwen3.8-omni-flash-realtime",
+    "runs": [
+      {
+        "mode": "kept_assistant_control",
+        "responses_requested": 2,
+        "events": [
+          {
+            "type": "session.created",
+            "at": 0.156
+          },
+          {
+            "type": "session.updated",
+            "at": 0.265
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.346,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 0.611
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 0.611
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.611,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 0.611
+          },
+          {
+            "type": "response.text.done",
+            "at": 0.703
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 0.703
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 0.703
+          },
+          {
+            "type": "response.done",
+            "at": 0.703,
+            "status": "completed"
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.782,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 1.054
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 1.054
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 1.054,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 1.054
+          },
+          {
+            "type": "response.text.done",
+            "at": 1.146
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 1.146
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 1.146
+          },
+          {
+            "type": "response.done",
+            "at": 1.147,
+            "status": "completed"
+          }
+        ],
+        "usage": [
+          {
+            "total_tokens": 81,
+            "input_tokens": 65,
+            "output_tokens": 16,
+            "input_tokens_details": {
+              "text_tokens": 65
+            },
+            "output_tokens_details": {
+              "text_tokens": 16
+            }
+          },
+          {
+            "total_tokens": 128,
+            "input_tokens": 112,
+            "output_tokens": 16,
+            "input_tokens_details": {
+              "text_tokens": 112
+            },
+            "output_tokens_details": {
+              "text_tokens": 16
+            }
+          }
+        ],
+        "http_status": 101,
+        "configuration_confirmed": true,
+        "generated_expected_format": true,
+        "original_text_synthetic": "The lantern is blue. Code: 739152.",
+        "original_user_retained": true,
+        "answer_synthetic": "The lantern is blue. Code: 739152.",
+        "answer_repeats_original_code": true,
+        "answer_contains_none": false,
+        "close_returned": true,
+        "close_sent": 1000,
+        "close_received": 1000,
+        "elapsed_seconds": 6.148
+      },
+      {
+        "mode": "deleted_then_replaced",
+        "responses_requested": 2,
+        "events": [
+          {
+            "type": "session.created",
+            "at": 0.142
+          },
+          {
+            "type": "session.updated",
+            "at": 0.244
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.313,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 0.559
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 0.559
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.559,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 0.559
+          },
+          {
+            "type": "response.text.done",
+            "at": 0.647
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 0.647
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 0.647
+          },
+          {
+            "type": "response.done",
+            "at": 0.647,
+            "status": "completed"
+          },
+          {
+            "type": "conversation.item.deleted",
+            "at": 0.719
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.788,
+            "role": "assistant"
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.857,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 1.102
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 1.102
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 1.102,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 1.102
+          },
+          {
+            "type": "response.text.done",
+            "at": 1.217
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 1.217
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 1.217
+          },
+          {
+            "type": "response.done",
+            "at": 1.217,
+            "status": "completed"
+          }
+        ],
+        "usage": [
+          {
+            "total_tokens": 81,
+            "input_tokens": 65,
+            "output_tokens": 16,
+            "input_tokens_details": {
+              "text_tokens": 65
+            },
+            "output_tokens_details": {
+              "text_tokens": 16
+            }
+          },
+          {
+            "total_tokens": 113,
+            "input_tokens": 97,
+            "output_tokens": 16,
+            "input_tokens_details": {
+              "text_tokens": 97
+            },
+            "output_tokens_details": {
+              "text_tokens": 16
+            }
+          }
+        ],
+        "http_status": 101,
+        "configuration_confirmed": true,
+        "generated_expected_format": true,
+        "original_text_synthetic": "The lantern is blue. Code: 739104.",
+        "original_user_retained": true,
+        "assistant_delete_confirmed": true,
+        "replacement_confirmed": true,
+        "answer_synthetic": "The lantern is blue. Code: 739104.",
+        "answer_repeats_original_code": true,
+        "answer_contains_none": false,
+        "close_returned": true,
+        "close_sent": 1000,
+        "close_received": 1000,
+        "elapsed_seconds": 6.219
+      }
+    ],
+    "microphone": false,
+    "audio_input": false,
+    "audio_output": false,
+    "automatic_retries": 0
+  },
+  "control-contrast": {
+    "model": "qwen3.8-omni-flash-realtime",
+    "runs": [
+      {
+        "mode": "kept_assistant_control",
+        "responses_requested": 2,
+        "events": [
+          {
+            "type": "session.created",
+            "at": 0.183
+          },
+          {
+            "type": "session.updated",
+            "at": 0.302
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.38,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 0.644
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 0.644
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.644,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 0.644
+          },
+          {
+            "type": "response.text.done",
+            "at": 0.756
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 0.756
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 0.756
+          },
+          {
+            "type": "response.done",
+            "at": 0.756,
+            "status": "completed"
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.834,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 1.096
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 1.096
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 1.096,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 1.096
+          },
+          {
+            "type": "response.text.done",
+            "at": 1.189
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 1.189
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 1.189
+          },
+          {
+            "type": "response.done",
+            "at": 1.189,
+            "status": "completed"
+          }
+        ],
+        "usage": [
+          {
+            "total_tokens": 81,
+            "input_tokens": 65,
+            "output_tokens": 16,
+            "input_tokens_details": {
+              "text_tokens": 65
+            },
+            "output_tokens_details": {
+              "text_tokens": 16
+            }
+          },
+          {
+            "total_tokens": 135,
+            "input_tokens": 119,
+            "output_tokens": 16,
+            "input_tokens_details": {
+              "text_tokens": 119
+            },
+            "output_tokens_details": {
+              "text_tokens": 16
+            }
+          }
+        ],
+        "http_status": 101,
+        "configuration_confirmed": true,
+        "generated_expected_format": true,
+        "original_text_synthetic": "The lantern is blue. Code: 739201.",
+        "original_user_retained": true,
+        "answer_synthetic": "The lantern is blue. Code: 739201.",
+        "answer_repeats_original_code": true,
+        "answer_contains_none": false,
+        "close_returned": true,
+        "close_sent": 1000,
+        "close_received": 1000,
+        "elapsed_seconds": 6.191
+      },
+      {
+        "mode": "deleted_then_replaced",
+        "responses_requested": 2,
+        "events": [
+          {
+            "type": "session.created",
+            "at": 0.16
+          },
+          {
+            "type": "session.updated",
+            "at": 0.272
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 0.35,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 1.786
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 1.786
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 1.786,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 1.787
+          },
+          {
+            "type": "response.text.done",
+            "at": 1.897
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 1.897
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 1.897
+          },
+          {
+            "type": "response.done",
+            "at": 1.897,
+            "status": "completed"
+          },
+          {
+            "type": "conversation.item.deleted",
+            "at": 1.975
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 2.051,
+            "role": "assistant"
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 2.126,
+            "role": "user"
+          },
+          {
+            "type": "response.created",
+            "at": 2.512
+          },
+          {
+            "type": "response.output_item.added",
+            "at": 2.512
+          },
+          {
+            "type": "conversation.item.created",
+            "at": 2.512,
+            "role": "assistant"
+          },
+          {
+            "type": "response.content_part.added",
+            "at": 2.512
+          },
+          {
+            "type": "response.text.done",
+            "at": 2.601
+          },
+          {
+            "type": "response.content_part.done",
+            "at": 2.602
+          },
+          {
+            "type": "response.output_item.done",
+            "at": 2.602
+          },
+          {
+            "type": "response.done",
+            "at": 2.602,
+            "status": "completed"
+          }
+        ],
+        "usage": [
+          {
+            "total_tokens": 81,
+            "input_tokens": 65,
+            "output_tokens": 16,
+            "input_tokens_details": {
+              "text_tokens": 65
+            },
+            "output_tokens_details": {
+              "text_tokens": 16
+            }
+          },
+          {
+            "total_tokens": 114,
+            "input_tokens": 104,
+            "output_tokens": 10,
+            "input_tokens_details": {
+              "text_tokens": 104
+            },
+            "output_tokens_details": {
+              "text_tokens": 10
+            }
+          }
+        ],
+        "http_status": 101,
+        "configuration_confirmed": true,
+        "generated_expected_format": true,
+        "original_text_synthetic": "The lantern is blue. Code: 147258.",
+        "original_user_retained": true,
+        "assistant_delete_confirmed": true,
+        "replacement_confirmed": true,
+        "answer_synthetic": "blue, 739102",
+        "answer_repeats_original_code": false,
+        "answer_contains_none": false,
+        "close_returned": true,
+        "close_sent": 1000,
+        "close_received": 1000,
+        "elapsed_seconds": 7.604
+      }
+    ],
+    "microphone": false,
+    "audio_input": false,
+    "audio_output": false,
+    "automatic_retries": 0
+  },
+  "bootstrap": {
+    "model": "qwen3.8-omni-flash-realtime",
+    "runs": [
+      {
+        "mode": "empty_context_control",
+        "responses_requested": 1,
+        "events": [
+          {
+            "at": 0.167,
+            "type": "session.created"
+          },
+          {
+            "at": 0.267,
+            "type": "session.updated"
+          },
+          {
+            "at": 0.34,
+            "type": "conversation.item.created",
+            "role": "user"
+          },
+          {
+            "at": 0.595,
+            "type": "response.created"
+          },
+          {
+            "at": 0.595,
+            "type": "response.output_item.added"
+          },
+          {
+            "at": 0.595,
+            "type": "conversation.item.created",
+            "role": "assistant"
+          },
+          {
+            "at": 0.595,
+            "type": "response.content_part.added"
+          },
+          {
+            "at": 0.618,
+            "type": "response.text.done"
+          },
+          {
+            "at": 0.618,
+            "type": "response.content_part.done"
+          },
+          {
+            "at": 0.618,
+            "type": "response.output_item.done"
+          },
+          {
+            "at": 0.618,
+            "type": "response.done",
+            "status": "completed"
+          }
+        ],
+        "usage": [
+          {
+            "total_tokens": 62,
+            "input_tokens": 60,
+            "output_tokens": 2,
+            "input_tokens_details": {
+              "text_tokens": 60
+            },
+            "output_tokens_details": {
+              "text_tokens": 2
+            }
+          }
+        ],
+        "http_status": 101,
+        "configuration_confirmed": true,
+        "status": "completed",
+        "answer_synthetic": "NONE",
+        "mentions_green": false,
+        "mentions_zebra": false,
+        "mentions_none": true,
+        "close_returned": true,
+        "close_sent": 1000,
+        "close_received": 1000,
+        "elapsed_seconds": 5.618
+      },
+      {
+        "mode": "seeded_assistant",
+        "responses_requested": 1,
+        "events": [
+          {
+            "at": 0.153,
+            "type": "session.created"
+          },
+          {
+            "at": 0.259,
+            "type": "session.updated"
+          },
+          {
+            "at": 0.34,
+            "type": "conversation.item.created",
+            "role": "assistant"
+          },
+          {
+            "at": 0.417,
+            "type": "conversation.item.created",
+            "role": "user"
+          },
+          {
+            "at": 0.695,
+            "type": "response.created"
+          },
+          {
+            "at": 0.696,
+            "type": "response.output_item.added"
+          },
+          {
+            "at": 0.696,
+            "type": "conversation.item.created",
+            "role": "assistant"
+          },
+          {
+            "at": 0.696,
+            "type": "response.content_part.added"
+          },
+          {
+            "at": 0.719,
+            "type": "response.text.done"
+          },
+          {
+            "at": 0.719,
+            "type": "response.content_part.done"
+          },
+          {
+            "at": 0.719,
+            "type": "response.output_item.done"
+          },
+          {
+            "at": 0.719,
+            "type": "response.done",
+            "status": "completed"
+          }
+        ],
+        "usage": [
+          {
+            "total_tokens": 62,
+            "input_tokens": 60,
+            "output_tokens": 2,
+            "input_tokens_details": {
+              "text_tokens": 60
+            },
+            "output_tokens_details": {
+              "text_tokens": 2
+            }
+          }
+        ],
+        "http_status": 101,
+        "configuration_confirmed": true,
+        "seed_ack_confirmed": true,
+        "status": "completed",
+        "answer_synthetic": "NONE",
+        "mentions_green": false,
+        "mentions_zebra": false,
+        "mentions_none": true,
+        "close_returned": true,
+        "close_sent": 1000,
+        "close_received": 1000,
+        "elapsed_seconds": 5.72
+      }
+    ],
+    "audio_input": false,
+    "audio_output": false,
+    "microphone": false,
+    "automatic_retries": 0
+  },
+  "bootstrap-user": {
+    "model": "qwen3.8-omni-flash-realtime",
+    "runs": [
+      {
+        "mode": "empty_context_control",
+        "responses_requested": 1,
+        "events": [
+          {
+            "at": 0.154,
+            "type": "session.created"
+          },
+          {
+            "at": 0.257,
+            "type": "session.updated"
+          },
+          {
+            "at": 0.33,
+            "type": "conversation.item.created",
+            "role": "user"
+          },
+          {
+            "at": 0.763,
+            "type": "response.created"
+          },
+          {
+            "at": 0.763,
+            "type": "response.output_item.added"
+          },
+          {
+            "at": 0.763,
+            "type": "conversation.item.created",
+            "role": "assistant"
+          },
+          {
+            "at": 0.763,
+            "type": "response.content_part.added"
+          },
+          {
+            "at": 0.784,
+            "type": "response.text.done"
+          },
+          {
+            "at": 0.784,
+            "type": "response.content_part.done"
+          },
+          {
+            "at": 0.784,
+            "type": "response.output_item.done"
+          },
+          {
+            "at": 0.784,
+            "type": "response.done",
+            "status": "completed"
+          }
+        ],
+        "usage": [
+          {
+            "total_tokens": 60,
+            "input_tokens": 58,
+            "output_tokens": 2,
+            "input_tokens_details": {
+              "text_tokens": 58
+            },
+            "output_tokens_details": {
+              "text_tokens": 2
+            }
+          }
+        ],
+        "http_status": 101,
+        "configuration_confirmed": true,
+        "status": "completed",
+        "answer_synthetic": "NONE",
+        "mentions_green": false,
+        "mentions_zebra": false,
+        "mentions_none": true,
+        "close_returned": true,
+        "close_sent": 1000,
+        "close_received": 1000,
+        "elapsed_seconds": 5.785
+      },
+      {
+        "mode": "seeded_user_recap",
+        "responses_requested": 1,
+        "events": [
+          {
+            "at": 0.162,
+            "type": "session.created"
+          },
+          {
+            "at": 0.27,
+            "type": "session.updated"
+          },
+          {
+            "at": 0.347,
+            "type": "conversation.item.created",
+            "role": "user"
+          },
+          {
+            "at": 0.423,
+            "type": "conversation.item.created",
+            "role": "user"
+          },
+          {
+            "at": 0.685,
+            "type": "response.created"
+          },
+          {
+            "at": 0.685,
+            "type": "response.output_item.added"
+          },
+          {
+            "at": 0.685,
+            "type": "conversation.item.created",
+            "role": "assistant"
+          },
+          {
+            "at": 0.685,
+            "type": "response.content_part.added"
+          },
+          {
+            "at": 0.775,
+            "type": "response.text.done"
+          },
+          {
+            "at": 0.775,
+            "type": "response.content_part.done"
+          },
+          {
+            "at": 0.775,
+            "type": "response.output_item.done"
+          },
+          {
+            "at": 0.776,
+            "type": "response.done",
+            "status": "completed"
+          }
+        ],
+        "usage": [
+          {
+            "total_tokens": 92,
+            "input_tokens": 78,
+            "output_tokens": 14,
+            "input_tokens_details": {
+              "text_tokens": 78
+            },
+            "output_tokens_details": {
+              "text_tokens": 14
+            }
+          }
+        ],
+        "http_status": 101,
+        "configuration_confirmed": true,
+        "seed_ack_confirmed": true,
+        "status": "completed",
+        "answer_synthetic": "The lantern is green, and the animal is a zebra.",
+        "mentions_green": true,
+        "mentions_zebra": true,
+        "mentions_none": false,
+        "close_returned": true,
+        "close_sent": 1000,
+        "close_received": 1000,
+        "elapsed_seconds": 5.777
+      }
+    ],
+    "audio_input": false,
+    "audio_output": false,
+    "microphone": false,
+    "automatic_retries": 0
+  },
+  "alignment": {
+    "model": "qwen3.8-omni-flash-realtime",
+    "connections": 1,
+    "responses_requested": 1,
+    "events": [
+      {
+        "at": 0.1793,
+        "type": "session.created",
+        "audio_bytes_so_far": 0
+      },
+      {
+        "at": 0.2865,
+        "type": "session.updated",
+        "audio_bytes_so_far": 0
+      },
+      {
+        "at": 0.363,
+        "type": "conversation.item.created",
+        "audio_bytes_so_far": 0
+      },
+      {
+        "at": 0.7534,
+        "type": "response.created",
+        "audio_bytes_so_far": 0
+      },
+      {
+        "at": 0.7534,
+        "type": "response.output_item.added",
+        "audio_bytes_so_far": 0
+      },
+      {
+        "at": 0.7534,
+        "type": "conversation.item.created",
+        "audio_bytes_so_far": 0
+      },
+      {
+        "at": 0.7544,
+        "type": "response.content_part.added",
+        "audio_bytes_so_far": 0
+      },
+      {
+        "at": 0.7544,
+        "type": "response.audio_transcript.delta",
+        "audio_bytes_so_far": 0,
+        "text_synthetic": "Hello there.",
+        "field_names": [
+          "content_index",
+          "delta",
+          "event_id",
+          "item_id",
+          "output_index",
+          "response_id",
+          "type"
+        ]
+      },
+      {
+        "at": 0.8929,
+        "type": "response.audio_transcript.delta",
+        "audio_bytes_so_far": 0,
+        "text_synthetic": " The green lantern is",
+        "field_names": [
+          "content_index",
+          "delta",
+          "event_id",
+          "item_id",
+          "output_index",
+          "response_id",
+          "type"
+        ]
+      },
+      {
+        "at": 0.8929,
+        "type": "response.audio_transcript.delta",
+        "audio_bytes_so_far": 0,
+        "text_synthetic": " near the blue table",
+        "field_names": [
+          "content_index",
+          "delta",
+          "event_id",
+          "item_id",
+          "output_index",
+          "response_id",
+          "type"
+        ]
+      },
+      {
+        "at": 0.8929,
+        "type": "response.audio_transcript.delta",
+        "audio_bytes_so_far": 0,
+        "text_synthetic": ". Take the small",
+        "field_names": [
+          "content_index",
+          "delta",
+          "event_id",
+          "item_id",
+          "output_index",
+          "response_id",
+          "type"
+        ]
+      },
+      {
+        "at": 0.8929,
+        "type": "response.audio_transcript.delta",
+        "audio_bytes_so_far": 0,
+        "text_synthetic": " umbrella before you go",
+        "field_names": [
+          "content_index",
+          "delta",
+          "event_id",
+          "item_id",
+          "output_index",
+          "response_id",
+          "type"
+        ]
+      },
+      {
+        "at": 0.893,
+        "type": "response.audio_transcript.delta",
+        "audio_bytes_so_far": 0,
+        "text_synthetic": " outside.",
+        "field_names": [
+          "content_index",
+          "delta",
+          "event_id",
+          "item_id",
+          "output_index",
+          "response_id",
+          "type"
+        ]
+      },
+      {
+        "at": 1.0739,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 15360,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.1143,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 30720,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.185,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 46080,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.2673,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 61440,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.3229,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 76800,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.3633,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 92160,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.4009,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 107520,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.4408,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 122880,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.4806,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 138240,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.5211,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 153600,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.5606,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 168960,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.5993,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 184320,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.64,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 199680,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.6808,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 215040,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.7187,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 230400,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.7605,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 245760,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.7998,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 261120,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.8408,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 276480,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.8762,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 291840,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.9179,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 307200,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.9553,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 322560,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 1.9901,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 337920,
+        "chunk_bytes": 15360
+      },
+      {
+        "at": 2.0146,
+        "type": "response.audio.delta",
+        "audio_bytes_so_far": 349440,
+        "chunk_bytes": 11520
+      },
+      {
+        "at": 2.0148,
+        "type": "response.audio_transcript.done",
+        "audio_bytes_so_far": 349440,
+        "text_synthetic": "Hello there. The green lantern is near the blue table. Take the small umbrella before you go outside.",
+        "field_names": [
+          "content_index",
+          "event_id",
+          "item_id",
+          "output_index",
+          "response_id",
+          "transcript",
+          "type"
+        ]
+      },
+      {
+        "at": 2.0148,
+        "type": "response.audio.done",
+        "audio_bytes_so_far": 349440
+      },
+      {
+        "at": 2.0148,
+        "type": "response.content_part.done",
+        "audio_bytes_so_far": 349440
+      },
+      {
+        "at": 2.0148,
+        "type": "response.output_item.done",
+        "audio_bytes_so_far": 349440
+      },
+      {
+        "at": 2.0148,
+        "type": "response.done",
+        "audio_bytes_so_far": 349440
+      }
+    ],
+    "audio_bytes": 349440,
+    "audio_saved": false,
+    "audio_played": false,
+    "microphone": false,
+    "automatic_retries": 0,
+    "http_status": 101,
+    "config_confirmed": true,
+    "usage": {
+      "total_tokens": 824,
+      "input_tokens": 711,
+      "output_tokens": 113,
+      "input_tokens_details": {
+        "text_tokens": 711
+      },
+      "output_tokens_details": {
+        "text_tokens": 22,
+        "audio_tokens": 91
+      }
+    },
+    "response_status": "completed",
+    "close_returned": true,
+    "close_sent": 1000,
+    "close_received": 1000,
+    "elapsed_seconds": 7.0169
+  },
+  "vad": {
+    "model": "qwen3.8-omni-flash-realtime",
+    "connections": 1,
+    "responses_requested_explicit": 1,
+    "automatic_responses": 0,
+    "synthetic_audio_uploaded": true,
+    "microphone": false,
+    "audio_output": false,
+    "automatic_retries": 0,
+    "events": [
+      {
+        "at": 0.225,
+        "type": "session.created"
+      },
+      {
+        "at": 0.338,
+        "type": "session.updated",
+        "turn_detection": {
+          "type": "server_vad",
+          "threshold": 0.2,
+          "prefix_padding_ms": 300,
+          "silence_duration_ms": 600,
+          "create_response": false,
+          "interrupt_response": false
+        }
+      },
+      {
+        "at": 0.55,
+        "type": "input_audio_buffer.speech_started"
+      },
+      {
+        "at": 0.972,
+        "type": "conversation.item.created"
+      },
+      {
+        "at": 0.972,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 0.977,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 1.282,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 1.293,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 1.892,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 1.897,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 1.903,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 2.664,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 2.669,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 4.508,
+        "type": "input_audio_buffer.speech_stopped"
+      },
+      {
+        "at": 6.026,
+        "type": "input_audio_buffer.committed"
+      },
+      {
+        "at": 6.026,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 6.026,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 6.026,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 6.026,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 6.026,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 6.026,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 6.026,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 6.026,
+        "type": "conversation.item.input_audio_transcription.delta"
+      },
+      {
+        "at": 6.026,
+        "type": "conversation.item.input_audio_transcription.completed",
+        "transcript_synthetic": "Yesterday I went to the park. What do you like to do outdoors?"
+      },
+      {
+        "at": 10.304,
+        "type": "response.created"
+      },
+      {
+        "at": 10.304,
+        "type": "response.output_item.added"
+      },
+      {
+        "at": 10.304,
+        "type": "conversation.item.created"
+      },
+      {
+        "at": 10.306,
+        "type": "response.content_part.added"
+      },
+      {
+        "at": 10.786,
+        "type": "response.text.done"
+      },
+      {
+        "at": 10.786,
+        "type": "response.content_part.done"
+      },
+      {
+        "at": 10.786,
+        "type": "response.output_item.done"
+      },
+      {
+        "at": 10.786,
+        "type": "response.done",
+        "status": "completed"
+      }
+    ],
+    "http_status": 101,
+    "configuration_outcome": "confirmed",
+    "returned_vad": {
+      "type": "server_vad",
+      "threshold": 0.2,
+      "prefix_padding_ms": 300,
+      "silence_duration_ms": 600,
+      "create_response": false,
+      "interrupt_response": false
+    },
+    "audio_input_bytes": 178558,
+    "observation": "speech_stopped",
+    "post_stop_event": "no_response_4s",
+    "usage": [
+      {
+        "total_tokens": 108,
+        "input_tokens": 44,
+        "output_tokens": 64,
+        "input_tokens_details": {
+          "text_tokens": 16,
+          "audio_tokens": 28
+        },
+        "output_tokens_details": {
+          "text_tokens": 64
+        }
+      }
+    ],
+    "explicit_result": "response.done",
+    "close_returned": true,
+    "close_sent": 1000,
+    "close_received": 1000,
+    "elapsed_seconds": 15.788
+  },
+  "vad-overlap": {
+    "model": "qwen3.8-omni-flash-realtime",
+    "connections": 1,
+    "responses_requested_explicit": 1,
+    "response_created_count": 1,
+    "audio_input_synthetic": true,
+    "audio_output_saved": false,
+    "audio_output_played": false,
+    "microphone": false,
+    "automatic_retries": 0,
+    "audio_bytes": 967680,
+    "events": [
+      {
+        "at": 0.179,
+        "type": "session.created"
+      },
+      {
+        "at": 0.289,
+        "type": "session.updated",
+        "turn_detection": {
+          "type": "server_vad",
+          "threshold": 0.2,
+          "prefix_padding_ms": 300,
+          "silence_duration_ms": 600,
+          "create_response": false,
+          "interrupt_response": false
+        },
+        "max_tokens": 128
+      },
+      {
+        "at": 0.372,
+        "type": "conversation.item.created"
+      },
+      {
+        "at": 0.696,
+        "type": "response.created"
+      },
+      {
+        "at": 0.696,
+        "type": "response.output_item.added"
+      },
+      {
+        "at": 0.696,
+        "type": "conversation.item.created"
+      },
+      {
+        "at": 0.696,
+        "type": "response.content_part.added"
+      },
+      {
+        "at": 1.278,
+        "type": "input_audio_buffer.speech_started"
+      },
+      {
+        "at": 1.707,
+        "type": "conversation.item.created"
+      }
+    ],
+    "http_status": 101,
+    "config_confirmed": true,
+    "first_audio_at": 1.06,
+    "speech_started_at": 1.278,
+    "response_done_before_speech_start": false,
+    "failure_class": "TimeoutError",
+    "close_returned": true,
+    "close_sent": 1000,
+    "close_received": null,
+    "elapsed_seconds": 19.753
+  },
+  "summary": {
+    "date": "2026-10-28",
+    "connections": 17,
+    "explicit_response_requests": 26,
+    "known_usage_count": 25,
+    "unknown_usage_count": 1,
+    "known_input_text_tokens": 2340,
+    "known_input_audio_tokens": 28,
+    "known_output_text_tokens": 338,
+    "known_output_audio_tokens": 91,
+    "known_usage_list_price_cny": 0.006291,
+    "audio_data_saved_in_evidence": false,
+    "note": "All speech and texts are locally synthesized or model-generated test content; no user microphone audio."
+  }
+}

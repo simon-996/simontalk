@@ -1,0 +1,37 @@
+{
+  "preexisting_files": 645,
+  "preexisting_files_missing": [],
+  "preexisting_files_changed_by_unit": [
+    "HANDOFF.md",
+    "apps/client/lib/features/review/review_page_view.dart",
+    "apps/client/lib/features/review/review_screen.dart",
+    "apps/client/test/features/practice/saved_practice_status_previews_test.dart",
+    "apps/client/test/features/review/review_screen_test.dart",
+    "docs/architecture/2026-10-21-review-page.md",
+    "docs/design/2026-10-15-screen-and-interaction-spec.md",
+    "docs/development/2026-10-24-saved-practice-status-verification.md",
+    "docs/validation/2026-10-15-validation-plan.md"
+  ],
+  "new_files": [
+    "docs/development/2026-10-24-review-action-guards-verification.md",
+    "docs/development/evidence/2026-10-24-review-action-guards-preservation.json",
+    "docs/development/screenshots/saved-practice-complete.png",
+    "docs/development/screenshots/saved-practice-failed.png",
+    "docs/development/screenshots/saved-practice-gap-dark320-200-bottom.png",
+    "docs/development/screenshots/saved-practice-gap-dark320-200.png",
+    "docs/development/screenshots/saved-practice-saving.png",
+    "docs/superpowers/plans/2026-10-24-review-action-guards.md"
+  ],
+  "backend_files_unchanged": 101,
+  "dependency_files_unchanged": [
+    "apps/client/pubspec.yaml",
+    "apps/client/pubspec.lock",
+    "services/api/pyproject.toml",
+    "services/api/uv.lock"
+  ],
+  "flutter_passed": 1113,
+  "special_fixture_skipped": 10,
+  "models_called": false,
+  "native_builds": false,
+  "committed_pushed_deployed": false
+}

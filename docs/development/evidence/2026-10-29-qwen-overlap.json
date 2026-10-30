@@ -1,0 +1,29 @@
+{
+  "started_at_utc": "2026-10-29T00:39:55.822522+00:00",
+  "reason": "session_returned",
+  "connection_attempted": true,
+  "session": {
+    "reason": "supervision_returned",
+    "configured": true,
+    "response_requested": true,
+    "overlap": {
+      "reason": "reader_finished",
+      "reader": {
+        "reason": "audio_limit",
+        "audio_bytes_observed": 998400,
+        "cancel_sent": true,
+        "response_status": "cancelled",
+        "usage": null,
+        "stop_feeding_failed": false,
+        "speech_started_before_done": true,
+        "speech_stopped": false
+      },
+      "feeder_stopped": true,
+      "input_chunks_sent": 39,
+      "input_complete": false
+    },
+    "cancel_attempted_before_supervision": false,
+    "close_sent": 1000,
+    "close_received": 1000
+  }
+}

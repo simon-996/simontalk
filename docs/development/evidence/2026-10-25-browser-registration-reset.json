@@ -1,0 +1,422 @@
+{
+  "date": "2026-10-25",
+  "scope": "browser-registration-and-password-reset",
+  "browser": "desktop IAB, version not recorded",
+  "origins": [
+    "http://127.0.0.1:7357",
+    "http://localhost:7357"
+  ],
+  "web_release": {
+    "sha256": "1e8efa83137f1c308687efbc7b2901eeb6a8fa4d1999ca9f6d9f2b00b74e4f42",
+    "source_files_older": 111
+  },
+  "browser_requests": [
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401,
+      "elapsed_ms": 33.4,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200,
+      "elapsed_ms": 16.9,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/register",
+      "status": 400,
+      "elapsed_ms": 20.8,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/register",
+      "status": 201,
+      "elapsed_ms": 113.2,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "elapsed_ms": 7.8,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "PATCH",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "elapsed_ms": 13.5,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401,
+      "elapsed_ms": 7.1,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200,
+      "elapsed_ms": 15.4,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/register",
+      "status": 400,
+      "elapsed_ms": 16.5,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/password-reset/confirm",
+      "status": 400,
+      "elapsed_ms": 16.6,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/password-reset/confirm",
+      "status": 503,
+      "elapsed_ms": 0.3,
+      "scenario": "reset-before-upstream-503",
+      "proxy_refused": true
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/password-reset/confirm",
+      "status": 204,
+      "elapsed_ms": 97.5,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401,
+      "elapsed_ms": 8.7,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/auth/csrf",
+      "status": 200,
+      "elapsed_ms": 11.5,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 401,
+      "elapsed_ms": 68.7,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 401,
+      "elapsed_ms": 69.3,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "elapsed_ms": 79.1,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "elapsed_ms": 7.5,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/password-reset/confirm",
+      "status": 400,
+      "elapsed_ms": 23.9,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/password-reset/confirm",
+      "status": 204,
+      "elapsed_ms": 5099.5,
+      "scenario": "reset-success-delay-5s",
+      "proxy_refused": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 401,
+      "elapsed_ms": 72.5,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "POST",
+      "path": "/v1/auth/login",
+      "status": 200,
+      "elapsed_ms": 77.7,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me/preferences",
+      "status": 200,
+      "elapsed_ms": 9.0,
+      "scenario": null,
+      "proxy_refused": false
+    },
+    {
+      "method": "GET",
+      "path": "/v1/me",
+      "status": 401,
+      "elapsed_ms": 7.9,
+      "scenario": null,
+      "proxy_refused": false
+    }
+  ],
+  "browser_request_count": 24,
+  "real_api_forwarded": 23,
+  "proxy_refused": 1,
+  "initial_incomplete_username_request_1based_index": 15,
+  "password_mismatch_register_requests": 0,
+  "after_proxy_failure": {
+    "active_sessions": 2,
+    "unconsumed_reset_grants": 2
+  },
+  "after_first_reset": {
+    "sessions_total": 2,
+    "active_sessions": 0,
+    "unconsumed_reset_grants": 0,
+    "old_mobile_me_status": 401
+  },
+  "final_database": {
+    "counts": {
+      "users": 1,
+      "invites": 1,
+      "auth_sessions": 4,
+      "password_reset_grants": 3,
+      "practice_sessions": 0,
+      "realtime_connections": 0,
+      "review_jobs": 0,
+      "review_attempts": 0,
+      "review_results": 0,
+      "revoked_sessions": 3,
+      "consumed_reset_grants": 3,
+      "consumed_invites": 1
+    },
+    "preferences": {
+      "difficulty": "intermediate",
+      "speech_pace": "normal",
+      "version": 2
+    },
+    "other_old_grant_http_status": 400,
+    "old_mobile_me_status": 401
+  },
+  "late_ui": {
+    "immediate_login": true,
+    "immediate_busy": true,
+    "final_login": true,
+    "final_success_notice": false,
+    "final_busy": false
+  },
+  "development_tables": {
+    "alembic_version": {
+      "count": 1,
+      "sha256": "a0ecf1a5d72db48d49416dfc5d8fbc4c37e71c04512b27c45e8f76b5689c2940"
+    },
+    "auth_sessions": {
+      "count": 11,
+      "sha256": "3f36e36af849e49bc2b2b7f42ba4675ad8ad4f701a99ef5f879485ad7672188e"
+    },
+    "completion_connections": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "connection_observations": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "final_transcripts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "invites": {
+      "count": 1,
+      "sha256": "b83c427e337adb29aa26fddfccd420c3943dc0838f0f7a9ebe868a25106c30f4"
+    },
+    "password_reset_grants": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "playback_evidence": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_completions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_deletion_receipts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "practice_sessions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "rate_limit_buckets": {
+      "count": 1,
+      "sha256": "12f309768eb491e8ac9536195ab0de41795383adf901a7db3a20aa0274a2b2f2"
+    },
+    "realtime_connections": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_actions": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_attempts": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_inputs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_jobs": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "review_results": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "termination_checks": {
+      "count": 0,
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    },
+    "user_preferences": {
+      "count": 1,
+      "sha256": "821390223101b284871402950794bd6dfacf0d262c6fd1366542fd66e7656feb"
+    },
+    "users": {
+      "count": 1,
+      "sha256": "1534ab12583e4b7f50bdd1685889b47df35ee622ede6a0fc52965587d2016db4"
+    }
+  },
+  "preservation": {
+    "initial_files": 752,
+    "source_changes": 0,
+    "source_files_unchanged": true,
+    "intentionally_updated_documents": [
+      "HANDOFF.md",
+      "docs/development/local-development.md",
+      "docs/validation/2026-10-15-validation-plan.md"
+    ],
+    "unchanged_initial_files": 749,
+    "missing_files": 0
+  },
+  "cleanup": {
+    "tabs_closed": 2,
+    "api_web_stopped": true,
+    "test_database_removed": true,
+    "active_connections_before_drop": 0,
+    "ports_closed": [
+      8000,
+      8001,
+      7357
+    ],
+    "private_files_removed": 14,
+    "private_task_directory_removed": true
+  },
+  "not_performed": [
+    "source code/dependency/schema changes",
+    "new release build or unrelated test rerun",
+    "paid model, microphone, native build",
+    "commit, push, deployment"
+  ],
+  "limitations": [
+    "not a full browser/device/network matrix",
+    "not proof of provider termination or B2/B5/B6 completion"
+  ],
+  "screenshots": {
+    "browser-register-invalid.jpg": {
+      "sha256": "a52d645d8fd696be0b0fdcfda023cee88cc42b0fc657cbe9393980e2baa4f6ef",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG"
+    },
+    "browser-register-setup.jpg": {
+      "sha256": "aa6362cc724cb80a0b6612bb650cb15bd11162e8f6221e4841924c19e0d7bf29",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG"
+    },
+    "browser-reset-invalid.jpg": {
+      "sha256": "ddee7a7d6071016b9a6ad59e85b02f5011e19db836b22e1584ca50802b556e3f",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG"
+    },
+    "browser-reset-success.jpg": {
+      "sha256": "85fc5b630ce1fc412eef641f7aacb5e2dfb924f04b94a15b65fdba88792b8280",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG"
+    },
+    "browser-reset-old-password-rejected.jpg": {
+      "sha256": "84635649cd59657fbb920eaf354362a6185dfd434092348186c8406b8765d47c",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG"
+    },
+    "browser-reset-late-login.jpg": {
+      "sha256": "a7726104c5ecc1216038aae0d47d95104b66484f49d4b907c6425e24a815a834",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG"
+    },
+    "browser-reset-new-password-home.jpg": {
+      "sha256": "4ae185749d68f2975d4be2be88fb5df63d537186d682446d971693b8f16f3331",
+      "width": 1280,
+      "height": 720,
+      "format": "JPEG"
+    }
+  },
+  "document_checks": {
+    "files": 5,
+    "local_references": 276,
+    "fences_balanced": true
+  }
+}

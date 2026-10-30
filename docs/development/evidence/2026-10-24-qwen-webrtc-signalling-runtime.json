@@ -1,0 +1,14 @@
+{
+  "isolated_runtime_import": true,
+  "pytest_installed": false,
+  "httpx_version": "0.28.1",
+  "gateway_mock_exchange_passed": true,
+  "application_admission_unavailable": true,
+  "application_gateway_unavailable": true,
+  "real_network_calls": 0,
+  "wheel_module_matches_source": true,
+  "installed_module_matches_source": true,
+  "module_sha256": "5c4a5f4abec9c839da8c1254d550fa775b9e39f0296cdafef53477b44a8faeb8",
+  "wheel_sha256": "6504d8b8256c0886c069838a502071b667a398ea42c240ac4e704e1c5df67d6a",
+  "httpx_runtime_requirement": "httpx<1,>=0.28"
+}

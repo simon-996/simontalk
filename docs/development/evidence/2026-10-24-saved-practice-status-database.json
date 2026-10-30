@@ -1,0 +1,9 @@
+{
+  "actual_wire_runs": 2,
+  "default_gateways_closed": true,
+  "test_all_public_tables_unchanged": true,
+  "development_business_tables": 20,
+  "development_all_public_tables_unchanged": true,
+  "dedicated_api_stopped": true,
+  "dedicated_database_removed": true
+}

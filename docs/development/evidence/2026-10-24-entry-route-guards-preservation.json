@@ -1,0 +1,31 @@
+{
+  "preexisting_files": 659,
+  "preexisting_files_missing": [],
+  "preexisting_files_changed_by_unit": [
+    "HANDOFF.md",
+    "apps/client/lib/features/practice/practice_entry_screen.dart",
+    "apps/client/lib/features/practice/practice_entry_view.dart",
+    "apps/client/test/features/practice/practice_entry_screen_test.dart",
+    "docs/architecture/2026-10-17-client-preparation-lifecycle.md",
+    "docs/design/2026-10-15-screen-and-interaction-spec.md",
+    "docs/superpowers/plans/2026-10-22-basic-version-development.md",
+    "docs/validation/2026-10-15-validation-plan.md"
+  ],
+  "new_files": [
+    "docs/development/2026-10-24-entry-route-guards-verification.md",
+    "docs/development/evidence/2026-10-24-entry-route-guards-preservation.json",
+    "docs/superpowers/plans/2026-10-24-entry-route-guards.md"
+  ],
+  "backend_files_unchanged": 101,
+  "dependency_files_unchanged": [
+    "apps/client/pubspec.yaml",
+    "apps/client/pubspec.lock",
+    "services/api/pyproject.toml",
+    "services/api/uv.lock"
+  ],
+  "flutter_passed": 1200,
+  "special_fixture_skipped": 10,
+  "models_called": false,
+  "native_builds": false,
+  "committed_pushed_deployed": false
+}
