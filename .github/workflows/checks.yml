@@ -34,9 +34,20 @@ jobs:
           version: '0.11.8'
           python-version: '3.13'
       - run: uv sync --locked --all-extras
-      - run: uv run ruff check .
-      - run: uv run ruff format --check .
-      - run: uv run pytest -q
+      - name: Prepare PostgreSQL service clients
+        env:
+          POSTGRES_CONTAINER: ${{ job.services.postgres.id }}
+        run: >-
+          uv run --locked --no-sync python ../../scripts/prepare_test_postgres_tools.py
+          --container "$POSTGRES_CONTAINER" --output "$RUNNER_TEMP/simontalk-pg-tools"
+      - run: uv run ruff check . ../../scripts/prepare_test_postgres_tools.py --config pyproject.toml
+      - run: uv run ruff format --check . ../../scripts/prepare_test_postgres_tools.py --config pyproject.toml
+      - name: Test API including real backup restores
+        env:
+          SIMONTALK_REQUIRE_REAL_BACKUP_TESTS: '1'
+          SIMONTALK_BACKUP_TEST_PG_DUMP: ${{ runner.temp }}/simontalk-pg-tools/pg_dump
+          SIMONTALK_BACKUP_TEST_PG_RESTORE: ${{ runner.temp }}/simontalk-pg-tools/pg_restore
+        run: uv run --locked --no-sync pytest -q
       - run: uv run alembic check
 
   client:

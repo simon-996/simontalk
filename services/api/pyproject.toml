@@ -8,6 +8,7 @@ dependencies = [
   "alembic>=1.16,<2",
   "argon2-cffi>=25,<26",
   "fastapi>=0.115,<1",
+  "httpx>=0.28,<1",
   "psycopg[binary]>=3.2,<4",
   "pydantic-settings>=2.9,<3",
   "sqlalchemy>=2.0,<3",
@@ -16,7 +17,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["httpx>=0.28,<1", "pytest>=8.3,<10", "ruff>=0.11,<1"]
+dev = ["pytest>=8.3,<10", "ruff>=0.11,<1"]
 
 [project.scripts]
 simontalk-admin = "simontalk_api.cli:main"
@@ -42,3 +43,9 @@ select = ["E", "F", "I", "UP", "B"]
 "src/simontalk_api/connection_routes.py" = ["B008"]
 "src/simontalk_api/observation_routes.py" = ["B008"]
 "src/simontalk_api/transcript_routes.py" = ["B008"]
+"src/simontalk_api/playback_routes.py" = ["B008"]
+
+"src/simontalk_api/completion_routes.py" = ["B008"]
+"src/simontalk_api/review_routes.py" = ["B008"]
+
+"src/simontalk_api/review_job_routes.py" = ["B008"]

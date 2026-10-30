@@ -1,5 +1,9 @@
 # SimonTalk API
 
+2026-10-26新增[重练两轴改善评价](../../docs/architecture/2026-10-26-rehearsal-evaluation.md)：复用原review任务/结果，review_result_v1可选扩展包含目标摘要及本次用户精确证据；新重练要求评价、普通结果拒绝扩展，旧结果仍可读。零建议有效评价为succeeded。默认供应商开关不变；[真实固定样本与完整验证](../../docs/development/2026-10-26-rehearsal-evaluation-verification.md)不代表语音媒体准入。
+
+复盘供应商现支持[显式后端配置](../../docs/architecture/2026-10-25-review-provider-config.md)：默认disabled，明确SIMONTALK_REVIEW_PROVIDER=qwen才从私有配置构造qwen3.8-flash网关。标准工厂/后台runner已作[真实验证](../../docs/development/2026-10-25-review-provider-config-verification.md)，Key存在不会自动启用。语音准入与信令仍关闭；以下语音边界不因复盘开关改变。
+
 Python 3.13+、uv、FastAPI、同步 SQLAlchemy/psycopg 与 PostgreSQL 17。账号与个人偏好使用真实数据库，服务启动不自动创建表；必须先执行 Alembic 迁移。
 
 另有供应商无关的练习准备登记：所有权、偏好快照、UUID幂等键和单用户并发保护。真实语音准入固定关闭，创建返回503 `realtime_unavailable`且不写练习；没有环境开关能启用空服务，也没有供应商调用。成功路径只通过独立测试库中的明确策略替身验证。接口与未来媒体边界见[准备登记契约](../../docs/architecture/2026-10-17-practice-preparation-api.md)。
