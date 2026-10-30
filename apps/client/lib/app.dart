@@ -16,6 +16,7 @@ import 'features/review/review_screen.dart';
 import 'features/transcript/saved_transcript_screen.dart';
 import 'features/rehearsal/rehearsal_screen.dart';
 import 'features/rehearsal/rehearsal_list_screen.dart';
+import 'features/session/practice_session_screen.dart';
 
 bool _isReadingPath(String path) {
   if (path == '/history' ||
@@ -63,11 +64,18 @@ final _routerProvider = Provider<GoRouter>((ref) {
     redirect: (context, route) {
       final state = ref.read(accountControllerProvider);
       final path = route.uri.path;
+      // A live call is entered only from the preparation handoff. A browser
+      // reload restores the URL without router extra, so it must never open the
+      // microphone or create another practice on its own.
+      if (path == '/practice/session' && route.extra != true) {
+        return state.phase == SessionPhase.signedIn ? '/practice' : '/login';
+      }
       final readingPath = _isReadingPath(path);
       final validReading = _isValidReadingPath(path);
       final entryPath = [
         '/practice',
         '/practice/prepare',
+        '/practice/session',
         '/account',
       ].contains(path);
       // go_router restores an encoded history stack through its base URI.
@@ -147,6 +155,10 @@ final _routerProvider = Provider<GoRouter>((ref) {
         path: '/practice/prepare',
         builder: (_, _) =>
             const _SignedInPage(child: PracticePreparationScreen()),
+      ),
+      GoRoute(
+        path: '/practice/session',
+        builder: (_, _) => const _SignedInPage(child: PracticeSessionScreen()),
       ),
       GoRoute(
         path: '/practice/:sessionId/transcript',

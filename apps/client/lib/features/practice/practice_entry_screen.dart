@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../account/account_controller.dart';
 import 'practice_entry_provider.dart';
 import 'practice_entry_view.dart';
+import 'practice_preparation_controller.dart';
 import 'practice_providers.dart';
 import 'practice_recovery_panel.dart';
 
@@ -122,6 +123,26 @@ class PracticePreparationScreen extends ConsumerWidget {
         onCancel: () {
           if (canActivate()) unawaited(entry.cancel());
         },
+        onEnterSession: entry.busy || account.busy
+            ? null
+            : () {
+                if (!canActivate() ||
+                    entry.preparation.phase != PreparationPhase.reserved) {
+                  return;
+                }
+                unawaited(() async {
+                  // The pre-flight reservation must be cancelled and confirmed
+                  // before a live attempt exists; otherwise two practices would
+                  // hold connections for one intention.
+                  await entry.cancel();
+                  if (!context.mounted) return;
+                  if (entry.preparation.phase != PreparationPhase.stopped) {
+                    return;
+                  }
+                  if (!canActivate()) return;
+                  context.push('/practice/session', extra: true);
+                }());
+              },
         onConfirmAccount: account.busy
             ? null
             : () {

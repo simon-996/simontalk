@@ -699,4 +699,48 @@ void main() {
       }
     }
   }
+  testWidgets('a direct visit to the live page never opens the microphone', (
+    t,
+  ) async {
+    await launch(t, location: '/practice/session');
+    expect(path(t), '/practice');
+    expect(requests.where((r) => r.method != 'GET'), isEmpty);
+    expect(find.text('正在连接语音，请稍候…'), findsNothing);
+  });
+
+  testWidgets('the call is entered only after the pre-flight is cancelled', (
+    t,
+  ) async {
+    await launch(t, location: '/practice/prepare');
+    var instance = clientId;
+    handler = (r) async {
+      if (r.url.path.endsWith('/current')) {
+        return response({'practice': null, 'connection': null});
+      }
+      if (r.url.path.endsWith('/connections')) {
+        instance = jsonDecode(r.body)['client_instance_id'] as String;
+        return response(connectionJson(instance: instance), 201);
+      }
+      if (r.url.path.contains('/connections/')) {
+        return response(connectionJson(instance: instance, status: 'closed'));
+      }
+      return response(
+        practiceJson(
+          status: r.url.path.endsWith('/cancel-preparation')
+              ? 'cancelled'
+              : 'created',
+        ),
+        201,
+      );
+    };
+    await tap(t, '开始准备');
+    expect(find.text('进入通话'), findsOneWidget);
+    await t.ensureVisible(find.text('进入通话'));
+    await t.tap(find.text('进入通话'));
+    await t.pump();
+    await t.pump();
+    await t.pump();
+    expect(path(t), '/practice/session');
+    expect(requests.last.url.path, endsWith('/cancel-preparation'));
+  });
 }

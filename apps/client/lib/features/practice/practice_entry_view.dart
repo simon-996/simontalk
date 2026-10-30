@@ -66,6 +66,7 @@ class PracticePreparationView extends StatelessWidget {
     this.onCancel,
     this.onBack,
     this.onConfirmAccount,
+    this.onEnterSession,
     this.recovery = const SizedBox.shrink(),
   });
   final Difficulty difficulty;
@@ -73,6 +74,7 @@ class PracticePreparationView extends StatelessWidget {
   final bool busy, accountBusy;
   final String? errorCode;
   final VoidCallback? onStart, onRetry, onCancel, onBack, onConfirmAccount;
+  final VoidCallback? onEnterSession;
   final Widget recovery;
   @override
   Widget build(BuildContext context) => AccountFrame(
@@ -113,6 +115,18 @@ class PracticePreparationView extends StatelessWidget {
               onPressed: busy || accountBusy ? null : onRetry,
               child: const Text('确认原准备结果'),
             ),
+          if (phase == PreparationPhase.reserved) ...[
+            const SizedBox(height: 12),
+            FilledButton(
+              onPressed: accountBusy ? null : onEnterSession,
+              child: const Text('进入通话'),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '进入后会先结束这次准备，再打开麦克风开始练习。',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ],
           if (phase == PreparationPhase.preparing ||
               phase == PreparationPhase.reserved ||
               phase == PreparationPhase.uncertain) ...[
