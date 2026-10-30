@@ -53,6 +53,10 @@ enum DeliveryStatus { unknown, notPlayed, partial, played }
 
 enum PlaybackEvidenceSource { unknown, deviceOutputAligned }
 
+enum InterruptedPrefixReason { interrupted, normalEnd }
+
+enum ConversationContextKind { finalTranscript, interruptedPrefix }
+
 enum ConversationApplyResult {
   applied,
   duplicate,
@@ -65,6 +69,22 @@ enum ConversationApplyResult {
 sealed class ConversationUpdate {
   const ConversationUpdate({required this.turnId});
   final String turnId;
+}
+
+/// Registers an input segment or response before any transcript is available.
+/// A late provider item may bind this same turn once, before its first final.
+final class TurnStartedUpdate extends ConversationUpdate {
+  const TurnStartedUpdate({
+    required super.turnId,
+    required this.turnIndex,
+    required this.role,
+    this.responseId,
+    this.providerItemId,
+  });
+  final int turnIndex;
+  final ConversationRole role;
+  final String? responseId;
+  final String? providerItemId;
 }
 
 final class TranscriptUpdate extends ConversationUpdate {
@@ -130,6 +150,27 @@ final class ConversationPlayback {
   final PlaybackEvidenceSource source;
 }
 
+/// Independent evidence for a stopped output. It does not finalize a transcript.
+/// Its source versions remain usable when a later final has no fresh alignment.
+final class ConversationFrozenPrefix {
+  const ConversationFrozenPrefix({
+    required this.transcriptRevision,
+    required this.playbackRevision,
+    required this.text,
+    required this.playedUntilMs,
+    required this.stopBoundaryMs,
+    required this.source,
+    required this.reason,
+  });
+  final int transcriptRevision;
+  final int playbackRevision;
+  final String text;
+  final int playedUntilMs;
+  final int stopBoundaryMs;
+  final PlaybackEvidenceSource source;
+  final InterruptedPrefixReason reason;
+}
+
 final class ConversationTurn {
   const ConversationTurn({
     required this.turnId,
@@ -141,6 +182,7 @@ final class ConversationTurn {
     required this.responseId,
     required this.providerItemId,
     required this.playback,
+    this.frozenPrefix,
   });
   final String turnId;
   final int turnIndex;
@@ -151,6 +193,7 @@ final class ConversationTurn {
   final String? responseId;
   final String? providerItemId;
   final ConversationPlayback playback;
+  final ConversationFrozenPrefix? frozenPrefix;
 }
 
 final class ConversationContextEntry {
@@ -161,6 +204,8 @@ final class ConversationContextEntry {
     required this.transcriptRevision,
     required this.text,
     required this.responseId,
+    this.kind = ConversationContextKind.finalTranscript,
+    this.playbackRevision,
   });
   final String turnId;
   final int turnIndex;
@@ -168,6 +213,8 @@ final class ConversationContextEntry {
   final int transcriptRevision;
   final String text;
   final String? responseId;
+  final ConversationContextKind kind;
+  final int? playbackRevision;
 }
 
 final class ConversationContext {
@@ -203,7 +250,7 @@ final class ConversationSnapshot {
       if (turn.isFinal &&
           (turn.role == ConversationRole.user ||
               turn.playback.status == DeliveryStatus.partial ||
-              turn.playback.status == DeliveryStatus.played))
+              turn.playback.status == DeliveryStatus.played)) ...[
         if ((turn.role == ConversationRole.user
                 ? turn.text
                 : turn.playback.playedText)
@@ -218,6 +265,22 @@ final class ConversationSnapshot {
                 ? turn.text
                 : turn.playback.playedText,
             responseId: turn.responseId,
+            playbackRevision: turn.role == ConversationRole.assistant
+                ? turn.playback.revision
+                : null,
           ),
+      ] else if (turn.frozenPrefix case final prefix?) ...[
+        if (prefix.text.trim().isNotEmpty)
+          ConversationContextEntry(
+            turnId: turn.turnId,
+            turnIndex: turn.turnIndex,
+            role: turn.role,
+            transcriptRevision: prefix.transcriptRevision,
+            text: prefix.text,
+            responseId: turn.responseId,
+            kind: ConversationContextKind.interruptedPrefix,
+            playbackRevision: prefix.playbackRevision,
+          ),
+      ],
   ]);
 }

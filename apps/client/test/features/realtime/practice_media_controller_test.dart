@@ -278,6 +278,60 @@ void main() {
     await h.controller.stop();
   });
 
+  testWidgets(
+    'a delayed resume failure cannot overwrite a playing observation',
+    (tester) async {
+      setup(tester);
+      await h.configured();
+      h.transport.playbackResume = Completer<void>();
+      final resume = h.controller.resumePlayback();
+      h.transport.observe(const RealtimeObservation('playback_playing', ''));
+      h.transport.playbackResume!.completeError(
+        const RealtimeFailure('playback_waiting'),
+      );
+      await resume;
+      expect(h.controller.playback, MediaPlayback.playing);
+      expect(h.controller.phase, PracticeMediaPhase.active);
+      await h.controller.stop();
+    },
+  );
+
+  testWidgets('an earlier resume cannot overwrite a later resume result', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    final first = Completer<void>();
+    final second = Completer<void>();
+    h.transport.playbackResume = first;
+    final firstResume = h.controller.resumePlayback();
+    h.transport.playbackResume = second;
+    final secondResume = h.controller.resumePlayback();
+    second.completeError(const RealtimeFailure('playback_blocked'));
+    await secondResume;
+    expect(h.controller.playback, MediaPlayback.blocked);
+    first.completeError(const RealtimeFailure('playback_waiting'));
+    await firstResume;
+    expect(h.controller.playback, MediaPlayback.blocked);
+    await h.controller.stop();
+  });
+
+  testWidgets('a delayed fatal resume failure still closes the connection', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    h.transport.playbackResume = Completer<void>();
+    final resume = h.controller.resumePlayback();
+    h.transport.observe(const RealtimeObservation('playback_playing', ''));
+    h.transport.playbackResume!.completeError(
+      const RealtimeFailure('playback_failed'),
+    );
+    await resume;
+    expect(h.controller.phase, PracticeMediaPhase.localClosed);
+    expect(h.controller.errorCode, 'playback_failed');
+  });
+
   testWidgets('early events are bounded before transport readiness', (
     tester,
   ) async {

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:simontalk_client/core/api_client.dart';
+import 'package:simontalk_client/features/conversation/final_transcript_journal.dart';
 import 'package:simontalk_client/features/practice/practice_repository.dart';
 import 'package:simontalk_client/features/realtime/practice_media_controller.dart';
 import 'package:simontalk_client/features/realtime/connection_observation_journal.dart';
@@ -54,6 +55,7 @@ class TestSignaller implements RealtimeSignaller {
 class TestTransport implements RealtimeTransport {
   final connected = Completer<void>();
   Completer<void>? activation;
+  Completer<void>? playbackResume;
   late RealtimeSignaller signaller;
   late void Function(RealtimeObservation) observe;
   late void Function(RealtimeTransportEvent) receive;
@@ -63,6 +65,8 @@ class TestTransport implements RealtimeTransport {
   int starts = 0;
   int stops = 0;
   int resumes = 0;
+  int drains = 0;
+  void Function()? onDrain;
   Future<void> Function()? onStart;
   @override
   Future<void> start({
@@ -89,7 +93,17 @@ class TestTransport implements RealtimeTransport {
   @override
   void setMuted(bool muted) => mutes.add(muted);
   @override
-  Future<void> resumePlayback() async => resumes++;
+  Future<void> resumePlayback() async {
+    resumes++;
+    await playbackResume?.future;
+  }
+
+  @override
+  void beginDrain() {
+    drains++;
+    onDrain?.call();
+  }
+
   @override
   void stop() => stops++;
 }
@@ -100,6 +114,14 @@ class TestProtocol implements RealtimeSessionProtocol {
   final channels = <String>[];
   final events = <String>[];
   int disposes = 0;
+  int drains = 0;
+  void Function()? onDrain;
+  @override
+  void beginDrain() {
+    drains++;
+    onDrain?.call();
+  }
+
   @override
   void channelOpened(String channelId) {
     channels.add(channelId);
@@ -119,7 +141,11 @@ class TestProtocol implements RealtimeSessionProtocol {
 }
 
 class MediaHarness {
-  MediaHarness(this.tester) {
+  MediaHarness(
+    this.tester, {
+    Duration drainTimeout = const Duration(seconds: 3),
+    TranscriptJournalFactory? transcriptJournalFactory,
+  }) {
     origin = tester.binding.clock.now();
     api = ApiClient(
       baseUrl: Uri.parse('http://localhost'),
@@ -137,6 +163,8 @@ class MediaHarness {
     handler = normalResponse;
     controller = PracticeMediaController(
       repository: PracticeRepository(api, accountId: accountId),
+      drainTimeout: drainTimeout,
+      transcriptJournalFactory: transcriptJournalFactory,
       elapsed: () =>
           manualElapsed ?? tester.binding.clock.now().difference(origin),
       transportFactory: () {

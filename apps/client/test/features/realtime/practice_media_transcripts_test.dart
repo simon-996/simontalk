@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:simontalk_client/features/conversation/conversation_models.dart';
 import 'package:simontalk_client/features/conversation/final_transcript_journal.dart';
@@ -13,11 +14,14 @@ import '../practice/practice_fixtures.dart';
 import 'media_fixtures.dart';
 import 'api_realtime_signaller_test.dart' show TrackedClient;
 
-class TestTranscriptJournal implements RealtimeTranscriptJournal {
+class TestTranscriptJournal extends ChangeNotifier
+    implements RealtimeTranscriptJournal {
   final events = <TranscriptUpdate>[];
   int finishes = 0;
   int aborts = 0;
   void Function()? onRecord;
+  Future<void> Function()? onRetry;
+  int retries = 0;
   @override
   int get pendingCount => events.length;
   @override
@@ -28,16 +32,31 @@ class TestTranscriptJournal implements RealtimeTranscriptJournal {
   void record(TranscriptUpdate update) {
     onRecord?.call();
     events.add(update);
+    notifyListeners();
   }
 
   @override
-  Future<void> retryPending() async {}
+  Future<void> retryPending() async {
+    retries++;
+    await onRetry?.call();
+  }
+
+  void confirmPending() {
+    events.clear();
+    notifyListeners();
+  }
+
   @override
-  void finish() => finishes++;
+  void finish() {
+    finishes++;
+    notifyListeners();
+  }
+
   @override
   void abort() {
     aborts++;
     events.clear();
+    notifyListeners();
   }
 }
 

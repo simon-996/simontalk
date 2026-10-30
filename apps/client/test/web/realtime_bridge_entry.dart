@@ -48,6 +48,10 @@ Future<void> main() async {
   } on RealtimeFailure catch (error) {
     check(error.code == 'playback_blocked');
   }
+  transport.beginDrain();
+  transport.beginDrain();
+  check(events.last.json == '{"type":"input.final"}');
+  transport.send('{"type":"response.cancel"}', events.last.channelId);
   transport.stop();
   transport.stop();
   check(signaller.cancellations == 1);
@@ -65,6 +69,22 @@ Future<void> main() async {
     check(error.code == 'connection_failed');
   }
   check(failingSignaller.cancellations == 1);
+  final drainSignaller = _Signaller();
+  final drainFailure = createRealtimeTransport();
+  await drainFailure.start(
+    signaller: drainSignaller,
+    onObservation: (_) {},
+    onEvent: (_) {},
+  );
+  await drainFailure.activate('server-channel');
+  try {
+    drainFailure.beginDrain();
+    throw StateError('missing synchronous drain failure');
+  } on RealtimeFailure catch (error) {
+    check(error.code == 'media_failed');
+  }
+  drainFailure.stop();
+  check(drainSignaller.cancellations == 1);
   // Test harness completion marker consumed by the Node runner.
   // ignore: avoid_print
   print('realtime-bridge-passed');

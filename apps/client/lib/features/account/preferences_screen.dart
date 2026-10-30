@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../design/account_components.dart';
 import '../audio_check/microphone_check_panel.dart';
 import '../practice/practice_recovery_panel.dart';
 import 'account_controller.dart';
 import 'account_models.dart';
+
+typedef _CanAct = bool Function({BuildContext? dialog, bool checkValues});
 
 class PreferencesScreen extends ConsumerStatefulWidget {
   const PreferencesScreen({super.key, this.onboarding = false});
@@ -20,44 +23,81 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
   int? _version;
   String? _userId;
 
-  Future<void> _save() async {
-    final success = await ref
-        .read(accountControllerProvider.notifier)
-        .save(_draft!);
-    if (mounted && success && !widget.onboarding) {
+  Future<void> _save(
+    AccountPreferences draft,
+    AccountController controller,
+    _CanAct canAct,
+  ) async {
+    if (!canAct() || !_dirty || draft.difficulty == null) return;
+    final success = await controller.save(draft);
+    if (mounted &&
+        success &&
+        !widget.onboarding &&
+        canAct(checkValues: false)) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('练习偏好已保存。')));
     }
   }
 
-  Future<void> _logout() async {
-    final yes = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('退出当前账号？'),
-        content: Text(
-          _dirty ? '尚未保存的设置将丢失。已保存的偏好会在下次登录时恢复。' : '已保存的偏好会在下次登录时恢复。',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('继续使用'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('退出登录'),
-          ),
-        ],
-      ),
+  Future<bool> _confirm({
+    required _CanAct canAct,
+    required String title,
+    required String description,
+    required String keep,
+    required String confirm,
+  }) async =>
+      await showDialog<bool>(
+        context: context,
+        builder: (dialog) {
+          void finish(bool approved) {
+            if (!dialog.mounted || ModalRoute.of(dialog)?.isCurrent != true) {
+              return;
+            }
+            Navigator.pop(dialog, approved && canAct(dialog: dialog));
+          }
+
+          return AlertDialog(
+            title: Text(title),
+            content: Text(description),
+            actions: [
+              TextButton(onPressed: () => finish(false), child: Text(keep)),
+              TextButton(onPressed: () => finish(true), child: Text(confirm)),
+            ],
+          );
+        },
+      ) ==
+      true;
+
+  Future<void> _logout(AccountController controller, _CanAct canAct) async {
+    if (!canAct()) return;
+    final yes = await _confirm(
+      canAct: canAct,
+      title: '退出当前账号？',
+      description: _dirty ? '尚未保存的设置将丢失。已保存的偏好会在下次登录时恢复。' : '已保存的偏好会在下次登录时恢复。',
+      keep: '继续使用',
+      confirm: '退出登录',
     );
-    if (yes == true && mounted) {
-      await ref.read(accountControllerProvider.notifier).logout();
-    }
+    if (yes && canAct()) await controller.logout();
   }
 
   bool get _dirty {
     final saved = ref.read(accountControllerProvider).session?.preferences;
     return saved != null && _draft != null && !_draft!.sameValues(saved);
+  }
+
+  Future<void> _backToPractice(_CanAct canAct) async {
+    if (!canAct()) return;
+    if (_dirty) {
+      final discard = await _confirm(
+        canAct: canAct,
+        title: '放弃未保存的修改？',
+        description: '返回练习后，仍会使用上次已保存的设置。',
+        keep: '继续编辑',
+        confirm: '放弃并返回',
+      );
+      if (!discard) return;
+    }
+    if (mounted && canAct()) context.go('/practice');
   }
 
   @override
@@ -71,6 +111,32 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
       _draft = session.preferences;
     }
     final draft = _draft!;
+    final controller = ref.read(accountControllerProvider.notifier);
+    final repository = ref.read(accountRepositoryProvider);
+    final path = widget.onboarding ? '/setup' : '/account';
+    bool canAct({BuildContext? dialog, bool checkValues = true}) {
+      if (!mounted ||
+          (dialog == null
+              ? ModalRoute.of(context)?.isCurrent != true
+              : !dialog.mounted ||
+                    ModalRoute.of(dialog)?.isCurrent != true ||
+                    ModalRoute.of(context)?.isActive != true) ||
+          GoRouter.of(context).routeInformationProvider.value.uri.path !=
+              path) {
+        return false;
+      }
+      final current = ref.read(accountControllerProvider);
+      return current.phase == SessionPhase.signedIn &&
+          !current.busy &&
+          current.session?.user.id == session.user.id &&
+          repository.api.hasCurrentAccount(session.user.id) &&
+          identical(ref.read(accountControllerProvider.notifier), controller) &&
+          identical(ref.read(accountRepositoryProvider), repository) &&
+          (!checkValues ||
+              identical(current.session?.preferences, session.preferences) &&
+                  identical(_draft, draft));
+    }
+
     final colors = Theme.of(context).colorScheme;
     return AccountFrame(
       wide: true,
@@ -78,6 +144,16 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         mainAxisSize: MainAxisSize.min,
         children: [
+          if (!widget.onboarding) ...[
+            Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton(
+                onPressed: state.busy ? null : () => _backToPractice(canAct),
+                child: const Text('返回练习'),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
           PageIntro(
             title: widget.onboarding ? '找到适合你的节奏' : '练习偏好',
             description: widget.onboarding
@@ -95,7 +171,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
           RadioGroup<Difficulty>(
             groupValue: draft.difficulty,
             onChanged: (value) {
-              if (state.busy || value == null) return;
+              if (!canAct() || value == null) return;
               setState(() => _draft = draft.copyWith(difficulty: value));
             },
             child: Column(
@@ -123,11 +199,14 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
               value: draft.speechPace == 'slow',
               onChanged: state.busy
                   ? null
-                  : (value) => setState(
-                      () => _draft = draft.copyWith(
-                        speechPace: value ? 'slow' : 'normal',
-                      ),
-                    ),
+                  : (value) {
+                      if (!canAct()) return;
+                      setState(
+                        () => _draft = draft.copyWith(
+                          speechPace: value ? 'slow' : 'normal',
+                        ),
+                      );
+                    },
             ),
             const Divider(),
             const SectionHeading('显示与辅助'),
@@ -140,9 +219,12 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
               value: draft.subtitleDefault,
               onChanged: state.busy
                   ? null
-                  : (value) => setState(
-                      () => _draft = draft.copyWith(subtitleDefault: value),
-                    ),
+                  : (value) {
+                      if (!canAct()) return;
+                      setState(
+                        () => _draft = draft.copyWith(subtitleDefault: value),
+                      );
+                    },
             ),
             const SizedBox(height: 12),
             SwitchListTile.adaptive(
@@ -153,9 +235,13 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
               value: draft.chineseHintsEnabled,
               onChanged: state.busy
                   ? null
-                  : (value) => setState(
-                      () => _draft = draft.copyWith(chineseHintsEnabled: value),
-                    ),
+                  : (value) {
+                      if (!canAct()) return;
+                      setState(
+                        () =>
+                            _draft = draft.copyWith(chineseHintsEnabled: value),
+                      );
+                    },
             ),
             const SizedBox(height: 16),
             Text(
@@ -171,14 +257,20 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
           PrimaryAction(
             label: widget.onboarding ? '保存并继续' : '保存设置',
             busy: state.busy,
-            onPressed: draft.difficulty != null && _dirty ? _save : null,
+            onPressed: !state.busy && draft.difficulty != null && _dirty
+                ? () => _save(draft, controller, canAct)
+                : null,
           ),
           if (!widget.onboarding && _dirty) ...[
             const SizedBox(height: 8),
             TextButton(
               onPressed: state.busy
                   ? null
-                  : () => setState(() => _draft = session.preferences),
+                  : () {
+                      if (canAct()) {
+                        setState(() => _draft = session.preferences);
+                      }
+                    },
               child: const Text('放弃修改'),
             ),
           ],
@@ -201,7 +293,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
           Align(
             alignment: Alignment.centerLeft,
             child: TextButton(
-              onPressed: state.busy ? null : _logout,
+              onPressed: state.busy ? null : () => _logout(controller, canAct),
               child: const Text('退出登录'),
             ),
           ),

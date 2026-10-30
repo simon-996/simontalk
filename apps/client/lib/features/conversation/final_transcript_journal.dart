@@ -1,15 +1,17 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 
 import '../../core/api_client.dart';
 import '../../core/http_client_factory.dart';
 import '../../core/random_uuid.dart';
+import '../practice/submission_manifest.dart';
 import 'conversation_models.dart';
 import 'conversation_projection.dart';
 
-abstract interface class RealtimeTranscriptJournal {
+abstract interface class RealtimeTranscriptJournal extends Listenable {
   int get pendingCount;
   int get rejectedCount;
   String? get errorCode;
@@ -29,7 +31,11 @@ typedef TranscriptJournalCreator = RealtimeTranscriptJournal Function(
 );
 
 /// An in-memory acknowledgement queue. Submission never proves audio delivery.
-class FinalTranscriptJournal implements RealtimeTranscriptJournal {
+class FinalTranscriptJournal extends ChangeNotifier
+    implements
+        RealtimeTranscriptJournal,
+        SubmissionManifestProvider,
+        SealedSubmissionReconciler {
   FinalTranscriptJournal({
     required ApiClient accountApi,
     required this.scope,
@@ -46,6 +52,9 @@ class FinalTranscriptJournal implements RealtimeTranscriptJournal {
   final http.Client Function() _clientFactory;
   final Duration Function() _elapsed;
   final _queue = <Map<String, Object>>[];
+  final _submissionRefs = <SubmissionEventRef>[];
+  bool _settled = false;
+  int _permanentlyUnsaved = 0;
   int _pendingBytes = 0;
   int _recordedEvents = 0;
   int _recordedBytes = 0;
@@ -83,9 +92,27 @@ class FinalTranscriptJournal implements RealtimeTranscriptJournal {
   int get rejectedCount => _rejected;
 
   @override
+  SubmissionManifest? get submissionManifest => _ownsAccount()
+      ? SubmissionManifest(
+          ledger: SubmissionLedger.transcripts,
+          events: _submissionRefs,
+          totalTextBytes: _recordedBytes,
+          pendingCountAtClose: _queue.length,
+        )
+      : null;
+
+  @override
+  int get permanentlyUnsavedCount {
+    _ownsAccount();
+    return _permanentlyUnsaved;
+  }
+
+  @override
   String? get errorCode {
     _ownsAccount();
-    return _requestError == 'account_changed' || _requestError == 'unauthorized'
+    return _requestError == 'account_changed' ||
+            _requestError == 'unauthorized' ||
+            _requestError == 'sealed_unsaved'
         ? _requestError
         : _inputError ?? _requestError;
   }
@@ -93,11 +120,12 @@ class FinalTranscriptJournal implements RealtimeTranscriptJournal {
   void _reject(String code) {
     _rejected++;
     _inputError = code;
+    notifyListeners();
   }
 
   @override
   void record(TranscriptUpdate update) {
-    if (!_ownsAccount() || _finished || !update.isFinal) return;
+    if (!_ownsAccount() || _finished || _settled || !update.isFinal) return;
     final provider = update.providerItemId;
     if (update.text.contains('\u0000') ||
         (provider != null &&
@@ -124,9 +152,10 @@ class FinalTranscriptJournal implements RealtimeTranscriptJournal {
       _reject('transcript_limit_reached');
       return;
     }
+    final eventId = randomUuid();
     _queue.add(
       Map.unmodifiable({
-        'event_id': randomUuid(),
+        'event_id': eventId,
         'sequence': ++_recordedEvents,
         'turn_id': update.turnId.toLowerCase(),
         'turn_index': update.turnIndex,
@@ -137,23 +166,30 @@ class FinalTranscriptJournal implements RealtimeTranscriptJournal {
         'provider_item_id': ?provider,
       }),
     );
+    _submissionRefs.add(
+      SubmissionEventRef(sequence: _recordedEvents, eventId: eventId),
+    );
     _pendingBytes += bytes;
     _recordedBytes += bytes;
     _schedule();
+    notifyListeners();
   }
 
   void _schedule() {
-    if (_aborted || _paused || _queue.isEmpty || _task != null) return;
+    if (_aborted || _settled || _paused || _queue.isEmpty || _task != null) {
+      return;
+    }
     _task = Future<void>.microtask(_drain);
   }
 
   @override
   Future<void> retryPending() {
-    if (!_ownsAccount()) return Future.value();
+    if (!_ownsAccount() || _settled) return Future.value();
     if (_task != null) return _task!;
     _paused = false;
     _requestError = null;
     _schedule();
+    notifyListeners();
     return _task ?? Future.value();
   }
 
@@ -164,7 +200,7 @@ class FinalTranscriptJournal implements RealtimeTranscriptJournal {
 
   Future<void> _drain() async {
     try {
-      while (!_aborted && !_paused && _queue.isNotEmpty) {
+      while (!_aborted && !_settled && !_paused && _queue.isNotEmpty) {
         if (!_ownsAccount()) return;
         final batch = _queue.take(4).toList(growable: false);
         final bytes = batch.fold<int>(
@@ -173,7 +209,7 @@ class FinalTranscriptJournal implements RealtimeTranscriptJournal {
         );
         try {
           final data = await _exchange(batch);
-          if (!_ownsAccount()) return;
+          if (!_ownsAccount() || _settled) return;
           if (!_validAcknowledgement(data, batch, bytes)) {
             throw const ApiException('invalid_response', '文字保存确认异常。');
           }
@@ -182,8 +218,10 @@ class FinalTranscriptJournal implements RealtimeTranscriptJournal {
           _confirmedEvents += batch.length;
           _confirmedBytes += bytes;
           _requestError = null;
+          _releaseConfirmedText();
+          notifyListeners();
         } on Object catch (error) {
-          if (_aborted) return;
+          if (_aborted || _settled) return;
           if (!_source.hasCurrentAccount(scope.accountId) ||
               (error is ApiException && error.code == 'account_changed')) {
             _loseAccount();
@@ -192,6 +230,7 @@ class FinalTranscriptJournal implements RealtimeTranscriptJournal {
           } else {
             _paused = true;
             _requestError = _errorCode(error);
+            notifyListeners();
           }
         }
       }
@@ -293,6 +332,8 @@ class FinalTranscriptJournal implements RealtimeTranscriptJournal {
       'transcript_limit_reached',
       'invalid_response',
       'csrf_invalid',
+      'practice_input_sealed',
+      'completion_manifest_conflict',
     };
     return error is ApiException && known.contains(error.code)
         ? error.code
@@ -301,10 +342,39 @@ class FinalTranscriptJournal implements RealtimeTranscriptJournal {
 
   @override
   void finish() {
-    if (!_ownsAccount()) return;
+    if (!_ownsAccount() || _finished) return;
     _finished = true;
     _projection.seal();
+    _releaseConfirmedText();
     _schedule();
+    notifyListeners();
+  }
+
+  void _releaseConfirmedText() {
+    if (_finished && _queue.isEmpty) _projection.clear();
+  }
+
+  @override
+  void reconcileSealed(SubmissionManifest received) {
+    if (!_ownsAccount() || _settled) return;
+    if (received.ledger != SubmissionLedger.transcripts) {
+      throw const FormatException();
+    }
+    final refs = {
+      for (final event in received.events) event.sequence: event.eventId,
+    };
+    _permanentlyUnsaved = _queue
+        .where((event) => refs[event['sequence']] != event['event_id'])
+        .length;
+    _settled = true;
+    _finished = true;
+    _cancelBatch?.call();
+    _activeApi?.close();
+    _queue.clear();
+    _pendingBytes = 0;
+    _projection.clear();
+    _requestError = _permanentlyUnsaved > 0 ? 'sealed_unsaved' : null;
+    notifyListeners();
   }
 
   @override
@@ -314,7 +384,10 @@ class FinalTranscriptJournal implements RealtimeTranscriptJournal {
     _cancelBatch?.call();
     _activeApi?.close();
     _queue.clear();
+    _submissionRefs.clear();
+    _permanentlyUnsaved = 0;
     _pendingBytes = 0;
     _projection.clear();
+    notifyListeners();
   }
 }

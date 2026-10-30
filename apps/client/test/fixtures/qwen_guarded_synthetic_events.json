@@ -1,0 +1,322 @@
+{
+  "events": [
+    {
+      "type": "session.created",
+      "event_id": "id_1",
+      "session": {
+        "id": "id_2",
+        "model": "qwen3.8-omni-flash-realtime"
+      }
+    },
+    {
+      "type": "session.updated",
+      "event_id": "id_3",
+      "session": {
+        "id": "id_2",
+        "model": "qwen3.8-omni-flash-realtime",
+        "modalities": [
+          "text",
+          "audio"
+        ],
+        "max_tokens": 128,
+        "voice": "Tina",
+        "instructions": "You are a friendly English conversation partner. Use short, simple sentences and familiar words. Speak at a natural conversational pace. Keep replies concise and invite the learner to speak.",
+        "input_audio_transcription": {
+          "model": "qwen3-asr-flash-realtime"
+        },
+        "turn_detection": {
+          "type": "server_vad",
+          "threshold": 0.2,
+          "silence_duration_ms": 600,
+          "create_response": false,
+          "interrupt_response": false
+        }
+      }
+    },
+    {
+      "type": "input_audio_buffer.speech_started",
+      "event_id": "id_4",
+      "item_id": "id_5"
+    },
+    {
+      "type": "conversation.item.created",
+      "event_id": "id_6"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_7",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_8",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday."
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_9",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_10",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I."
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_11",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_12",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_13",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_14",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_15",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park."
+    },
+    {
+      "type": "input_audio_buffer.speech_stopped",
+      "event_id": "id_16",
+      "item_id": "id_5"
+    },
+    {
+      "type": "input_audio_buffer.committed",
+      "event_id": "id_17",
+      "item_id": "id_5"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_18",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_19",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What do"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_20",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What do you"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_21",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What do you like"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_22",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What do you like to"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_23",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What do you like to do"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_24",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What do you like to do outdoors"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_25",
+      "item_id": "id_5",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What do you like to do outdoors?"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.completed",
+      "event_id": "id_26",
+      "item_id": "id_5",
+      "content_index": 0,
+      "transcript": "Yesterday I went to the park. What do you like to do outdoors?"
+    },
+    {
+      "type": "response.created",
+      "event_id": "id_27",
+      "response": {
+        "id": "id_28"
+      }
+    },
+    {
+      "type": "response.output_item.added",
+      "event_id": "id_29",
+      "response_id": "id_28",
+      "output_index": 0,
+      "item": {
+        "id": "id_30",
+        "type": "message",
+        "role": "assistant"
+      }
+    },
+    {
+      "type": "conversation.item.created",
+      "event_id": "id_31"
+    },
+    {
+      "type": "response.content_part.added",
+      "event_id": "id_32",
+      "item_id": "id_30",
+      "response_id": "id_28",
+      "content_index": 0,
+      "output_index": 0
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_33",
+      "item_id": "id_30",
+      "response_id": "id_28",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": "I"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_34",
+      "item_id": "id_30",
+      "response_id": "id_28",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": " enjoy"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_35",
+      "item_id": "id_30",
+      "response_id": "id_28",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": " walking in nature"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_36",
+      "item_id": "id_30",
+      "response_id": "id_28",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": " and"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_37",
+      "item_id": "id_30",
+      "response_id": "id_28",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": " watching"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_38",
+      "item_id": "id_30",
+      "response_id": "id_28",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": " the sunset."
+    },
+    {
+      "type": "response.audio_transcript.done",
+      "event_id": "id_39",
+      "item_id": "id_30",
+      "response_id": "id_28",
+      "content_index": 0,
+      "output_index": 0,
+      "transcript": "I enjoy walking in nature and watching the sunset."
+    },
+    {
+      "type": "response.audio.done",
+      "event_id": "id_40",
+      "item_id": "id_30",
+      "response_id": "id_28",
+      "content_index": 0,
+      "output_index": 0
+    },
+    {
+      "type": "response.content_part.done",
+      "event_id": "id_41",
+      "item_id": "id_30",
+      "response_id": "id_28",
+      "content_index": 0,
+      "output_index": 0
+    },
+    {
+      "type": "response.output_item.done",
+      "event_id": "id_42",
+      "response_id": "id_28",
+      "output_index": 0
+    },
+    {
+      "type": "response.done",
+      "event_id": "id_43",
+      "response": {
+        "id": "id_28",
+        "status": "completed"
+      }
+    }
+  ]
+}

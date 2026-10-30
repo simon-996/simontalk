@@ -22,13 +22,17 @@
     let connected = false;
     let active = false;
     let activating = false;
+    let draining = false;
     let muted = false;
     let peer, stream, sender, audio, remoteStream, controlChannel;
     let permissionTimer, connectionTimer, configurationTimer, finishStart, finishIce;
     let finishClosed;
     const whenClosed = new Promise((resolve) => { finishClosed = resolve; });
+    let finishDraining;
+    const whenDraining = new Promise((resolve) => { finishDraining = resolve; });
     let observe = () => {}, receive = () => {}, cancel = () => {};
     let nextChannel = 0;
+    let playbackGeneration = 0;
     const channels = new Map();
     const listeners = [];
     const playbackTimers = new Set();
@@ -39,7 +43,7 @@
     }
 
     function report(code, detail = '') {
-      if (stopped) return;
+      if (stopped || (draining && code.startsWith('playback_'))) return;
       try { observe(code, detail); } catch (_) { close('callback_failed'); }
     }
 
@@ -68,7 +72,7 @@
       attempt(() => peer?.close());
       if (audio) {
         attempt(() => audio.pause());
-        audio.srcObject = null;
+        attempt(() => { audio.srcObject = null; });
         attempt(() => audio.remove());
       }
       // This only cancels local signalling. It does not prove upstream billing stopped.
@@ -89,24 +93,26 @@
     }
 
     function bindChannel(channel) {
-      if (stopped) { attempt(() => channel.close()); return; }
+      if (stopped || draining) { attempt(() => channel.close()); return; }
       if ([...channels.values()].includes(channel)) return;
       // Bound the number of server-created channels held by an individual connection.
       if (nextChannel >= 8) { attempt(() => channel.close()); close('too_many_channels'); return; }
       const id = `channel-${nextChannel++}`;
       channels.set(id, channel);
       const opened = () => {
-        if (stopped) return;
+        if (stopped || draining || channels.get(id) !== channel) return;
         checkConnected();
         report('channel_open', id);
       };
       listen(channel, 'open', opened);
       listen(channel, 'message', ({ data }) => {
-        if (stopped) return;
+        if (stopped || channels.get(id) !== channel || (draining && id !== controlChannel)) return;
         if (!validEvent(data)) { close('invalid_event'); return; }
         try { receive(data, id); } catch (_) { close('callback_failed'); }
       });
-      listen(channel, 'error', () => close('event_channel_failed'));
+      listen(channel, 'error', () => {
+        if (channels.get(id) === channel) close('event_channel_failed');
+      });
       listen(channel, 'close', () => {
         if (stopped) return;
         channels.delete(id);
@@ -118,19 +124,24 @@
       if (channel.readyState === 'open') opened();
     }
 
-    function playbackFailure(error) {
+    function playbackFailure(error, generation) {
       if (stopped) return 'cancelled';
+      if (draining) return 'draining';
       if (error?.name !== 'NotAllowedError') {
         close('playback_failed');
         return 'playback_failed';
       }
+      if (generation !== playbackGeneration) return null;
       report('playback_blocked');
-      return 'playback_blocked';
+      return stopped ? 'cancelled' : draining ? 'draining' :
+        generation === playbackGeneration ? 'playback_blocked' : null;
     }
 
     async function play() {
       if (stopped) return 'cancelled';
+      if (draining) return 'draining';
       if (!active || !remoteStream?.getTracks().length) return 'not_ready';
+      const generation = ++playbackGeneration;
       let timer;
       try {
         const waiting = new Promise((resolve) => {
@@ -138,16 +149,20 @@
           playbackTimers.add(timer);
         });
         // Keep observing a late rejection even when the bounded wait has already returned.
-        const playback = Promise.resolve(audio.play()).then(() => null, playbackFailure);
-        const result = await Promise.race([playback, whenClosed, waiting]);
+        const playback = Promise.resolve(audio.play()).then(
+          () => null, (error) => playbackFailure(error, generation));
+        const result = await Promise.race([playback, whenClosed, whenDraining, waiting]);
+        if (draining && !stopped) return 'draining';
+        if (generation !== playbackGeneration && !stopped) return null;
         if (!stopped && result === 'waiting') {
           report('playback_waiting');
-          return 'playback_waiting';
+          return stopped ? 'cancelled' : draining ? 'draining' :
+            generation === playbackGeneration ? 'playback_waiting' : null;
         }
         return result === 'playback_failed' || result === 'playback_blocked'
           ? result : stopped ? 'cancelled' : null;
       } catch (error) {
-        return playbackFailure(error);
+        return playbackFailure(error, generation);
       } finally { clearTimeout(timer); playbackTimers.delete(timer); }
     }
 
@@ -169,7 +184,9 @@
           close('no_device'); return;
         }
         tracks[0].enabled = !muted;
-        for (const track of stream.getTracks()) listen(track, 'ended', () => close('device_lost'));
+        for (const track of stream.getTracks()) {
+          listen(track, 'ended', () => { if (!draining) close('device_lost'); });
+        }
         connectionTimer = setTimeout(() => close('connection_timeout'), 30000);
         peer = new window.RTCPeerConnection({ iceServers: [] });
         // Negotiate audio now; the real microphone is attached only after configuration confirmation.
@@ -178,16 +195,26 @@
         audio = document.createElement('audio');
         audio.autoplay = false;
         audio.playsInline = true;
-        audio.srcObject = remoteStream;
-        listen(audio, 'playing', () => report('playback_playing'));
+        listen(audio, 'playing', () => { playbackGeneration++; report('playback_playing'); });
         listen(audio, 'pause', () => report('playback_paused'));
         listen(audio, 'error', () => close('playback_failed'));
         listen(peer, 'track', ({ track }) => {
-          if (stopped) { attempt(() => track.stop()); return; }
+          if (stopped || draining) { attempt(() => track.stop()); return; }
           if (track.kind !== 'audio') { attempt(() => track.stop()); return; }
           if (!remoteStream.getTracks().includes(track)) {
-            remoteStream.addTrack(track);
-            listen(track, 'ended', () => close('remote_media_ended'));
+            let added = false;
+            try {
+              remoteStream.addTrack(track);
+              added = true;
+              // Chromium can leave a player bound to an initially empty stream
+              // waiting forever even after a remote audio track is added.
+              if (!audio.srcObject) audio.srcObject = remoteStream;
+              listen(track, 'ended', () => { if (!draining) close('remote_media_ended'); });
+            } catch (_) {
+              if (!added) attempt(() => track.stop());
+              close('playback_failed');
+              return;
+            }
           }
           if (active) void play();
         });
@@ -255,6 +282,7 @@
       },
       async activate(channelId) {
         if (stopped) return 'cancelled';
+        if (draining) return 'draining';
         if (!connected) return 'not_connected';
         if (channels.get(channelId)?.readyState !== 'open') return 'invalid_channel';
         if (active) return channelId === controlChannel ? null : 'already_active';
@@ -264,10 +292,12 @@
         try {
           await Promise.race([sender.replaceTrack(stream.getAudioTracks()[0]), whenClosed]);
           if (stopped) return 'cancelled';
+          if (draining) return 'draining';
           active = true;
           clearTimeout(configurationTimer);
           report('microphone_active');
           if (stopped) return 'cancelled';
+          if (draining) return 'draining';
           // play() can wait for the first remote packet. Microphone activation is already
           // complete; playback restrictions/failures are delivered through observations.
           if (remoteStream.getTracks().length) void play();
@@ -282,18 +312,53 @@
         if (stopped) return 'cancelled';
         if (!connected) return 'not_connected';
         const channel = channels.get(channelId);
-        if (channel?.readyState !== 'open') return 'invalid_channel';
+        if (channel?.readyState !== 'open' || (draining && channelId !== controlChannel)) return 'invalid_channel';
         if (!validEvent(json)) return 'invalid_event';
         if (channel.bufferedAmount + bytes(json) > 262144) return 'backpressure';
         try { channel.send(json); return null; }
         catch (_) { close('event_channel_failed'); return 'event_channel_failed'; }
       },
       setMuted(value) {
-        if (stopped) return;
+        if (stopped || draining) return;
         muted = value === true;
         for (const track of stream?.getAudioTracks() ?? []) track.enabled = !muted;
       },
       resumePlayback: play,
+      beginDrain() {
+        if (stopped) return 'cancelled';
+        if (draining) return null;
+        if (!active || !connected || channels.get(controlChannel)?.readyState !== 'open') return 'not_active';
+        draining = true;
+        active = false;
+        finishDraining();
+        clearTimeout(configurationTimer);
+        for (const timer of playbackTimers) clearTimeout(timer);
+        playbackTimers.clear();
+        let failed = false;
+        const release = (action) => { try { action(); } catch (_) { failed = true; } };
+        release(() => {
+          for (const track of stream?.getTracks() ?? []) {
+            release(() => { track.enabled = false; });
+            release(() => track.stop());
+          }
+        });
+        stream = undefined;
+        if (audio) {
+          release(() => audio.pause());
+          release(() => { audio.srcObject = null; });
+        }
+        release(() => {
+          for (const track of remoteStream?.getTracks() ?? []) release(() => track.stop());
+        });
+        remoteStream = undefined;
+        for (const [id, channel] of channels) {
+          if (id === controlChannel) continue;
+          channels.delete(id);
+          release(() => channel.close());
+        }
+        if (failed) { close('media_failed'); return 'media_failed'; }
+        return null;
+      },
       stop: () => close(),
     };
   }

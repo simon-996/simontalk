@@ -28,6 +28,7 @@ extension type _BrowserTransport._(JSObject _) implements JSObject {
   external JSString? send(String json, String channelId);
   external void setMuted(bool muted);
   external JSPromise<JSString?> resumePlayback();
+  external JSString? beginDrain();
   external void stop();
 }
 
@@ -121,6 +122,9 @@ class _WebRealtimeTransport implements RealtimeTransport {
   @override
   Future<void> resumePlayback() async =>
       _check(await _transport.resumePlayback().toDart);
+
+  @override
+  void beginDrain() => _check(_transport.beginDrain());
 
   @override
   void stop() {

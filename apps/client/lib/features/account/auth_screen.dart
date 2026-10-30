@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 import '../../design/account_components.dart';
 import 'account_controller.dart';
 
+typedef _AuthCanAct = bool Function({bool checkState});
+
 enum AuthMode { login, register, reset }
 
 class AuthScreen extends ConsumerStatefulWidget {
@@ -37,9 +39,8 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    if (!_form.currentState!.validate()) return;
-    final controller = ref.read(accountControllerProvider.notifier);
+  Future<void> _submit(AccountController controller, _AuthCanAct canAct) async {
+    if (!canAct() || !_form.currentState!.validate()) return;
     final mode = widget.mode;
     final success = switch (mode) {
       AuthMode.login => await controller.authenticate(
@@ -62,14 +63,15 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
     _password.clear();
     _confirm.clear();
     _invite.clear();
-    if (mode == AuthMode.reset) {
+    if (mode == AuthMode.reset && canAct(checkState: false)) {
       ScaffoldMessenger.of(context)
           .showSnackBar(const SnackBar(content: Text('密码已更新，请使用新密码登录。')));
       context.go('/login');
     }
   }
 
-  void _navigate(String path) {
+  void _navigate(String path, _AuthCanAct canAct) {
+    if (!canAct()) return;
     ref.read(accountControllerProvider.notifier).clearError();
     context.go(path);
   }
@@ -77,6 +79,31 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(accountControllerProvider);
+    final controller = ref.read(accountControllerProvider.notifier);
+    final repository = ref.read(accountRepositoryProvider);
+    final owner = repository.api.expectedAccountId;
+    final path = switch (widget.mode) {
+      AuthMode.login => '/login',
+      AuthMode.register => '/join',
+      AuthMode.reset => '/reset',
+    };
+    bool canAct({bool checkState = true}) {
+      if (!mounted ||
+          ModalRoute.of(context)?.isCurrent != true ||
+          GoRouter.of(context).routeInformationProvider.value.uri.path !=
+              path) {
+        return false;
+      }
+      final current = ref.read(accountControllerProvider);
+      return current.phase == SessionPhase.signedOut &&
+          !current.busy &&
+          identical(ref.read(accountControllerProvider.notifier), controller) &&
+          identical(ref.read(accountRepositoryProvider), repository) &&
+          repository.api.expectedAccountId == owner &&
+          (owner == null || repository.api.hasCurrentAccount(owner)) &&
+          (!checkState || identical(current, state));
+    }
+
     final register = widget.mode == AuthMode.register;
     final reset = widget.mode == AuthMode.reset;
     final title = reset
@@ -159,7 +186,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ? TextInputAction.next
                     : TextInputAction.done,
                 onFieldSubmitted: (_) {
-                  if (!register && !reset) _submit();
+                  if (!register && !reset) _submit(controller, canAct);
                 },
                 decoration: InputDecoration(
                   labelText: reset ? '新密码' : '密码',
@@ -170,7 +197,11 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     tooltip: _showPassword ? '隐藏密码' : '显示密码',
                     onPressed: state.busy
                         ? null
-                        : () => setState(() => _showPassword = !_showPassword),
+                        : () {
+                            if (canAct()) {
+                              setState(() => _showPassword = !_showPassword);
+                            }
+                          },
                     icon: Icon(
                       _showPassword
                           ? Icons.visibility_off_outlined
@@ -196,7 +227,7 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   autocorrect: false,
                   enableSuggestions: false,
                   textInputAction: TextInputAction.done,
-                  onFieldSubmitted: (_) => _submit(),
+                  onFieldSubmitted: (_) => _submit(controller, canAct),
                   decoration: const InputDecoration(labelText: '再次输入密码'),
                   validator: (value) =>
                       value != _password.text || value == null || value.isEmpty
@@ -212,21 +243,27 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                     ? '创建账号'
                     : '登录',
                 busy: state.busy,
-                onPressed: _submit,
+                onPressed: () => _submit(controller, canAct),
               ),
               const SizedBox(height: 16),
               if (!register && !reset) ...[
                 TextButton(
-                  onPressed: state.busy ? null : () => _navigate('/join'),
+                  onPressed: state.busy
+                      ? null
+                      : () => _navigate('/join', canAct),
                   child: const Text('邀请码注册'),
                 ),
                 TextButton(
-                  onPressed: state.busy ? null : () => _navigate('/reset'),
+                  onPressed: state.busy
+                      ? null
+                      : () => _navigate('/reset', canAct),
                   child: const Text('忘记密码'),
                 ),
               ] else
                 TextButton(
-                  onPressed: state.busy ? null : () => _navigate('/login'),
+                  onPressed: state.busy
+                      ? null
+                      : () => _navigate('/login', canAct),
                   child: const Text('返回登录'),
                 ),
             ],

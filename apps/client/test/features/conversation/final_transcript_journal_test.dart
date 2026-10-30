@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:simontalk_client/core/api_client.dart';
 import 'package:simontalk_client/features/conversation/conversation_models.dart';
 import 'package:simontalk_client/features/conversation/final_transcript_journal.dart';
+import 'package:simontalk_client/features/practice/submission_manifest.dart';
 
 import '../practice/practice_fixtures.dart';
 import '../realtime/api_realtime_signaller_test.dart' show TrackedClient;
@@ -335,6 +336,71 @@ void main() {
   );
 
   test(
+    'finished journal notifies the final acknowledgement and stays sealed',
+    () async {
+      setup();
+      final pending = Completer<http.Response>();
+      handler = (_) => pending.future;
+      final states = <int>[];
+      journal.addListener(() => states.add(journal.pendingCount));
+      journal.record(fixtures.user());
+      journal.finish();
+      final drain = journal.retryPending();
+      await Future<void>.delayed(Duration.zero);
+      expect(states, isNotEmpty);
+      expect(states.every((count) => count == 1), isTrue);
+      pending.complete(response(ack(requests.single)));
+      await drain;
+      expect(states.last, 0);
+      final confirmedStates = states.length;
+      journal.record(fixtures.ai());
+      expect(states.length, confirmedStates);
+      expect(journal.pendingCount, 0);
+      expect(requests.length, 1);
+    },
+  );
+
+  test(
+    'finish after acknowledgement notifies completion without another request',
+    () async {
+      setup();
+      journal.record(fixtures.user());
+      await journal.retryPending();
+      var completions = 0;
+      journal.addListener(() {
+        expect(journal.pendingCount, 0);
+        completions++;
+      });
+      journal.finish();
+      expect(completions, 1);
+      journal.finish();
+      expect(completions, 1);
+      expect(requests.length, 1);
+    },
+  );
+
+  test(
+    'account loss notifications can read journal state without reentrant abort',
+    () async {
+      setup();
+      handler = (_) async => response({'code': 'service_unavailable'}, 503);
+      journal.record(fixtures.user());
+      await journal.retryPending();
+      var notifications = 0;
+      journal.addListener(() {
+        notifications++;
+        expect(journal.pendingCount, 0);
+        expect(journal.errorCode, 'account_changed');
+      });
+      account.expectedAccountId = requestKey;
+      expect(journal.pendingCount, 0);
+      expect(notifications, 1);
+      journal.abort();
+      expect(notifications, 1);
+    },
+  );
+
+  test(
     'abort clears text, settles drain and ignores a late acknowledgement',
     () async {
       setup();
@@ -485,5 +551,56 @@ void main() {
     journal.record(fixtures.user());
     await journal.retryPending();
     expect(journal.errorCode, 'transcript_failed');
+  });
+
+  test(
+    'manifest retains acknowledged refs without text until account abort',
+    () async {
+      setup();
+      journal.record(fixtures.user(text: 'private phrase'));
+      await journal.retryPending();
+      journal.finish();
+      final manifest =
+          (journal as SubmissionManifestProvider).submissionManifest!;
+      expect(manifest.events.single.eventId, server[1]!['event_id']);
+      expect(manifest.pendingCountAtClose, 0);
+      expect(manifest.totalTextBytes, 14);
+      expect(
+        jsonEncode(manifest.toRequestJson()),
+        isNot(contains('private phrase')),
+      );
+      journal.abort();
+      expect(journal.submissionManifest, isNull);
+    },
+  );
+
+  test('sealed receipt settles in-flight pending and distinguishes unsaved from ACK', () async {
+    setup();
+    final pending = Completer<http.Response>();
+    handler = (_) => pending.future;
+    journal.record(fixtures.user());
+    journal.record(fixtures.ai());
+    final task = journal.retryPending();
+    await Future<void>.delayed(Duration.zero);
+    final original = journal.submissionManifest!;
+    journal.reconcileSealed(
+      SubmissionManifest(
+        ledger: SubmissionLedger.transcripts,
+        events: [original.events.first],
+        totalTextBytes: 0,
+        pendingCountAtClose: 0,
+      ),
+    );
+    await task;
+    expect(journal.pendingCount, 0);
+    expect(journal.permanentlyUnsavedCount, 1);
+    expect(journal.rejectedCount, 0);
+    expect(journal.errorCode, 'sealed_unsaved');
+    expect(journal.submissionManifest!.events.length, 2);
+    pending.complete(response(ack(requests.single)));
+    await Future<void>.delayed(Duration.zero);
+    await journal.retryPending();
+    expect(requests.length, 1);
+    expect(journal.permanentlyUnsavedCount, 1);
   });
 }

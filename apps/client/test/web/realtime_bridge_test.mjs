@@ -22,11 +22,11 @@ test('compiled Dart bridge passes async signalling, event and cancellation callb
       supported: true,
       create() {
         let closed = false;
-        let observe, cancel;
+        let observe, receive, cancel;
         const instance = {
-          muted: false, sent: [], activated: false,
+          muted: false, sent: [], activated: false, drains: 0,
           async start(exchange, onObservation, onEvent, onCancel) {
-            observe = onObservation; cancel = onCancel;
+            observe = onObservation; receive = onEvent; cancel = onCancel;
             try {
               assert.equal(await exchange('v=0\r\no=offer\r\n'), 'v=0\r\no=answer\r\n');
               observe('transport_connected', '');
@@ -40,6 +40,12 @@ test('compiled Dart bridge passes async signalling, event and cancellation callb
           send(json, id) { assert.equal(id, 'server-channel'); this.sent.push(json); return null; },
           setMuted(value) { this.muted = value; },
           async resumePlayback() { return 'playback_blocked'; },
+          beginDrain() {
+            this.drains++;
+            if (instances.indexOf(this) === 2) return 'media_failed';
+            receive('{"type":"input.final"}', 'server-channel');
+            return null;
+          },
           stop() { if (closed) return; closed = true; cancel?.(); observe?.('local_closed', 'cancelled'); },
         };
         instances.push(instance); return instance;
@@ -57,10 +63,12 @@ test('compiled Dart bridge passes async signalling, event and cancellation callb
     context.self = context;
     vm.runInNewContext(readFileSync(output, 'utf8'), context);
     await completion;
-    assert.equal(instances.length, 2);
+    assert.equal(instances.length, 3);
     assert.equal(instances[0].activated, true);
     assert.equal(instances[0].muted, true);
-    assert.deepEqual(instances[0].sent, ['{"type":"session.update"}']);
+    assert.equal(instances[0].drains, 2);
+    assert.equal(instances[2].drains, 1);
+    assert.deepEqual(instances[0].sent, ['{"type":"session.update"}', '{"type":"response.cancel"}']);
     assert.ok(!logs.join('\n').includes('private upstream details'));
   } finally { rmSync(directory, { recursive: true, force: true }); }
 });

@@ -1,0 +1,278 @@
+{
+  "events": [
+    {
+      "type": "response.created",
+      "event_id": "id_1",
+      "response": {
+        "id": "id_2"
+      }
+    },
+    {
+      "type": "response.output_item.added",
+      "event_id": "id_3",
+      "response_id": "id_2",
+      "output_index": 0,
+      "item": {
+        "id": "id_4",
+        "type": "message",
+        "role": "assistant"
+      }
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_5",
+      "item_id": "id_4",
+      "response_id": "id_2",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": "One"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_6",
+      "item_id": "id_4",
+      "response_id": "id_2",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": ", two, three"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_7",
+      "item_id": "id_4",
+      "response_id": "id_2",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": ", four, five"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_8",
+      "item_id": "id_4",
+      "response_id": "id_2",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": ", six, seven"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_9",
+      "item_id": "id_4",
+      "response_id": "id_2",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": ", eight, nine"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_10",
+      "item_id": "id_4",
+      "response_id": "id_2",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": ", ten, eleven"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_11",
+      "item_id": "id_4",
+      "response_id": "id_2",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": ", twelve, thirteen"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_12",
+      "item_id": "id_4",
+      "response_id": "id_2",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": ", fourteen, fifteen"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_13",
+      "item_id": "id_4",
+      "response_id": "id_2",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": ", sixteen, seventeen"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_14",
+      "item_id": "id_4",
+      "response_id": "id_2",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": ", eighteen, nineteen"
+    },
+    {
+      "type": "response.audio_transcript.delta",
+      "event_id": "id_15",
+      "item_id": "id_4",
+      "response_id": "id_2",
+      "content_index": 0,
+      "output_index": 0,
+      "delta": ", twenty."
+    },
+    {
+      "type": "input_audio_buffer.speech_started",
+      "event_id": "id_16",
+      "item_id": "id_17"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_18",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_19",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday."
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_20",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_21",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I."
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_22",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_23",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_24",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the"
+    },
+    {
+      "type": "response.audio_transcript.done",
+      "event_id": "id_25",
+      "item_id": "id_4",
+      "response_id": "id_2",
+      "content_index": 0,
+      "output_index": 0,
+      "transcript": "One, two, three, four, five, six, seven, eight, nine, ten, eleven, twelve, thirteen, fourteen, fifteen, sixteen, seventeen, eighteen, nineteen, twenty."
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_26",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_27",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park."
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_28",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_29",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What do"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_30",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What do you"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_31",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What do you like"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_32",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What do you like to"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_33",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What do you like to do"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_34",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What do you like to do outdoors"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.delta",
+      "event_id": "id_35",
+      "item_id": "id_17",
+      "content_index": 0,
+      "text": "",
+      "stash": "Yesterday I went to the park. What do you like to do outdoors?"
+    },
+    {
+      "type": "conversation.item.input_audio_transcription.completed",
+      "event_id": "id_36",
+      "item_id": "id_17",
+      "content_index": 0,
+      "transcript": "Yesterday I went to the park. What do you like to do outdoors?"
+    }
+  ]
+}

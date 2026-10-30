@@ -9,12 +9,16 @@ import 'package:simontalk_client/features/account/account_controller.dart';
 import 'package:simontalk_client/features/account/account_repository.dart';
 import 'package:simontalk_client/features/practice/connection_observation_models.dart';
 import 'package:simontalk_client/features/practice/practice_models.dart';
+import 'package:simontalk_client/features/practice/practice_completion_models.dart';
 import 'package:simontalk_client/features/practice/practice_providers.dart';
 import 'package:simontalk_client/features/practice/practice_recovery_panel.dart';
 
 import 'practice_fixtures.dart';
 import 'practice_providers_test.dart' show ScopedAccountController;
 import 'recovery_fixtures.dart';
+import 'practice_completion_test.dart' show completionSummary;
+import 'saved_status_recovery_test.dart' show terminationSnapshot;
+import 'practice_save_status_view_test.dart' show savedSummary, savedCheck;
 
 PracticeRecovery unknownRecovery() => PracticeRecovery.fromJson({
   'practice': practiceJson(status: 'interrupted', epoch: 1),
@@ -22,6 +26,60 @@ PracticeRecovery unknownRecovery() => PracticeRecovery.fromJson({
 });
 
 void main() {
+  testWidgets('sealed saved source exposes a review entry only while usable', (
+    tester,
+  ) async {
+    var opened = 0;
+    Future<void> show({
+      bool busy = false,
+      bool loaded = true,
+      bool accountReady = true,
+      bool ending = false,
+      bool missing = false,
+      String? error,
+    }) => tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: SingleChildScrollView(
+            child: PracticeRecoveryView(
+              recovery: unknownRecovery(),
+              savedCompletion: missing
+                  ? null
+                  : ending
+                  ? PracticeCompletionSummary.fromJson(
+                      completionSummary(),
+                      scope: savedSummary().scope,
+                    )
+                  : savedSummary(),
+              reviewEntryAvailable: accountReady,
+              onOpenReview: () => opened++,
+              saveStatusLoaded: loaded,
+              saveStatusErrorCode: error,
+              busy: busy,
+            ),
+          ),
+        ),
+      ),
+    );
+    await show();
+    expect(find.text('查看复盘'), findsOneWidget);
+    await tester.ensureVisible(find.text('查看复盘'));
+    await tester.tap(find.text('查看复盘'));
+    expect(opened, 1);
+    await show(ending: true);
+    expect(find.text('查看复盘'), findsNothing);
+    await show(missing: true);
+    expect(find.text('查看复盘'), findsNothing);
+    await show(accountReady: false);
+    expect(find.text('查看复盘'), findsNothing);
+    await show(busy: true);
+    expect(find.text('查看复盘'), findsNothing);
+    await show(loaded: false);
+    expect(find.text('查看复盘'), findsNothing);
+    await show(error: 'account_changed');
+    expect(find.text('查看复盘'), findsNothing);
+  });
+
   testWidgets(
     'actual panel only reads on explicit actions, preserves unknown alongside local close',
     (tester) async {
@@ -43,6 +101,12 @@ void main() {
             recoveryHttpClientFactoryProvider.overrideWithValue(
               () => MockClient((r) async {
                 requests.add(r);
+                if (r.url.path.endsWith('/completion')) {
+                  return response(completionSummary(sealed: true));
+                }
+                if (r.url.path.endsWith('/termination-check')) {
+                  return response(terminationSnapshot());
+                }
                 if (r.url.path.endsWith('/observations')) {
                   return response(closed);
                 }
@@ -68,12 +132,21 @@ void main() {
       await tester.tap(find.text('查看未结束练习'));
       await tester.pumpAndSettle();
       expect(find.text('远端是否结束尚未确认'), findsOneWidget);
+      expect(find.text('已有内容已保存，仍有缺口'), findsNothing);
       expect(requests, hasLength(1));
       await tester.ensureVisible(find.text('查看连接记录'));
       await tester.tap(find.text('查看连接记录'));
       await tester.pumpAndSettle();
       expect(find.text('客户端报告本地已关闭'), findsOneWidget);
       expect(find.text('远端是否结束尚未确认'), findsOneWidget);
+      await tester.ensureVisible(find.text('查看保存状态'));
+      await tester.tap(find.text('查看保存状态'));
+      await tester.pumpAndSettle();
+      expect(find.text('已有内容已保存，仍有缺口'), findsOneWidget);
+      expect(find.textContaining('维护者协助确认'), findsOneWidget);
+      expect(find.text('上次练习状态'), findsOneWidget);
+      expect(find.text('服务器记录：练习已结束'), findsOneWidget);
+      expect(requests, hasLength(4));
       expect(requests.every((r) => r.method == 'GET'), isTrue);
       expect(
         requests.every((r) => r.headers['X-Account-ID'] == accountId),
@@ -191,6 +264,9 @@ void main() {
                       constraints: const BoxConstraints(maxWidth: 680),
                       child: PracticeRecoveryView(
                         recovery: recovery,
+                        saveStatusLoaded: true,
+                        savedCompletion: savedSummary(),
+                        terminationCheck: savedCheck(),
                         page: page,
                         events: page.events,
                         onLoadObservations: () => more++,

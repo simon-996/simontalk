@@ -17,6 +17,9 @@ class ConnectionLeaseWatchdog {
   Timer? _expiry;
 
   bool get expired => _deadline != null && elapsed() >= _deadline!;
+  Duration? get deadline => _deadline;
+
+  void stopRenewal() => _renew?.cancel();
 
   bool arm(Duration requestStarted, ConnectionReservation connection) {
     final deadline = requestStarted + connection.leaseDuration;

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/widget_previews.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../design/account_components.dart';
 import '../../design/app_theme.dart';
@@ -10,20 +13,31 @@ import '../conversation/final_transcript_read_models.dart';
 import '../conversation/final_transcript_read_view.dart';
 import 'connection_observation_models.dart';
 import 'practice_models.dart';
+import 'practice_completion_models.dart';
+import 'practice_save_status_view.dart';
+import 'termination_check_models.dart';
 import 'practice_providers.dart';
 import 'practice_recovery_controller.dart';
 import 'preparation_discard_dialog.dart';
 
 class PracticeRecoveryPanel extends ConsumerWidget {
-  const PracticeRecoveryPanel({super.key});
+  const PracticeRecoveryPanel({
+    super.key,
+    this.recoveryController,
+    this.showAccountStatus = true,
+  });
+  final bool showAccountStatus;
+  final PracticeRecoveryController? recoveryController;
 
   Future<void> _confirmDiscard(
     BuildContext context,
     PracticeRecoveryController controller,
+    PracticePreparation original,
+    bool Function() canAct,
   ) async {
-    final original = controller.recovery?.practice;
-    if (original == null ||
-        controller.busy ||
+    if (!canAct() ||
+        !identical(original, controller.recovery?.practice) ||
+        controller.endRegistered ||
         !(controller.recovery?.canDiscardPreparation ?? false)) {
       return;
     }
@@ -31,36 +45,133 @@ class PracticeRecoveryPanel extends ConsumerWidget {
       context: context,
       builder: (_) => const PreparationDiscardDialog(),
     );
-    if (confirmed == true && context.mounted) {
+    if (confirmed == true &&
+        canAct() &&
+        identical(original, controller.recovery?.practice)) {
       await controller.discardPreparation(original);
     }
   }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.watch(practiceRecoveryProvider);
+    final controller =
+        recoveryController ?? ref.watch(practiceRecoveryProvider);
+    final account = ref.watch(accountControllerProvider);
     if (controller == null) return const SizedBox.shrink();
+    final displayedUri = GoRouter.maybeOf(context)
+        ?.routeInformationProvider
+        .value
+        .uri;
+    bool canAct({bool requireApiOwner = true}) {
+      if (!context.mounted ||
+          ModalRoute.of(context)?.isCurrent != true ||
+          GoRouter.maybeOf(context)?.routeInformationProvider.value.uri !=
+              displayedUri) {
+        return false;
+      }
+      final current = ref.read(accountControllerProvider);
+      final activePanel = context.widget;
+      if (activePanel is! PracticeRecoveryPanel) return false;
+      final active =
+          activePanel.recoveryController ?? ref.read(practiceRecoveryProvider);
+      return current.phase == SessionPhase.signedIn &&
+          !current.busy &&
+          current.session?.user.id == controller.accountId &&
+          identical(controller, active) &&
+          !controller.busy &&
+          (!requireApiOwner ||
+              ref
+                  .read(accountRepositoryProvider)
+                  .api
+                  .hasCurrentAccount(controller.accountId));
+    }
+
     return ListenableBuilder(
       listenable: controller,
-      builder: (context, _) => PracticeRecoveryView(
-        busy: controller.busy,
-        recovery: controller.recovery,
-        page: controller.page,
-        events: controller.events,
-        errorCode: controller.errorCode,
-        observationErrorCode: controller.observationErrorCode,
-        transcripts: controller.transcripts,
-        transcriptErrorCode: controller.transcriptErrorCode,
-        loadingTranscripts: controller.loadingTranscripts,
-        cleanupStatus: controller.cleanupStatus,
-        onRefresh: controller.refresh,
-        onLoadObservations: controller.loadObservations,
-        onLoadTranscripts: controller.loadTranscripts,
-        onRefreshTranscripts: () => controller.loadTranscripts(refresh: true),
-        onDiscard: () => _confirmDiscard(context, controller),
-        onConfirmAccount: () =>
-            ref.read(accountControllerProvider.notifier).restore(),
-      ),
+      builder: (viewContext, _) {
+        final displayedRecovery = controller.recovery;
+        final displayedCompletion = controller.savedCompletion;
+        bool hasRecovery() =>
+            canAct() &&
+            displayedRecovery != null &&
+            identical(controller.recovery, displayedRecovery);
+        return PracticeRecoveryView(
+          busy: controller.busy,
+          accountBusy: account.busy,
+          showAccountStatus: showAccountStatus,
+          recovery: displayedRecovery,
+          page: controller.page,
+          events: controller.events,
+          errorCode: controller.errorCode,
+          observationErrorCode: controller.observationErrorCode,
+          transcripts: controller.transcripts,
+          transcriptErrorCode: controller.transcriptErrorCode,
+          loadingTranscripts: controller.loadingTranscripts,
+          savedCompletion: displayedCompletion,
+          endRegistered: controller.endRegistered,
+          terminationCheck: controller.terminationCheck,
+          saveStatusLoaded: controller.saveStatusLoaded,
+          loadingSaveStatus: controller.loadingSaveStatus,
+          saveStatusErrorCode: controller.saveStatusErrorCode,
+          onOpenReview: () {
+            if (!hasRecovery() ||
+                displayedCompletion == null ||
+                !identical(controller.savedCompletion, displayedCompletion) ||
+                !controller.saveStatusLoaded ||
+                controller.errorCode != null ||
+                controller.saveStatusErrorCode != null ||
+                displayedCompletion.status != PracticeCompletionStatus.sealed ||
+                displayedCompletion.scope.accountId != controller.accountId ||
+                displayedCompletion.scope.sessionId !=
+                    displayedRecovery?.practice?.id) {
+              return;
+            }
+            context.push(
+              '/practice/${displayedCompletion.scope.sessionId}/review',
+            );
+          },
+          onLoadSaveStatus: () {
+            if (hasRecovery()) unawaited(controller.loadSaveStatus());
+          },
+          onRefreshSaveStatus: () {
+            if (hasRecovery()) {
+              unawaited(controller.loadSaveStatus(refresh: true));
+            }
+          },
+          cleanupStatus: controller.cleanupStatus,
+          onRefresh: () {
+            if (canAct()) unawaited(controller.refresh());
+          },
+          onLoadObservations: () {
+            if (hasRecovery()) unawaited(controller.loadObservations());
+          },
+          onLoadTranscripts: () {
+            if (hasRecovery()) unawaited(controller.loadTranscripts());
+          },
+          onRefreshTranscripts: () {
+            if (hasRecovery()) {
+              unawaited(controller.loadTranscripts(refresh: true));
+            }
+          },
+          onDiscard: () {
+            if (hasRecovery() && displayedRecovery?.practice != null) {
+              unawaited(
+                _confirmDiscard(
+                  context,
+                  controller,
+                  displayedRecovery!.practice!,
+                  canAct,
+                ),
+              );
+            }
+          },
+          onConfirmAccount: () {
+            if (canAct(requireApiOwner: false)) {
+              unawaited(ref.read(accountControllerProvider.notifier).restore());
+            }
+          },
+        );
+      },
     );
   }
 }
@@ -69,6 +180,9 @@ class PracticeRecoveryView extends StatelessWidget {
   const PracticeRecoveryView({
     super.key,
     this.busy = false,
+    this.accountBusy = false,
+    this.showAccountStatus = true,
+    this.reviewEntryAvailable = true,
     this.recovery,
     this.page,
     this.events = const [],
@@ -77,6 +191,15 @@ class PracticeRecoveryView extends StatelessWidget {
     this.transcripts,
     this.transcriptErrorCode,
     this.loadingTranscripts = false,
+    this.savedCompletion,
+    this.endRegistered = false,
+    this.terminationCheck,
+    this.saveStatusLoaded = false,
+    this.loadingSaveStatus = false,
+    this.saveStatusErrorCode,
+    this.onOpenReview,
+    this.onLoadSaveStatus,
+    this.onRefreshSaveStatus,
     this.cleanupStatus = PreparationCleanupStatus.idle,
     this.onRefresh,
     this.onLoadObservations,
@@ -86,7 +209,8 @@ class PracticeRecoveryView extends StatelessWidget {
     this.onDiscard,
   });
 
-  final bool busy;
+  final bool busy, accountBusy, showAccountStatus;
+  final bool reviewEntryAvailable;
   final PracticeRecovery? recovery;
   final ConnectionObservationPage? page;
   final List<ConnectionObservation> events;
@@ -95,6 +219,15 @@ class PracticeRecoveryView extends StatelessWidget {
   final FinalTranscriptHistory? transcripts;
   final String? transcriptErrorCode;
   final bool loadingTranscripts;
+  final PracticeCompletionSummary? savedCompletion;
+  final bool endRegistered;
+  final TerminationCheckSnapshot? terminationCheck;
+  final bool saveStatusLoaded;
+  final bool loadingSaveStatus;
+  final String? saveStatusErrorCode;
+  final VoidCallback? onOpenReview;
+  final VoidCallback? onLoadSaveStatus;
+  final VoidCallback? onRefreshSaveStatus;
   final PreparationCleanupStatus cleanupStatus;
   final VoidCallback? onRefresh;
   final VoidCallback? onLoadObservations;
@@ -105,6 +238,7 @@ class PracticeRecoveryView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final blocked = busy || accountBusy;
     final colors = Theme.of(context).colorScheme;
     final practice = recovery?.practice;
     final connection = recovery?.connection;
@@ -123,13 +257,24 @@ class PracticeRecoveryView extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SectionHeading('未结束练习'),
+              SectionHeading(
+                endRegistered ||
+                        practice?.status == PracticeStatus.completed ||
+                        savedCompletion?.status ==
+                            PracticeCompletionStatus.sealed
+                    ? '上次练习状态'
+                    : '未结束练习',
+              ),
               const SizedBox(height: 12),
               Text(
                 '查看查询时的服务端记录，可刷新了解最新状态。仅查看不会重新连接或打开麦克风。',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(height: 20),
+              if (accountBusy && showAccountStatus) ...[
+                const StatusMessage('账号操作进行中，请稍候…', error: false),
+                const SizedBox(height: 12),
+              ],
               if (errorCode != null)
                 StatusMessage(_errorMessage(errorCode!))
               else if (cleanupStatus == PreparationCleanupStatus.working)
@@ -151,7 +296,11 @@ class PracticeRecoveryView extends StatelessWidget {
                 Semantics(liveRegion: true, child: const Text('没有未结束的练习'))
               else ...[
                 Text(
-                  '服务器记录：${_practiceLabel(practice.status)}',
+                  '服务器记录：${savedCompletion == null && endRegistered ? '已登记结束' : _practiceLabel(savedCompletion?.status == PracticeCompletionStatus.sealed
+                            ? PracticeStatus.completed
+                            : savedCompletion?.status == PracticeCompletionStatus.ending
+                            ? PracticeStatus.ending
+                            : practice.status)}',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
@@ -214,14 +363,14 @@ class PracticeRecoveryView extends StatelessWidget {
                   ],
                   if (observationErrorCode != null)
                     StatusMessage(_errorMessage(observationErrorCode!)),
-                  if (busy && !loadingTranscripts) ...[
+                  if (busy && !loadingTranscripts && !loadingSaveStatus) ...[
                     const SizedBox(height: 12),
                     Semantics(liveRegion: true, child: const Text('正在读取连接记录…')),
                   ],
                   if (page == null || page!.hasMore) ...[
                     const SizedBox(height: 16),
                     OutlinedButton(
-                      onPressed: busy ? null : onLoadObservations,
+                      onPressed: blocked ? null : onLoadObservations,
                       child: Text(
                         observationErrorCode != null
                             ? '重试读取记录'
@@ -231,16 +380,48 @@ class PracticeRecoveryView extends StatelessWidget {
                       ),
                     ),
                   ],
-                  const Divider(height: 32),
-                  FinalTranscriptReadView(
-                    history: transcripts,
-                    busy: loadingTranscripts,
-                    errorCode: transcriptErrorCode,
-                    onLoad: busy ? null : onLoadTranscripts,
-                    onRefresh: busy ? null : onRefreshTranscripts,
-                  ),
+                  if (practice.stateReason == 'content_deleted') ...[
+                    const Divider(height: 32),
+                    const Text('内容已删除，原连接与用量仍待核对。'),
+                  ] else ...[
+                    const Divider(height: 32),
+                    PracticeSaveStatusView(
+                      loaded: saveStatusLoaded,
+                      busy: loadingSaveStatus,
+                      completion: savedCompletion,
+                      terminationCheck: terminationCheck,
+                      terminationStatus: connection.terminationStatus,
+                      errorCode: saveStatusErrorCode,
+                      onLoad: blocked ? null : onLoadSaveStatus,
+                      onRefresh: blocked ? null : onRefreshSaveStatus,
+                    ),
+                    if (!busy &&
+                        reviewEntryAvailable &&
+                        saveStatusLoaded &&
+                        errorCode == null &&
+                        saveStatusErrorCode == null &&
+                        savedCompletion?.status ==
+                            PracticeCompletionStatus.sealed &&
+                        savedCompletion?.scope.sessionId == practice.id) ...[
+                      const SizedBox(height: 16),
+                      OutlinedButton(
+                        onPressed: blocked ? null : onOpenReview,
+                        child: const Text('查看复盘'),
+                      ),
+                    ],
+                    const Divider(height: 32),
+                    FinalTranscriptReadView(
+                      history: transcripts,
+                      busy: loadingTranscripts,
+                      errorCode: transcriptErrorCode,
+                      onLoad: blocked ? null : onLoadTranscripts,
+                      onRefresh: blocked ? null : onRefreshTranscripts,
+                    ),
+                  ],
                 ],
-                if (recovery!.canDiscardPreparation) ...[
+                if (!endRegistered &&
+                    savedCompletion == null &&
+                    recovery!.canDiscardPreparation) ...[
                   const Divider(height: 32),
                   Text(
                     '可尝试清理未开始的准备，服务端会再次核验完整记录。',
@@ -248,7 +429,7 @@ class PracticeRecoveryView extends StatelessWidget {
                   ),
                   const SizedBox(height: 12),
                   OutlinedButton(
-                    onPressed: busy ? null : onDiscard,
+                    onPressed: blocked ? null : onDiscard,
                     child: const Text('清理未开始的准备'),
                   ),
                 ],
@@ -256,12 +437,12 @@ class PracticeRecoveryView extends StatelessWidget {
               const SizedBox(height: 20),
               if (identityError)
                 OutlinedButton(
-                  onPressed: busy ? null : onConfirmAccount,
+                  onPressed: blocked ? null : onConfirmAccount,
                   child: const Text('重新确认账号'),
                 )
               else
                 OutlinedButton(
-                  onPressed: busy ? null : onRefresh,
+                  onPressed: blocked ? null : onRefresh,
                   child: Text(
                     recovery == null &&
                             errorCode == null &&
@@ -292,7 +473,7 @@ String _practiceLabel(PracticeStatus status) => switch (status) {
   PracticeStatus.active => '练习进行中',
   PracticeStatus.interrupted => '练习已中断',
   PracticeStatus.ending => '正在结束',
-  PracticeStatus.completed => '练习已完成',
+  PracticeStatus.completed => '练习已结束',
   PracticeStatus.cancelled => '准备已取消',
   PracticeStatus.failed => '练习未完成',
 };

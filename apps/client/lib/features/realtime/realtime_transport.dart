@@ -35,6 +35,12 @@ abstract interface class RealtimeTransport {
   void setMuted(bool muted);
   Future<void> resumePlayback();
 
+  /// Synchronously stops capture and sound, keeping the configured event channel
+  /// for bounded tail evidence and provider completion/cancel controls only.
+  /// Requires an active transport; cannot activate media again. The owner bounds
+  /// the wait and validates tail events and controls, then calls [stop].
+  void beginDrain();
+
   /// Idempotent local shutdown. Does not assert that upstream charges have stopped.
   void stop();
 }

@@ -53,41 +53,63 @@ class AccountController extends Notifier<AccountState> {
     return const AccountState();
   }
 
-  Future<void> restore() async {
-    state = const AccountState();
+  Future<void> restore() => _restore();
+
+  Future<void> _restore({bool accountChanged = false}) async {
+    if (!ref.mounted) return;
+    final repository = _repository;
+    final pending = AccountState();
+    state = pending;
+    bool isCurrent() => ref.mounted && identical(state, pending);
+    const changedMessage = '当前浏览器已切换账号，旧页面修改未提交。请确认当前身份后再操作。';
     try {
-      final session = await _repository.restore();
+      final session = await repository.restore(stillCurrent: isCurrent);
+      if (!isCurrent()) return;
       state = AccountState(
         phase: session == null ? SessionPhase.signedOut : SessionPhase.signedIn,
         session: session,
+        error: accountChanged ? changedMessage : null,
       );
     } on Object catch (error) {
+      if (!isCurrent()) return;
       state = AccountState(
         phase: SessionPhase.unreachable,
-        error: _message(error),
+        error: accountChanged ? changedMessage : _message(error),
       );
     }
   }
 
-  void clearError() =>
-      state = AccountState(phase: state.phase, session: state.session);
+  void clearError() {
+    if (!ref.mounted || state.busy || state.error == null) return;
+    state = AccountState(phase: state.phase, session: state.session);
+  }
 
   Future<bool> authenticate(
     Future<AccountSession> Function(AccountRepository) action,
   ) async {
-    if (state.busy) return false;
-    state = AccountState(
+    if (!ref.mounted || state.busy) return false;
+    final repository = _repository;
+    final pending = AccountState(
       phase: state.phase,
       session: state.session,
       busy: true,
     );
+    state = pending;
+    bool isCurrent() =>
+        ref.mounted &&
+        identical(state, pending) &&
+        identical(ref.read(accountRepositoryProvider), repository);
     try {
-      final session = await action(_repository);
+      final session = await action(repository.scopedTo(isCurrent));
+      if (!isCurrent()) return false;
       state = AccountState(phase: SessionPhase.signedIn, session: session);
       return true;
     } on Object catch (error) {
+      if (!isCurrent()) return false;
       state = AccountState(
-        phase: error is ApiException && error.code == 'session_pending'
+        phase:
+            error is ApiException &&
+                {'session_pending', 'account_changed'}.contains(error.code)
             ? SessionPhase.unreachable
             : SessionPhase.signedOut,
         error: _message(error),
@@ -99,19 +121,24 @@ class AccountController extends Notifier<AccountState> {
   Future<bool> save(AccountPreferences draft) async {
     if (state.busy || state.session == null) return false;
     final session = state.session!;
-    state = AccountState(
+    final repository = _repository;
+    final pending = AccountState(
       phase: SessionPhase.signedIn,
       session: session,
       busy: true,
     );
+    state = pending;
+    bool isCurrent() => ref.mounted && identical(state, pending);
     try {
-      final preferences = await _repository.savePreferences(draft);
+      final preferences = await repository.savePreferences(draft);
+      if (!isCurrent()) return false;
       state = AccountState(
         phase: SessionPhase.signedIn,
         session: AccountSession(session.user, preferences),
       );
       return true;
     } on ApiException catch (error) {
+      if (!isCurrent()) return false;
       if (error.code == 'account_changed') {
         await _recoverChangedAccount();
         return false;
@@ -124,8 +151,10 @@ class AccountController extends Notifier<AccountState> {
       var message = error.message;
       if (error.code == 'preferences_conflict') {
         try {
-          preferences = await _repository.loadPreferences();
+          preferences = await repository.loadPreferences();
+          if (!isCurrent()) return false;
         } on Object catch (refreshError) {
+          if (!isCurrent()) return false;
           if (refreshError is ApiException &&
               refreshError.code == 'account_changed') {
             await _recoverChangedAccount();
@@ -141,6 +170,7 @@ class AccountController extends Notifier<AccountState> {
       );
       return false;
     } on Object catch (error) {
+      if (!isCurrent()) return false;
       state = AccountState(
         phase: SessionPhase.signedIn,
         session: session,
@@ -153,15 +183,24 @@ class AccountController extends Notifier<AccountState> {
   Future<bool> logout() async {
     if (state.busy) return false;
     final session = state.session;
-    state = AccountState(phase: state.phase, session: session, busy: true);
+    final repository = _repository;
+    final pending = AccountState(
+      phase: state.phase,
+      session: session,
+      busy: true,
+    );
+    state = pending;
+    bool isCurrent() => ref.mounted && identical(state, pending);
     try {
-      final revoked = await _repository.logout();
+      final revoked = await repository.logout();
+      if (!isCurrent()) return false;
       state = AccountState(
         phase: SessionPhase.signedOut,
         error: revoked ? null : '已清除本机登录。服务端退出尚未确认，该会话最迟到期时失效。',
       );
       return true;
     } on Object catch (error) {
+      if (!isCurrent()) return false;
       if (error is ApiException && error.code == 'account_changed') {
         await _recoverChangedAccount();
         return false;
@@ -176,29 +215,32 @@ class AccountController extends Notifier<AccountState> {
   }
 
   Future<bool> resetPassword(String token, String password) async {
-    if (state.busy) return false;
-    state = const AccountState(phase: SessionPhase.signedOut, busy: true);
+    if (!ref.mounted || state.busy) return false;
+    final repository = _repository;
+    final pending = AccountState(phase: SessionPhase.signedOut, busy: true);
+    state = pending;
+    bool isCurrent() =>
+        ref.mounted &&
+        identical(state, pending) &&
+        identical(ref.read(accountRepositoryProvider), repository);
     try {
-      await _repository.resetPassword(token, password);
+      await repository.scopedTo(isCurrent).resetPassword(token, password);
+      if (!isCurrent()) return false;
       state = const AccountState(phase: SessionPhase.signedOut);
       return true;
     } on Object catch (error) {
+      if (!isCurrent()) return false;
       state = AccountState(
-        phase: SessionPhase.signedOut,
+        phase: error is ApiException && error.code == 'account_changed'
+            ? SessionPhase.unreachable
+            : SessionPhase.signedOut,
         error: _message(error),
       );
       return false;
     }
   }
 
-  Future<void> _recoverChangedAccount() async {
-    await restore();
-    state = AccountState(
-      phase: state.phase,
-      session: state.session,
-      error: '当前浏览器已切换账号，旧页面修改未提交。请确认当前身份后再操作。',
-    );
-  }
+  Future<void> _recoverChangedAccount() => _restore(accountChanged: true);
 
   String _message(Object error) =>
       error is ApiException ? error.message : '暂时无法完成操作，请重试；仍有问题时请联系维护者。';

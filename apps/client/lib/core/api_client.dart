@@ -66,9 +66,12 @@ class ApiClient {
     Map<String, dynamic>? body,
     String? accountId,
     String? idempotencyKey,
+    int? maxResponseBytes,
+    bool Function()? stillCurrent,
   }) async {
     void checkAccount() {
-      if (accountId != null && _currentAccountId != accountId) {
+      if (stillCurrent?.call() == false ||
+          accountId != null && _currentAccountId != accountId) {
         throw const ApiException('account_changed', '当前账号已变化，请确认身份后再操作。');
       }
     }
@@ -106,6 +109,10 @@ class ApiClient {
         await _client.send(request),
       ))().timeout(timeout);
       checkAccount();
+      if (maxResponseBytes != null &&
+          response.bodyBytes.length > maxResponseBytes) {
+        throw const ApiException('invalid_response', '服务响应超出读取范围。');
+      }
       if (response.statusCode == 204) return {};
       Map<String, dynamic> data;
       try {

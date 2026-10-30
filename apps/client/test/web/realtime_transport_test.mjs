@@ -28,7 +28,7 @@ function target(extra = {}) {
   };
 }
 
-function environment({ secure = true, blockedPlayback = false, replaceWait = false, playbackError, playbackWait = false } = {}) {
+function environment({ secure = true, blockedPlayback = false, replaceWait = false, playbackError, playbackWait = false, onObservation = () => {} } = {}) {
   const permission = deferred();
   const answer = deferred();
   const replaced = deferred();
@@ -114,7 +114,7 @@ function environment({ secure = true, blockedPlayback = false, replaceWait = fal
   const transport = window.simontalkRealtime.create();
   const begin = () => transport.start(
     (offer) => { counters.exchanges++; assert.equal(offer, 'v=0\r\no=offer\r\n'); return answer.promise; },
-    (code, detail) => observations.push({ code, detail }),
+    (code, detail) => { observations.push({ code, detail }); onObservation(code, detail); },
     (json, id) => events.push({ json, id }),
     () => { counters.cancelled++; },
   );
@@ -324,6 +324,28 @@ test('microphone activation does not wait for the first remote audio packet', as
   env.transport.stop();
 });
 
+test('the player binds its remote stream only after the first audio track exists', async () => {
+  const env = environment(); await env.connect();
+  assert.equal(env.audios[0].srcObject, null);
+  const remoteTrack = target({ kind: 'audio', stop() {} });
+  env.peers[0].emit('track', { track: remoteTrack, streams: [] });
+  assert.deepEqual(env.audios[0].srcObject.getTracks(), [remoteTrack]);
+  env.transport.stop();
+});
+
+test('a remote stream binding failure closes media without escaping the track callback', async () => {
+  const env = environment(); await env.connect();
+  Object.defineProperty(env.audios[0], 'srcObject', {
+    set(value) { if (value !== null) throw new Error('private media failure'); },
+    get() { return null; },
+  });
+  const remoteTrack = target({ kind: 'audio', stops: 0, stop() { this.stops++; } });
+  assert.doesNotThrow(() => env.peers[0].emit('track', { track: remoteTrack, streams: [] }));
+  assert.equal(env.track.stops, 1);
+  assert.equal(remoteTrack.stops, 1);
+  assert.ok(env.observations.some((event) => event.detail === 'playback_failed'));
+});
+
 test('explicit playback resume has a bounded waiting result when media is silent', async () => {
   const env = environment({ playbackWait: true }); await env.connect();
   await env.transport.activate(env.observations.find((event) => event.code === 'channel_open').detail);
@@ -345,5 +367,185 @@ test('playback denial arriving after the waiting deadline is still observed', as
   assert.ok(env.observations.some((event) => event.code === 'playback_waiting'));
   env.playback.reject({ name: 'NotAllowedError' }); await flush();
   assert.ok(env.observations.some((event) => event.code === 'playback_blocked'));
+  env.transport.stop();
+});
+
+test('playing event prevents an older pending timeout from reporting waiting', async () => {
+  const env = environment({ playbackWait: true }); await env.connect();
+  await env.transport.activate(env.observations.find((event) => event.code === 'channel_open').detail);
+  env.peers[0].emit('track', { track: target({ kind: 'audio', stop() {} }), streams: [] });
+  env.audios[0].emit('playing');
+  env.fire(5000); await flush();
+  assert.equal(env.observations.at(-1).code, 'playback_playing');
+  assert.equal(env.observations.some((event) => event.code === 'playback_waiting'), false);
+  env.transport.stop();
+});
+
+test('late denial from an earlier play cannot overwrite a successful resume', async () => {
+  const env = environment({ playbackWait: true }); await env.connect();
+  await env.transport.activate(env.observations.find((event) => event.code === 'channel_open').detail);
+  env.peers[0].emit('track', { track: target({ kind: 'audio', stop() {} }), streams: [] });
+  env.audios[0].play = async () => {};
+  assert.equal(await env.transport.resumePlayback(), null);
+  env.audios[0].emit('playing');
+  env.playback.reject({ name: 'NotAllowedError' }); await flush();
+  assert.equal(env.observations.at(-1).code, 'playback_playing');
+  assert.equal(env.track.stops, 0);
+  env.transport.stop();
+});
+
+test('a late non-permission playback failure still closes media after a resume', async () => {
+  const env = environment({ playbackWait: true }); await env.connect();
+  await env.transport.activate(env.observations.find((event) => event.code === 'channel_open').detail);
+  env.peers[0].emit('track', { track: target({ kind: 'audio', stop() {} }), streams: [] });
+  env.audios[0].play = async () => {};
+  assert.equal(await env.transport.resumePlayback(), null);
+  env.audios[0].emit('playing');
+  env.playback.reject({ name: 'NotSupportedError' }); await flush();
+  assert.equal(env.track.stops, 1);
+  assert.ok(env.observations.some((event) => event.detail === 'playback_failed'));
+});
+
+test('a playing observation during a waiting callback supersedes its return value', async () => {
+  let env;
+  env = environment({ playbackWait: true, onObservation(code) {
+    if (code === 'playback_waiting') env.audios[0].emit('playing');
+  } });
+  await env.connect();
+  await env.transport.activate(env.observations.find((event) => event.code === 'channel_open').detail);
+  env.peers[0].emit('track', { track: target({ kind: 'audio', stop() {} }), streams: [] });
+  const resumed = env.transport.resumePlayback();
+  const [id, timer] = [...env.timers.entries()].filter(([, value]) => value.delay === 5000).at(-1);
+  env.timers.delete(id); timer.callback(); await flush();
+  assert.equal(await resumed, null);
+  assert.equal(env.observations.at(-1).code, 'playback_playing');
+  env.transport.stop();
+});
+
+test('drain synchronously stops media and keeps only the confirmed event channel', async () => {
+  const env = environment(); const control = await env.connect();
+  const other = env.channel('other'); other.readyState = 'open';
+  env.peers[0].emit('datachannel', { channel: other });
+  const id = env.observations.find((event) => event.code === 'channel_open').detail;
+  await env.transport.activate(id);
+  const remote = target({ kind: 'audio', stops: 0, stop() { this.stops++; } });
+  env.peers[0].emit('track', { track: remote }); await flush();
+  assert.equal(env.counters.plays, 1);
+  assert.equal(typeof env.transport.beginDrain, 'function');
+  assert.equal(env.transport.beginDrain(), null);
+  assert.equal(env.track.enabled, false); assert.equal(env.track.stops, 1);
+  assert.equal(remote.stops, 1); assert.equal(env.counters.pauses, 1);
+  assert.equal(env.audios[0].srcObject, null);
+  assert.equal(env.peers[0].closes, 0); assert.equal(control.closes, 0);
+  assert.equal(other.closes, 1); assert.equal(env.counters.cancelled, 0);
+  control.message('{"type":"input.final"}');
+  other.message('{"type":"other.final"}');
+  assert.deepEqual(env.events, [{ json: '{"type":"input.final"}', id }]);
+  assert.equal(env.transport.send('{"type":"response.cancel"}', id), null);
+  assert.equal(env.transport.send('{"type":"response.cancel"}', 'channel-1'), 'invalid_channel');
+  assert.deepEqual(control.sent, ['{"type":"response.cancel"}']);
+  assert.equal(env.transport.beginDrain(), null);
+  assert.equal(env.track.stops, 1); assert.equal(remote.stops, 1);
+  assert.equal(env.counters.pauses, 1);
+  env.transport.stop(); env.transport.stop();
+  assert.equal(env.peers[0].closes, 1); assert.equal(control.closes, 1);
+  assert.equal(env.counters.cancelled, 1); assert.equal(env.timers.size, 0);
+  assert.equal(env.audios[0].removed, true);
+});
+
+test('drain prevents late media, new channels, activation and unmuting', async () => {
+  const env = environment(); await env.connect();
+  const id = env.observations.find((event) => event.code === 'channel_open').detail;
+  await env.transport.activate(id);
+  assert.equal(env.transport.beginDrain(), null);
+  const remote = target({ kind: 'audio', stops: 0, stop() { this.stops++; } });
+  env.peers[0].emit('track', { track: remote });
+  const late = env.channel('late'); late.readyState = 'open';
+  env.peers[0].emit('datachannel', { channel: late });
+  late.message('{"type":"response.created"}');
+  assert.equal(await env.transport.activate(id), 'draining');
+  assert.equal(await env.transport.resumePlayback(), 'draining');
+  env.transport.setMuted(false);
+  assert.equal(env.track.enabled, false); assert.equal(remote.stops, 1);
+  assert.equal(late.closes, 1); assert.equal(env.events.length, 0);
+  assert.equal(env.counters.plays, 0);
+  assert.equal(env.observations.filter((event) => event.code === 'channel_open').length, 1);
+  env.transport.stop();
+  assert.equal(env.transport.beginDrain(), 'cancelled');
+});
+
+test('drain settles pending playback and ignores its late denial', async () => {
+  const env = environment({ playbackWait: true }); await env.connect();
+  const id = env.observations.find((event) => event.code === 'channel_open').detail;
+  await env.transport.activate(id);
+  env.peers[0].emit('track', { track: target({ kind: 'audio', stop() {} }) });
+  const resumed = env.transport.resumePlayback();
+  assert.equal(env.transport.beginDrain(), null);
+  assert.equal(await resumed, 'draining');
+  assert.equal(env.timers.size, 0);
+  env.playback.reject({ name: 'NotAllowedError' }); await flush();
+  env.audios[0].emit('playing');
+  assert.equal(env.observations.some((event) => event.code === 'playback_blocked'), false);
+  assert.equal(env.observations.some((event) => event.code === 'playback_playing'), false);
+  assert.equal(env.peers[0].closes, 0);
+  env.transport.stop();
+});
+
+test('drain before activation is rejected and stop still releases pending activation', async () => {
+  const env = environment({ replaceWait: true }); await env.connect();
+  const id = env.observations.find((event) => event.code === 'channel_open').detail;
+  const activating = env.transport.activate(id);
+  assert.equal(env.transport.beginDrain(), 'not_active');
+  assert.equal(env.track.stops, 0);
+  env.transport.stop();
+  assert.equal(await activating, 'cancelled');
+  env.replaced.resolve(); await flush();
+  assert.equal(env.track.stops, 1); assert.equal(env.track.readyState, 'ended');
+  assert.equal(env.counters.plays, 0);
+});
+
+test('media release failures during drain still release remaining local resources', async () => {
+  const env = environment(); await env.connect();
+  const id = env.observations.find((event) => event.code === 'channel_open').detail;
+  await env.transport.activate(id);
+  const remote = target({ kind: 'audio', stops: 0, stop() { this.stops++; } });
+  env.peers[0].emit('track', { track: remote }); await flush();
+  env.track.stop = () => { env.track.stops++; throw new Error('device failure'); };
+  env.audios[0].pause = () => { env.counters.pauses++; throw new Error('player failure'); };
+  assert.equal(env.transport.beginDrain(), 'media_failed');
+  assert.equal(env.track.enabled, false); assert.equal(remote.stops, 1);
+  assert.equal(env.audios[0].srcObject, null); assert.equal(env.audios[0].removed, true);
+  assert.equal(env.peers[0].closes, 1); assert.equal(env.channels[0].closes, 1);
+  assert.equal(env.counters.cancelled, 1); assert.equal(env.timers.size, 0);
+  env.transport.stop();
+});
+
+test('drain retains a server configured channel and ignores errors from retired channels', async () => {
+  const env = environment(); const original = await env.connect();
+  const configured = env.channel('server'); configured.readyState = 'open';
+  env.peers[0].emit('datachannel', { channel: configured });
+  const id = env.observations.at(-1).detail;
+  await env.transport.activate(id);
+  assert.equal(env.transport.beginDrain(), null);
+  assert.equal(original.closes, 1); assert.equal(configured.closes, 0);
+  original.emit('error');
+  assert.equal(env.peers[0].closes, 0);
+  configured.message('{"type":"response.final"}');
+  assert.deepEqual(env.events, [{ json: '{"type":"response.final"}', id }]);
+  assert.equal(env.transport.send('{"type":"input.complete"}', id), null);
+  configured.close();
+  assert.equal(env.peers[0].closes, 1);
+});
+
+test('drain requested by microphone activation observation prevents its remaining playback', async () => {
+  const env = environment({ onObservation(code) {
+    if (code === 'microphone_active') assert.equal(env.transport.beginDrain(), null);
+  } });
+  await env.connect();
+  env.peers[0].emit('track', { track: target({ kind: 'audio', stop() {} }) });
+  const id = env.observations.find((event) => event.code === 'channel_open').detail;
+  assert.equal(await env.transport.activate(id), 'draining');
+  assert.equal(env.peers[0].closes, 0); assert.equal(env.counters.plays, 0);
+  assert.equal(env.track.stops, 1);
   env.transport.stop();
 });

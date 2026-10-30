@@ -10,6 +10,8 @@ import '../conversation/final_transcript_read_models.dart';
 import 'connection_observation_models.dart';
 import 'practice_models.dart';
 import 'practice_repository.dart';
+import 'practice_completion_models.dart';
+import 'termination_check_models.dart';
 
 enum PreparationCleanupStatus { idle, working, succeeded, unconfirmed, refused }
 
@@ -19,6 +21,8 @@ enum _RecoveryOperation {
   discard,
   transcripts,
   refreshTranscripts,
+  saveStatus,
+  refreshSaveStatus,
 }
 
 /// Read snapshots and explicitly discard never-started preparation; never obtain media.
@@ -41,6 +45,20 @@ class PracticeRecoveryController extends ChangeNotifier {
   bool get busy => _busy;
   _RecoveryOperation? _operation;
   bool get loadingTranscripts => _busy && _isTranscriptRead(_operation);
+  bool get loadingSaveStatus => _busy && _isSaveStatusRead(_operation);
+  PracticeCompletionSummary? _savedCompletion;
+  TerminationCheckSnapshot? _terminationCheck;
+  bool _saveStatusLoaded = false;
+  bool _endRegistered = false;
+  bool get endRegistered => _canExposeData() && _endRegistered;
+  String? _saveStatusErrorCode;
+  PracticeCompletionSummary? get savedCompletion =>
+      _canExposeData() ? _savedCompletion : null;
+  TerminationCheckSnapshot? get terminationCheck =>
+      _canExposeData() ? _terminationCheck : null;
+  bool get saveStatusLoaded => _canExposeData() && _saveStatusLoaded;
+  String? get saveStatusErrorCode =>
+      _canExposeData() ? _saveStatusErrorCode : null;
   PracticeRecovery? _recovery;
   PracticeRecovery? get recovery => _canExposeData() ? _recovery : null;
   ConnectionObservationPage? _page;
@@ -72,6 +90,11 @@ class PracticeRecoveryController extends ChangeNotifier {
 
   Future<void> refresh() => _start(_RecoveryOperation.refresh);
   Future<void> loadObservations() => _start(_RecoveryOperation.observations);
+  Future<void> loadSaveStatus({bool refresh = false}) => _start(
+    refresh
+        ? _RecoveryOperation.refreshSaveStatus
+        : _RecoveryOperation.saveStatus,
+  );
   Future<void> loadTranscripts({bool refresh = false}) => _start(
     refresh
         ? _RecoveryOperation.refreshTranscripts
@@ -83,6 +106,9 @@ class PracticeRecoveryController extends ChangeNotifier {
   static bool _isTranscriptRead(_RecoveryOperation? operation) =>
       operation == _RecoveryOperation.transcripts ||
       operation == _RecoveryOperation.refreshTranscripts;
+  static bool _isSaveStatusRead(_RecoveryOperation? operation) =>
+      operation == _RecoveryOperation.saveStatus ||
+      operation == _RecoveryOperation.refreshSaveStatus;
 
   // A retained controller must not expose old text before provider disposal runs.
   // Consumers must still discard immutable snapshots on account scope changes.
@@ -102,8 +128,15 @@ class PracticeRecoveryController extends ChangeNotifier {
   }) {
     if (_disposed) return Future.value();
     if (_inFlight != null) return _inFlight!.future;
+    if (_isSaveStatusRead(operation) &&
+        (_recovery?.connection == null ||
+            (operation == _RecoveryOperation.saveStatus &&
+                _saveStatusLoaded))) {
+      return Future.value();
+    }
     if (operation == _RecoveryOperation.discard &&
-        (original == null ||
+        (_endRegistered ||
+            original == null ||
             !identical(original, _recovery?.practice) ||
             !(_recovery?.canDiscardPreparation ?? false))) {
       return Future.value();
@@ -133,17 +166,27 @@ class PracticeRecoveryController extends ChangeNotifier {
     if (operation == _RecoveryOperation.refresh) _clearData();
     if (_isTranscriptRead(operation)) _transcriptErrorCode = null;
     if (operation == _RecoveryOperation.refreshTranscripts) _transcripts = null;
+    if (_isSaveStatusRead(operation)) _clearSaveStatus();
     notifyListeners();
     unawaited(_perform(operation, completion, original));
     return completion.future;
   }
 
   void _clearData() {
+    _endRegistered = false;
     _recovery = null;
     _page = null;
     _events = const [];
     _transcripts = null;
     _transcriptErrorCode = null;
+    _clearSaveStatus();
+  }
+
+  void _clearSaveStatus() {
+    _savedCompletion = null;
+    _terminationCheck = null;
+    _saveStatusLoaded = false;
+    _saveStatusErrorCode = null;
   }
 
   Future<void> _perform(
@@ -157,6 +200,47 @@ class PracticeRecoveryController extends ChangeNotifier {
         _checkAccount();
         _clearData();
         _cleanupStatus = PreparationCleanupStatus.succeeded;
+      } else if (_isSaveStatusRead(operation)) {
+        final connection = _recovery!.connection!;
+        final scope = ConversationScope(
+          accountId: accountId,
+          sessionId: connection.sessionId,
+          connectionId: connection.id,
+          clientInstanceId: connection.clientInstanceId,
+          epoch: connection.epoch,
+        );
+        final deadline = _now + const Duration(seconds: 8);
+        void beforeNextRead() {
+          _checkAccount();
+          if (_now >= deadline) throw TimeoutException('Read deadline');
+        }
+
+        final result = await _read((repo) async {
+          PracticeCompletionSummary? summary;
+          try {
+            summary = await repo.loadRecoveryCompletion(
+              _recovery!.practice!,
+              connection,
+              beforeNextRead: beforeNextRead,
+            );
+          } on ApiException catch (error) {
+            if (error.statusCode != 404 ||
+                error.code != 'completion_not_found') {
+              rethrow;
+            }
+          }
+          beforeNextRead();
+          // This verified fact prevents obsolete cleanup even if the check GET fails.
+          // The two display snapshots are still published together below.
+          if (summary != null) _endRegistered = true;
+          final check = await repo.loadTerminationCheck(scope);
+          return (summary, check);
+        });
+        _checkAccount();
+        _savedCompletion = result.$1;
+        _terminationCheck = result.$2;
+        _saveStatusLoaded = true;
+        if (result.$1 != null) _endRegistered = true;
       } else if (_isTranscriptRead(operation)) {
         final connection = _recovery!.connection!;
         final previous =
@@ -235,6 +319,14 @@ class PracticeRecoveryController extends ChangeNotifier {
           _clearData();
           _cleanupStatus = PreparationCleanupStatus.idle;
           _errorCode = code;
+        } else if (_isSaveStatusRead(operation)) {
+          _clearSaveStatus();
+          if (code == 'practice_not_found' || code == 'connection_not_found') {
+            _clearData();
+            _errorCode = code;
+          } else {
+            _saveStatusErrorCode = code;
+          }
         } else if (_isTranscriptRead(operation)) {
           if (code == 'practice_not_found' || code == 'connection_not_found') {
             _clearData();
@@ -253,7 +345,12 @@ class PracticeRecoveryController extends ChangeNotifier {
               ? PreparationCleanupStatus.refused
               : PreparationCleanupStatus.unconfirmed;
         } else if (operation == _RecoveryOperation.observations) {
-          _observationErrorCode = code;
+          if (code == 'practice_not_found' || code == 'connection_not_found') {
+            _clearData();
+            _errorCode = code;
+          } else {
+            _observationErrorCode = code;
+          }
         } else {
           _errorCode = code;
         }

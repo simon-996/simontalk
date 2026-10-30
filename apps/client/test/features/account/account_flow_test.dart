@@ -25,6 +25,8 @@ void main() {
     double scale = 1,
     double keyboardInset = 0,
   }) async {
+    tester.platformDispatcher.defaultRouteNameTestValue = '/account';
+    addTearDown(tester.platformDispatcher.clearDefaultRouteNameTestValue);
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     tester.view.viewInsets = FakeViewPadding(bottom: keyboardInset);
@@ -270,7 +272,7 @@ void main() {
     await tester.tap(find.widgetWithText(FilledButton, '保存并继续'));
     await tester.pumpAndSettle();
     expect(saved, isTrue);
-    expect(find.text('练习偏好'), findsOneWidget);
+    expect(find.text('开始自由聊天'), findsOneWidget);
   });
 
   testWidgets('offline restore offers retry and does not show login', (
