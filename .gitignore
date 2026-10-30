@@ -19,3 +19,6 @@ key.properties
 *.jks
 *.keystore
 .worktrees/
+
+# Local agent workspace data, not project source
+.workbuddy/
