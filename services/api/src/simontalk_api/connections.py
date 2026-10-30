@@ -14,6 +14,7 @@ from simontalk_api.models import (
 from simontalk_api.practice import own_preparation
 from simontalk_api.schemas import InputModel
 from simontalk_api.security import digest, now
+from simontalk_api.termination_checks import ensure_termination_check
 
 LEASE_SECONDS = 45  # Business liveness only; never an upstream billing limit.
 SCANNABLE_STATES = tuple(value for value in OCCUPIED_CONNECTION_STATES if value != "unknown")
@@ -89,6 +90,9 @@ def create_connection(db, user_id, session_id, payload, key, admission):
         client_instance_id=payload.client_instance_id,
         epoch=practice.connection_epoch + 1,
         configuration=configuration,
+        # Keep the creation/heartbeat/lease ordering on one application clock.
+        # A database clock slightly ahead would otherwise invalidate this read.
+        created_at=stamp,
         last_seen_at=stamp,
         lease_expires_at=stamp + timedelta(seconds=LEASE_SECONDS),
     )
@@ -130,6 +134,8 @@ def _latest(practice, connection):
 
 
 def _restore_preparation_state(db, practice):
+    if practice.status in {"ending", "completed"}:
+        return
     upstream = db.scalar(
         select(RealtimeConnection.id)
         .where(
@@ -150,13 +156,15 @@ def _expire(db, practice, connection, stamp):
     else:
         connection.status = "unknown"
         connection.termination_status = "unknown"
-        practice.status = "interrupted"
+        if practice.status not in {"ending", "completed"}:
+            practice.status = "interrupted"
+        ensure_termination_check(db, connection, stamp)
 
 
 def renew_connection(db, user_id, session_id, connection_id, payload):
     practice, connection = _controlled_connection(db, user_id, session_id, connection_id, payload)
     _latest(practice, connection)
-    if connection.status not in SCANNABLE_STATES:
+    if practice.status in {"ending", "completed"} or connection.status not in SCANNABLE_STATES:
         raise APIError(409, "connection_not_renewable", "这条连接已停止或无法确认，不能续租。")
     stamp = now()
     if connection.lease_expires_at <= stamp:

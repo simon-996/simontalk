@@ -44,7 +44,7 @@ def clean_database(request):
         connection.execute(
             text(
                 "TRUNCATE users, invites, auth_sessions, password_reset_grants, "
-                "user_preferences, rate_limit_buckets CASCADE"
+                "user_preferences, rate_limit_buckets, practice_deletion_receipts CASCADE"
             )
         )
 

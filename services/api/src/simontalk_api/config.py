@@ -1,3 +1,6 @@
+from pathlib import Path
+from typing import Literal
+
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -19,6 +22,10 @@ class Settings(BaseSettings):
     practice_maintenance_interval_seconds: float = Field(
         default=15, ge=1, le=300, allow_inf_nan=False
     )
+
+    review_job_interval_seconds: float = Field(default=5, ge=1, le=300, allow_inf_nan=False)
+    review_provider: Literal["disabled", "qwen"] = "disabled"
+    qwen_env_file: Path | None = Path(".env")
 
     @model_validator(mode="after")
     def validate_security(self):

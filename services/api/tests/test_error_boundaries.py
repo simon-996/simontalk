@@ -40,7 +40,7 @@ def test_rejected_cors_preflight_has_safe_json_and_request_id():
                 "/v1/me",
                 headers={
                     "Origin": "http://localhost:7357",
-                    "Access-Control-Request-Method": "DELETE",
+                    "Access-Control-Request-Method": "PUT",
                 },
             )
         assert response.status_code == 400

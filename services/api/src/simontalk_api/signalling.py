@@ -14,6 +14,7 @@ from simontalk_api.practice import own_preparation
 from simontalk_api.practice_routes import locked_identity
 from simontalk_api.schemas import InputModel
 from simontalk_api.security import digest, now, session_identity
+from simontalk_api.termination_checks import ensure_termination_check
 
 MAX_SDP_BYTES = 65536
 EXCHANGE_TIMEOUT_SECONDS = 8
@@ -152,7 +153,9 @@ def _unknown(db, practice, connection, stamp, reason):
     connection.termination_status = "unknown"
     connection.signalling_finished_at = stamp
     connection.state_reason = reason
-    practice.status = "interrupted"
+    if practice.status not in {"ending", "completed"}:
+        practice.status = "interrupted"
+    ensure_termination_check(db, connection, stamp)
     db.commit()
 
 

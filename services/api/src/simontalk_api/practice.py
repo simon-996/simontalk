@@ -43,6 +43,9 @@ class PracticeOutput(InputModel):
     model_config = ConfigDict(from_attributes=True)
     id: UUID
     mode: str
+    kind: str
+    source_session_id: UUID | None
+    source_review_item_id: UUID | None
     status: str
     state_reason: str | None
     connection_epoch: int
@@ -60,11 +63,21 @@ def create_preparation(db, user_id, payload: PracticeInput, key, admission: Prac
         )
     )
     if existing is not None:
+        if existing.deleted_at is not None:
+            raise APIError(404, "practice_not_found", "没有找到这次练习。")
         if existing.request_digest != request_digest:
             raise APIError(
                 409, "idempotency_conflict", "这个请求已用于不同的练习设置，请重新确认。"
             )
         return existing
+    practice = build_preparation(db, user_id, payload, key, request_digest, admission)
+    db.add(practice)
+    db.commit()
+    return practice
+
+
+def build_preparation(db, user_id, payload, key, request_digest, admission):
+    """Construct under the caller's owner lock, without writing or committing."""
     active = db.scalar(
         select(PracticeSession.id)
         .where(
@@ -89,7 +102,7 @@ def create_preparation(db, user_id, payload: PracticeInput, key, admission: Prac
     if preferences.difficulty is None:
         raise APIError(409, "preferences_required", "请先选择个人对话难度。")
     permit = admission.admit(user_id)
-    practice = PracticeSession(
+    return PracticeSession(
         user_id=user_id,
         creation_key=key,
         request_digest=request_digest,
@@ -106,14 +119,12 @@ def create_preparation(db, user_id, payload: PracticeInput, key, admission: Prac
             },
         },
     )
-    db.add(practice)
-    db.commit()
-    return practice
 
 
 def own_preparation(db, user_id, session_id, *, lock=False):
     query = select(PracticeSession).where(
         PracticeSession.id == session_id,
+        PracticeSession.deleted_at.is_(None),
         PracticeSession.user_id == user_id,
     )
     if lock:

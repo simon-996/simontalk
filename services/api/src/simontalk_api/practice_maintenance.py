@@ -7,7 +7,9 @@ from sqlalchemy import text
 
 from simontalk_api.connections import expire_connection_leases
 from simontalk_api.db import create_database
+from simontalk_api.practice_completion import finalize_due_completions
 from simontalk_api.preparation_cleanup import expire_idle_preparations
+from simontalk_api.termination_checks import backfill_termination_checks
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +18,8 @@ logger = logging.getLogger(__name__)
 class MaintenanceResult:
     connections_expired: int
     preparations_expired: int
+    completions_finalized: int = 0
+    termination_checks_registered: int = 0
 
 
 def run_maintenance_batch(factory, *, limit=100):
@@ -29,7 +33,9 @@ def run_maintenance_batch(factory, *, limit=100):
         db.execute(text("SET LOCAL lock_timeout = '100ms'"))
         connections = expire_connection_leases(db, limit=limit)
         preparations = expire_idle_preparations(db, limit=limit)
-    return MaintenanceResult(connections, preparations)
+        completions = finalize_due_completions(db, limit=limit)
+        checks = backfill_termination_checks(db, limit=limit)
+    return MaintenanceResult(connections, preparations, completions, checks)
 
 
 class PracticeMaintenanceRunner:
@@ -82,11 +88,19 @@ class PracticeMaintenanceRunner:
             while not self._stop.wait(self._interval):
                 try:
                     result = run_maintenance_batch(self._factory, limit=self._limit)
-                    if result.connections_expired or result.preparations_expired:
+                    if (
+                        result.connections_expired
+                        or result.preparations_expired
+                        or result.completions_finalized
+                        or result.termination_checks_registered
+                    ):
                         logger.info(
-                            "Practice maintenance committed connections=%d preparations=%d",
+                            "Practice maintenance committed connections=%d preparations=%d "
+                            "completions=%d checks=%d",
                             result.connections_expired,
                             result.preparations_expired,
+                            result.completions_finalized,
+                            result.termination_checks_registered,
                         )
                 except Exception:
                     # Driver exception strings may contain connection or input details.

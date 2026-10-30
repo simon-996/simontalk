@@ -11,7 +11,9 @@ from sqlalchemy import select
 from simontalk_api.connections import ConnectionControl, own_connection
 from simontalk_api.errors import APIError
 from simontalk_api.models import FinalTranscript
+from simontalk_api.playback_evidence import validate_transcript_evidence
 from simontalk_api.practice import own_preparation
+from simontalk_api.practice_completion import try_finalize_completion, validate_completion_append
 from simontalk_api.schemas import InputModel
 from simontalk_api.security import digest
 
@@ -116,7 +118,7 @@ def _identity(connection, rows):
 
 
 def append_transcripts(db, user_id, session_id, connection_id, payload):
-    own_preparation(db, user_id, session_id, lock=True)
+    practice = own_preparation(db, user_id, session_id, lock=True)
     connection = own_connection(db, user_id, session_id, connection_id, lock=True)
     if (
         connection.client_instance_id != payload.client_instance_id
@@ -139,10 +141,12 @@ def append_transcripts(db, user_id, session_id, connection_id, payload):
             if previous.event_digest != fingerprint:
                 raise APIError(409, "transcript_conflict", "文字标识已用于其他内容。")
             continue
+        validate_completion_append(db, practice, connection, "transcripts", event)
         if event.sequence in by_sequence:
             raise APIError(409, "transcript_conflict", "文字序号已用于其他内容。")
         if event.sequence <= last_sequence:
             raise APIError(409, "transcript_sequence_stale", "文字序号已过期，请读取当前记录。")
+        validate_transcript_evidence(db, connection_id, event)
         previous_turn = by_turn.get(event.turn_id)
         if previous_turn is not None:
             if any(
@@ -173,6 +177,8 @@ def append_transcripts(db, user_id, session_id, connection_id, payload):
     ):
         raise APIError(429, "transcript_limit_reached", "这条连接的最终文字记录已达上限。")
     db.add_all(additions)
+    db.flush()
+    try_finalize_completion(db, practice)
     db.commit()
     return TranscriptAcknowledgement(
         **identity, acknowledged_event_ids=[event.event_id for event in payload.events]
@@ -180,6 +186,7 @@ def append_transcripts(db, user_id, session_id, connection_id, payload):
 
 
 def read_transcripts(db, user_id, session_id, connection_id, after_sequence, limit):
+    own_preparation(db, user_id, session_id)
     connection = own_connection(db, user_id, session_id, connection_id)
     rows = _rows(db, connection_id)
     remaining = [row for row in rows if row.sequence > after_sequence]

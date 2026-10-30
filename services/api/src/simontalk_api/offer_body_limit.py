@@ -6,6 +6,10 @@ from starlette.responses import JSONResponse
 MAX_OFFER_BODY_BYTES = 96 * 1024
 MAX_OBSERVATION_BODY_BYTES = 8 * 1024
 MAX_TRANSCRIPT_BODY_BYTES = 256 * 1024
+MAX_PLAYBACK_BODY_BYTES = 512 * 1024
+MAX_END_BODY_BYTES = 8 * 1024
+MAX_COMPLETION_MANIFEST_BODY_BYTES = 256 * 1024
+MAX_REVIEW_INPUT_BODY_BYTES = 8 * 1024
 BODY_TIMEOUT_SECONDS = 5
 
 
@@ -17,20 +21,55 @@ class ConnectionBodyLimitMiddleware:
 
     async def __call__(self, scope, receive, send):
         path = scope.get("path", "")
-        if not (
+        deleting = (
             scope["type"] == "http"
-            and scope.get("method") == "POST"
-            and path.startswith("/v1/practice-sessions/")
-            and "/connections/" in path
-            and path.endswith(("/offer", "/observations", "/transcripts"))
+            and scope.get("method") == "DELETE"
+            and path.startswith("/v1/practice-history/")
+            and len(path.split("/")) == 4
+        )
+        if not (
+            deleting
+            or (
+                scope["type"] == "http"
+                and scope.get("method") == "POST"
+                and path.startswith("/v1/practice-sessions/")
+                and (
+                    path.endswith(("/review-input", "/review", "/review/retry"))
+                    or ("/review-items/" in path and path.endswith("/rehearsals"))
+                    or (
+                        "/connections/" in path
+                        and path.endswith(
+                            (
+                                "/offer",
+                                "/observations",
+                                "/transcripts",
+                                "/playback-evidence",
+                                "/end",
+                                "/completion-manifest",
+                            )
+                        )
+                    )
+                )
+            )
         ):
             await self.app(scope, receive, send)
             return
-        maximum = {
-            "observations": MAX_OBSERVATION_BODY_BYTES,
-            "transcripts": MAX_TRANSCRIPT_BODY_BYTES,
-            "offer": MAX_OFFER_BODY_BYTES,
-        }[path.rsplit("/", 1)[-1]]
+        maximum = (
+            MAX_REVIEW_INPUT_BODY_BYTES
+            if deleting
+            else {
+                "observations": MAX_OBSERVATION_BODY_BYTES,
+                "transcripts": MAX_TRANSCRIPT_BODY_BYTES,
+                "playback-evidence": MAX_PLAYBACK_BODY_BYTES,
+                "offer": MAX_OFFER_BODY_BYTES,
+                "end": MAX_END_BODY_BYTES,
+                "completion-manifest": MAX_COMPLETION_MANIFEST_BODY_BYTES,
+                "review-input": MAX_REVIEW_INPUT_BODY_BYTES,
+                "review": MAX_REVIEW_INPUT_BODY_BYTES,
+                "retry": MAX_REVIEW_INPUT_BODY_BYTES,
+                "rehearsals": MAX_REVIEW_INPUT_BODY_BYTES,
+            }[path.rsplit("/", 1)[-1]]
+        )
 
         async def reject(status, code):
             request_id = scope.get("state", {}).get("request_id") or str(uuid.uuid4())

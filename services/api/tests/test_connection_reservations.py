@@ -3,7 +3,7 @@ import subprocess
 import sys
 import uuid
 from concurrent.futures import ThreadPoolExecutor
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from threading import Event
 from types import SimpleNamespace
@@ -251,6 +251,30 @@ def test_lease_renewal_uses_server_time_and_cannot_change_identity(client, prepa
     assert renewed.status_code == 200
     assert renewed.json()["lease_expires_at"] > first["lease_expires_at"]
     assert renewed.json()["last_seen_at"] != first["last_seen_at"]
+
+
+def test_reservation_timestamps_stay_ordered_when_database_clock_is_ahead(
+    client, prepared, monkeypatch
+):
+    from simontalk_api import connections
+
+    # PostgreSQL and the application can use different clocks. The client
+    # rejects a connection whose creation appears later than its last heartbeat.
+    stamp = now() - timedelta(seconds=1)
+    monkeypatch.setattr(connections, "now", lambda: stamp)
+    key = uuid.uuid4()
+    response = reserve(client, prepared, key=key)
+    assert response.status_code == 201
+    saved = response.json()
+    created, seen, expires = (
+        datetime.fromisoformat(saved[name])
+        for name in ("created_at", "last_seen_at", "lease_expires_at")
+    )
+    assert created <= seen
+    assert expires - seen == timedelta(seconds=45)
+    assert client.get(path(prepared, saved), headers=prepared.headers).json() == saved
+    monkeypatch.setattr(connections, "now", lambda: stamp + timedelta(seconds=10))
+    assert reserve(client, prepared, key=key).json() == saved
 
 
 def test_expiry_before_signalling_is_safe_but_never_revives_the_old_attempt(

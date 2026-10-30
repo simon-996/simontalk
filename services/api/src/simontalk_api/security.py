@@ -122,7 +122,7 @@ def session_identity(request: Request, db, *, optional=False):
         raise unauthorized()
     if identity:
         expected = request.headers.get("x-account-id")
-        requires_binding = platform == "web" and request.method in {"PATCH", "POST"}
+        requires_binding = platform == "web" and request.method in {"PATCH", "POST", "DELETE"}
         if (requires_binding and not expected) or (
             expected is not None and expected != str(identity[1].id)
         ):
