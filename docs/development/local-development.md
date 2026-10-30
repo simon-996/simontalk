@@ -112,6 +112,8 @@ flutter widget-preview start
 
 Web字体完整性校验在仓库根目录运行`uv run scripts/check_web_fonts.py`；发布构建后用`uv run scripts/check_web_fonts.py --web-build apps/client/build/web`同时核验发布文件。此工具使用Python3.11/3.12和脚本声明的固定字体依赖，后端仍使用Python3.13。
 
+若`flutter test`在加载阶段整批失败并报`Unable to connect to flutter_tester process: WebSocketException`，先检查环境里是否有`HTTP_PROXY`/`HTTPS_PROXY`：代理会劫持`flutter_tester`与本机回环端口的连接。用`env -u HTTP_PROXY -u HTTPS_PROXY -u http_proxy -u https_proxy flutter test`重跑即可；同理，`pytest`的`tmp_path`在受限沙箱下可能因目录创建失败而整批报错，可加`--basetemp`指定可写临时目录。这两类都属于运行环境问题，不是用例失败，也不要据此改源码。
+
 Web偏好页的“麦克风检查”只在用户点击后申请音频，展示本机短时输入音量，最长30秒，不录音、不上传、不调用模型。取消/超时后的晚到授权也会释放，后台/退出/账号组件更换会停止；回前台需重新开始。真实麦克风、系统许可和手机浏览器仍待人工验收，不能用替身测试充当硬件证据。详见[本机检查验证](2026-10-17-microphone-check-verification.md)。
 
 WebRTC生产传输底层与Dart桥接已实现，尚未接到练习页或供应商。Node检查包含Dart→JS桥接编译；`test/web/realtime_loopback.html`可在独立本地开发服务中执行真实WebRTC回环，输入为合成静音，不申请物理麦克风、不调用模型。它不进入发布包，不作为真实语音或费用验收。步骤与边界见[传输层验证](2026-10-17-web-realtime-transport-verification.md)。
