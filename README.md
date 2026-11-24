@@ -4,11 +4,13 @@
 
 GitHub 仓库：[simon-996/simontalk](https://github.com/simon-996/simontalk)。Git 远端 `origin` 使用 `https://github.com/simon-996/simontalk.git`，初始分支为 `main`。
 
-当前阶段、完成情况和下一步统一见 [HANDOFF.md](HANDOFF.md)。技术栈中 Flutter 已确认，其余方案的决策状态见产品总纲。
+## 开发交接
 
-已建立Flutter客户端、FastAPI与PostgreSQL账号基础，支持邀请码注册、登录、密码重设和独立练习偏好。另有准备/恢复、文字保存、复盘阅读和原话回看等模块；真实AI语音、完整学习流程与历史管理的最新接入和验收状态以HANDOFF为准。当前Web优先，原生构建暂停。启动、维护和检查命令见[本地开发](docs/development/local-development.md)。
+当前优先开发 Flutter Web。账号、练习准备、历史与复盘阅读已接入。浏览器语音客户端和服务端已在隔离环境走通单次连接，验证了换号停轨与插话停播；其中麦克风是 Chromium 虚拟设备，千问使用测试替身。正式通话准入保持关闭。
 
-后续开发从[基础版本开发路线](docs/superpowers/plans/2026-10-22-basic-version-development.md)确定下一单元：普通练习首页与准备已交付（[B1证据](docs/development/2026-10-23-practice-entry-verification.md)），本人历史/详情及文字/复盘回看已接通（[B3证据及待补浏览器验收](docs/development/2026-10-23-practice-history-verification.md)）；本人范围确认与删除也已接通（[B4证据及边界](docs/development/2026-10-23-practice-deletion-verification.md)）。另补人工停服后的独立删除清单/旧备份原子重放（[恢复证据及边界](docs/development/2026-10-23-deletion-restore-verification.md)）。模型输入暂缺时继续保留真实语音/反馈待验，实际浏览器可用时补页面验收。另有[重练目标确认与独立准备客户端](docs/architecture/2026-10-23-rehearsal-client.md)，实际语音和改善评价尚未接入。真实自由聊天/结束保存、简单反馈及完整重练按路线后续接入。此顺序不缩减完整首版需求。
+1. 从 [HANDOFF.md 第 2 节和第 4 节](HANDOFF.md) 确认当前进度和下一项任务。
+2. 按[本地开发说明](docs/development/local-development.md)安装锁定依赖，启动 PostgreSQL、API 和 Flutter Web。
+3. 按[浏览器媒体验证记录](docs/development/2026-11-24-flutter-browser-media-verification.md)复验单次连接。下一项开发工作是在隔离配置中把这条连接接入正式练习页，验证开始、静音、离开与结束保存。
 
 偏好页可明确查看未结束练习/客户端连接记录，并在确认后安全清理未开始上游的准备；unknown保留占用，不冒充已结束。契约与验证见[准备清理](docs/architecture/2026-10-18-preparation-discard-api.md)。
 

@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><title>PCM local WebSocket verification</title>
+<button id="run">Run synthetic audio loopback</button><pre id="result">Ready</pre>
+<script src="streaming_pcm_input.js"></script><script src="streaming_pcm_wire.js"></script><script src="streaming_pcm_sender.js"></script><script>
+run.onclick=async()=>{
+ const report={source:'oscillator',microphone:false,model:false,errors:[],chunks:0};
+ const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+ let ctx,osc,stream,capture,sender,socket,closeContext;
+ try {
+  ctx=new AudioContext({sampleRate:16000});await ctx.resume();
+  const dest=ctx.createMediaStreamDestination();stream=dest.stream;
+  osc=ctx.createOscillator();osc.frequency.value=440;osc.connect(dest);osc.start();
+  capture=simontalkStreamingPcmInput.create(ctx,stream,bytes=>{report.chunks++;sender?.send(bytes);},err=>{report.errors.push(err);sender?.stop();});
+  report.started=await capture.start();
+  socket=new WebSocket('ws://127.0.0.1:18766/');
+  await new Promise((resolve,reject)=>{socket.onopen=resolve;socket.onerror=reject;});
+  sender=simontalkPcmSender.create(socket,capture,()=>{osc.stop();stream.getTracks().forEach(t=>t.stop());closeContext=ctx.close();},err=>report.errors.push(err));
+  report.unmute=sender.setMuted(false);await pause(650);report.beforeMute=report.chunks;
+  report.mute=sender.setMuted(true);await pause(400);report.duringMute=report.chunks;
+  report.unmuteAgain=sender.setMuted(false);await pause(450);report.afterUnmute=report.chunks;
+  sender.stop();await closeContext;await pause(150);report.afterStop=report.chunks;
+  for(let i=0;i<30;i++){try{const r=await fetch('/result.json',{cache:'no-store'});if(r.ok){report.server=await r.json();break;}}catch(_){}await pause(100);}
+  const s=report.server;
+  report.pass=report.started&&report.unmute&&report.mute&&report.unmuteAgain&&report.beforeMute>0&&report.beforeMute===report.duringMute&&report.afterUnmute>report.duringMute&&report.afterStop===report.afterUnmute&&report.errors.length===0&&stream.getAudioTracks()[0].readyState==='ended'&&ctx.state==='closed'&&s?.status==='finished'&&!s.error&&s.stop&&s.provider_closed===1&&s.provider_frames>0&&s.provider_bytes===s.provider_frames*3200&&JSON.stringify(s.modes)==='[[1,false],[2,true],[3,false]]'&&s.forwarded_by_epoch['1']>0&&s.forwarded_by_epoch['3']>0&&!s.forwarded_by_epoch['2'];
+ }catch(e){report.exception=String(e);report.pass=false;}
+ finally{try{sender?.stop();capture?.stop();osc?.stop();stream?.getTracks().forEach(t=>t.stop());if(ctx&&ctx.state!=='closed')await ctx.close();}catch(_){}result.textContent=JSON.stringify(report);}
+};
+</script>

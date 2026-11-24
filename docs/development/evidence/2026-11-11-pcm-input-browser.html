@@ -1,0 +1,22 @@
+<!doctype html><meta charset="utf-8"><title>PCM capture verification</title>
+<button id="start">Start synthetic capture</button><pre id="result">Ready</pre>
+<script src="streaming_pcm_input.js"></script><script>
+start.onclick = async () => {
+  const report = {source:'oscillator', microphone:false, model:false, frames:[], errors:[]};
+  const pause = ms => new Promise(resolve => setTimeout(resolve,ms));
+  let ctx, oscillator, stream, capture;
+  try {
+    ctx = new AudioContext({sampleRate:16000}); await ctx.resume();
+    const destination=ctx.createMediaStreamDestination(); stream=destination.stream;
+    oscillator=ctx.createOscillator(); oscillator.frequency.value=440; oscillator.connect(destination); oscillator.start();
+    capture=window.simontalkStreamingPcmInput.create(ctx,stream,bytes=>report.frames.push(bytes.byteLength),error=>report.errors.push(error));
+    report.actualSampleRate=ctx.sampleRate; report.started=await capture.start();
+    report.unmuted=capture.setMuted(false); await pause(650); report.beforeMute=report.frames.length;
+    report.muted=capture.setMuted(true); await pause(450); report.duringMute=report.frames.length;
+    report.unmutedAgain=capture.setMuted(false); await pause(450); report.afterUnmute=report.frames.length;
+    capture.stop(); await pause(250); report.afterStop=report.frames.length;
+    report.pass=report.started && report.unmuted && report.muted && report.unmutedAgain && report.actualSampleRate===16000 && report.beforeMute>0 && report.duringMute===report.beforeMute && report.afterUnmute>report.duringMute && report.afterStop===report.afterUnmute && report.frames.every(x=>x===3200) && report.errors.length===0;
+  } catch (e) { report.exception=String(e); report.pass=false; }
+  finally { try {capture?.stop(); oscillator?.stop(); stream?.getTracks().forEach(track=>track.stop()); await ctx?.close();} catch(e) {report.cleanupError=String(e);report.pass=false;} result.textContent=JSON.stringify(report); }
+};
+</script>

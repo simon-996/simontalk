@@ -42,9 +42,15 @@ class Harness {
           projection.apply(update);
           onUpdate?.call(update);
         },
-        sendDrainControl: (json, channel, kind, id) =>
-            controls.add((json, channel, kind, id)),
+        sendDrainControl: (json, channel, kind, id) {
+          controls.add((json, channel, kind, id));
+          onControl?.call();
+        },
         freezeResponse: (_, _, _) => fail('No verified playback'),
+        quarantineUnknownResponse: (id, channel) {
+          quarantines.add((id, channel));
+          onQuarantine?.call();
+        },
         revokeFrozenPrefix: (_, _) => fail('No playback to revoke'),
         prepareContext: (_) => null,
         sendContextControl: (_, _, _) => fail('No verified context'),
@@ -59,7 +65,10 @@ class Harness {
   final failures = <String>[];
   final updates = <ConversationUpdate>[];
   final controls = <(String, String, RealtimeDrainControlKind, String?)>[];
+  final quarantines = <(String, String)>[];
   void Function(ConversationUpdate)? onUpdate;
+  void Function()? onQuarantine;
+  void Function()? onControl;
   void receive(Map<String, Object?> event, [String channel = 'c0']) =>
       protocol.receive(RealtimeTransportEvent(jsonEncode(event), channel));
   void open() {
@@ -405,7 +414,163 @@ void main() {
       expect(h.failures, isEmpty);
     },
   );
-  test('new speech after a reply request stops before new turn or reply', () {
+  test('overlapping speech holds unknown output, cancels once and retains one user final', () {
+    final h = Harness();
+    h.configure();
+    h.firstUser();
+    h.firstResponse();
+    final interrupted = {
+      'type': 'input_audio_buffer.speech_started',
+      'event_id': 'e8',
+      'item_id': 'u2',
+    };
+    h.receive(interrupted);
+    h.receive(interrupted);
+    expect(h.failures, isEmpty);
+    expect(h.quarantines, hasLength(1));
+    expect(h.controls, hasLength(1));
+    expect(h.controls.single.$3, RealtimeDrainControlKind.cancelResponse);
+    expect(h.controls.single.$4, h.quarantines.single.$1);
+    h.receive({
+      'type': 'response.done',
+      'response': {'id': 'r1', 'status': 'cancelled'},
+    });
+    h.receive({'type': 'input_audio_buffer.speech_stopped', 'item_id': 'u2'});
+    h.receive({'type': 'input_audio_buffer.committed', 'item_id': 'u2'});
+    h.receive({
+      'type': 'conversation.item.input_audio_transcription.completed',
+      'event_id': 'e9',
+      'item_id': 'u2',
+      'content_index': 0,
+      'transcript': 'Please wait',
+    });
+    expect(h.failures, isEmpty);
+    expect(h.projection.snapshot.turns, hasLength(3));
+    expect(h.projection.snapshot.turns.last.text, 'Please wait');
+    expect(
+      h.projection.snapshot.turns[1].playback.status,
+      DeliveryStatus.unknown,
+    );
+    expect(h.projection.snapshot.turns[1].frozenPrefix, isNull);
+    expect(
+      h.sent.map((s) => s.$1['type']).where((t) => t == 'response.create'),
+      hasLength(1),
+    );
+  });
+
+  test('new transcript delta before speech start quarantines once and preserves the same user item', () {
+    final h = Harness();
+    h.configure();
+    h.firstUser();
+    h.firstResponse();
+    final early = <String, Object?>{
+      'type': 'conversation.item.input_audio_transcription.delta',
+      'event_id': 'early-delta',
+      'item_id': 'u2',
+      'content_index': 0,
+      'text': 'Please',
+      'stash': ' wait',
+    };
+    h.receive(early);
+    h.receive(early);
+    expect(h.failures, isEmpty);
+    expect(h.quarantines, hasLength(1));
+    expect(h.controls, hasLength(1));
+    expect(h.projection.snapshot.turns.last.text, 'Please wait');
+    h.receive({
+      'type': 'response.done',
+      'response': {'id': 'r1', 'status': 'completed'},
+    });
+    final start = <String, Object?>{
+      'type': 'input_audio_buffer.speech_started',
+      'event_id': 'late-start',
+      'item_id': 'u2',
+    };
+    h.receive(start);
+    h.receive(start);
+    h.receive({'type': 'input_audio_buffer.speech_stopped', 'item_id': 'u2'});
+    h.receive({'type': 'input_audio_buffer.committed', 'item_id': 'u2'});
+    h.receive({
+      'type': 'conversation.item.input_audio_transcription.completed',
+      'event_id': 'final-u2',
+      'item_id': 'u2',
+      'content_index': 0,
+      'transcript': 'Please wait',
+    });
+    expect(h.failures, isEmpty);
+    expect(h.projection.snapshot.turns, hasLength(3));
+    expect(h.projection.snapshot.turns.last.isFinal, isTrue);
+    expect(h.controls, hasLength(1));
+    expect(
+      h.sent.where((s) => s.$1['type'] == 'response.create'),
+      hasLength(1),
+    );
+    expect(h.projection.snapshot.turns[1].frozenPrefix, isNull);
+  });
+
+  test('empty or malformed early transcript never quarantines or cancels', () {
+    for (final delta in [
+      <String, Object?>{'text': '', 'stash': ''},
+      <String, Object?>{'text': 'Hello', 'stash': null},
+    ]) {
+      final h = Harness();
+      h.configure();
+      h.firstUser();
+      h.firstResponse();
+      h.receive({
+        'type': 'conversation.item.input_audio_transcription.delta',
+        'event_id': 'early',
+        'item_id': 'u2',
+        'content_index': 0,
+        ...delta,
+      });
+      expect(h.failures, hasLength(1));
+      expect(h.quarantines, isEmpty);
+      expect(h.controls, isEmpty);
+    }
+  });
+
+  test(
+    'late start of a different user item cannot replace early interruption',
+    () {
+      final h = Harness();
+      h.configure();
+      h.firstUser();
+      h.firstResponse();
+      h.receive({
+        'type': 'conversation.item.input_audio_transcription.delta',
+        'event_id': 'early',
+        'item_id': 'u2',
+        'content_index': 0,
+        'text': 'Wait',
+        'stash': '',
+      });
+      h.receive({
+        'type': 'input_audio_buffer.speech_started',
+        'event_id': 'wrong',
+        'item_id': 'u3',
+      });
+      expect(h.failures, hasLength(1));
+      expect(h.controls, hasLength(1));
+      expect(h.projection.snapshot.turns, hasLength(3));
+    },
+  );
+
+  test('a second user item before response binding still fails closed', () {
+    final h = Harness();
+    h.configure();
+    h.firstUser();
+    h.receive({
+      'type': 'input_audio_buffer.speech_started',
+      'event_id': 'late',
+      'item_id': 'u2',
+    });
+    expect(h.failures, hasLength(1));
+    expect(h.quarantines, isEmpty);
+    expect(h.controls, isEmpty);
+  });
+
+  test('a third user item during a quarantined interruption fails closed', () {
     final h = Harness();
     h.configure();
     h.firstUser();
@@ -415,13 +580,189 @@ void main() {
       'event_id': 'e8',
       'item_id': 'u2',
     });
+    h.receive({
+      'type': 'input_audio_buffer.speech_started',
+      'event_id': 'e9',
+      'item_id': 'u3',
+    });
     expect(h.failures, hasLength(1));
-    expect(h.projection.snapshot.turns, hasLength(2));
+    expect(h.controls, hasLength(1));
+    expect(h.quarantines, hasLength(1));
+  });
+
+  test('new speech after completed response does not cancel it', () {
+    final h = Harness();
+    h.configure();
+    h.firstUser();
+    h.firstResponse();
+    h.receive({
+      'type': 'response.done',
+      'response': {'id': 'r1', 'status': 'completed'},
+    });
+    h.receive({
+      'type': 'input_audio_buffer.speech_started',
+      'event_id': 'e8',
+      'item_id': 'u2',
+    });
+    expect(h.failures, hasLength(1));
+    expect(h.quarantines, isEmpty);
+    expect(h.controls, isEmpty);
+  });
+
+  test('quarantined user final requires that same item to stop and commit', () {
+    final h = Harness();
+    h.configure();
+    h.firstUser();
+    h.firstResponse();
+    h.receive({
+      'type': 'input_audio_buffer.speech_started',
+      'event_id': 'e8',
+      'item_id': 'u2',
+    });
+    h.receive({
+      'type': 'conversation.item.input_audio_transcription.completed',
+      'event_id': 'e9',
+      'item_id': 'u2',
+      'content_index': 0,
+      'transcript': 'not committed',
+    });
+    expect(h.failures, hasLength(1));
+    expect(h.projection.snapshot.turns.last.isFinal, isFalse);
     expect(
       h.sent.map((s) => s.$1['type']).where((t) => t == 'response.create'),
       hasLength(1),
     );
   });
+
+  test('quarantine failure cannot send cancel or publish a new user turn', () {
+    final h = Harness();
+    h.configure();
+    h.firstUser();
+    h.firstResponse();
+    h.onQuarantine = () => throw StateError('hold failed');
+    h.receive({
+      'type': 'input_audio_buffer.speech_started',
+      'event_id': 'e8',
+      'item_id': 'u2',
+    });
+    expect(h.failures, hasLength(1));
+    expect(h.controls, isEmpty);
+    expect(h.projection.snapshot.turns, hasLength(2));
+  });
+
+  test('malformed overlap cannot trigger hold or cancellation', () {
+    final h = Harness();
+    h.configure();
+    h.firstUser();
+    h.firstResponse();
+    h.receive({'type': 'input_audio_buffer.speech_started', 'item_id': 'u2'});
+    expect(h.failures, hasLength(1));
+    expect(h.quarantines, isEmpty);
+    expect(h.controls, isEmpty);
+  });
+
+  test('conflicting replay id cannot trigger hold or cancellation', () {
+    final h = Harness();
+    h.configure();
+    h.firstUser();
+    h.firstResponse();
+    h.receive({
+      'type': 'input_audio_buffer.speech_started',
+      'event_id': 'e1',
+      'item_id': 'u2',
+    });
+    expect(h.failures, hasLength(1));
+    expect(h.quarantines, isEmpty);
+    expect(h.controls, isEmpty);
+  });
+
+  test(
+    'an exact repeated speech-start event remains idempotent after stop',
+    () {
+      final h = Harness();
+      h.configure();
+      h.firstUser();
+      h.firstResponse();
+      final started = {
+        'type': 'input_audio_buffer.speech_started',
+        'event_id': 'e8',
+        'item_id': 'u2',
+      };
+      h.receive(started);
+      h.receive({'type': 'input_audio_buffer.speech_stopped', 'item_id': 'u2'});
+      h.receive(started);
+      expect(h.failures, isEmpty);
+      expect(h.controls, hasLength(1));
+      h.receive({
+        'type': 'input_audio_buffer.speech_started',
+        'event_id': 'different',
+        'item_id': 'u2',
+      });
+      expect(h.failures, hasLength(1));
+    },
+  );
+
+  test('ending during interruption never repeats cancel and accepts committed final', () {
+    final h = Harness();
+    h.configure();
+    h.firstUser();
+    h.firstResponse();
+    h.receive({
+      'type': 'input_audio_buffer.speech_started',
+      'event_id': 'e8',
+      'item_id': 'u2',
+    });
+    h.protocol.beginDrain();
+    expect(h.controls, hasLength(1));
+    h.receive({'type': 'input_audio_buffer.speech_stopped', 'item_id': 'u2'});
+    h.receive({'type': 'input_audio_buffer.committed', 'item_id': 'u2'});
+    h.receive({
+      'type': 'conversation.item.input_audio_transcription.completed',
+      'event_id': 'e9',
+      'item_id': 'u2',
+      'content_index': 0,
+      'transcript': 'Please wait',
+    });
+    h.receive({
+      'type': 'response.done',
+      'response': {'id': 'r1', 'status': 'cancelled'},
+    });
+    expect(h.failures, isEmpty);
+    expect(h.projection.snapshot.turns.last.text, 'Please wait');
+    expect(
+      h.sent.map((s) => s.$1['type']).where((t) => t == 'response.create'),
+      hasLength(1),
+    );
+  });
+
+  test(
+    'synchronous end during cancellation retains the already-started user item',
+    () {
+      final h = Harness();
+      h.configure();
+      h.firstUser();
+      h.firstResponse();
+      h.onControl = h.protocol.beginDrain;
+      h.receive({
+        'type': 'input_audio_buffer.speech_started',
+        'event_id': 'e8',
+        'item_id': 'u2',
+      });
+      expect(h.controls, hasLength(1));
+      expect(h.projection.snapshot.turns, hasLength(3));
+      h.receive({'type': 'input_audio_buffer.speech_stopped', 'item_id': 'u2'});
+      h.receive({'type': 'input_audio_buffer.committed', 'item_id': 'u2'});
+      h.receive({
+        'type': 'conversation.item.input_audio_transcription.completed',
+        'event_id': 'e9',
+        'item_id': 'u2',
+        'content_index': 0,
+        'transcript': 'Please wait',
+      });
+      expect(h.projection.snapshot.turns.last.text, 'Please wait');
+      expect(h.failures, isEmpty);
+    },
+  );
   test('unsolicited reply and invalid event fail with no output', () {
     final h = Harness();
     h.configure();

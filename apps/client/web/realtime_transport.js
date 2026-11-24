@@ -24,12 +24,16 @@
     let activating = false;
     let draining = false;
     let muted = false;
+    let playbackHeld = false;
+    let audioMutedBeforeHold = false;
     let peer, stream, sender, audio, remoteStream, controlChannel;
     let permissionTimer, connectionTimer, configurationTimer, finishStart, finishIce;
     let finishClosed;
     const whenClosed = new Promise((resolve) => { finishClosed = resolve; });
     let finishDraining;
     const whenDraining = new Promise((resolve) => { finishDraining = resolve; });
+    let finishHeld;
+    let whenHeld = new Promise((resolve) => { finishHeld = resolve; });
     let observe = () => {}, receive = () => {}, cancel = () => {};
     let nextChannel = 0;
     let playbackGeneration = 0;
@@ -140,6 +144,7 @@
     async function play() {
       if (stopped) return 'cancelled';
       if (draining) return 'draining';
+      if (playbackHeld) return 'playback_held';
       if (!active || !remoteStream?.getTracks().length) return 'not_ready';
       const generation = ++playbackGeneration;
       let timer;
@@ -151,8 +156,9 @@
         // Keep observing a late rejection even when the bounded wait has already returned.
         const playback = Promise.resolve(audio.play()).then(
           () => null, (error) => playbackFailure(error, generation));
-        const result = await Promise.race([playback, whenClosed, whenDraining, waiting]);
+        const result = await Promise.race([playback, whenClosed, whenDraining, whenHeld, waiting]);
         if (draining && !stopped) return 'draining';
+        if (playbackHeld && !stopped) return 'playback_held';
         if (generation !== playbackGeneration && !stopped) return null;
         if (!stopped && result === 'waiting') {
           report('playback_waiting');
@@ -195,7 +201,10 @@
         audio = document.createElement('audio');
         audio.autoplay = false;
         audio.playsInline = true;
-        listen(audio, 'playing', () => { playbackGeneration++; report('playback_playing'); });
+        listen(audio, 'playing', () => {
+          playbackGeneration++;
+          if (!playbackHeld) report('playback_playing');
+        });
         listen(audio, 'pause', () => report('playback_paused'));
         listen(audio, 'error', () => close('playback_failed'));
         listen(peer, 'track', ({ track }) => {
@@ -324,6 +333,32 @@
         for (const track of stream?.getAudioTracks() ?? []) track.enabled = !muted;
       },
       resumePlayback: play,
+      holdPlayback() {
+        if (stopped) return 'cancelled';
+        if (draining) return 'draining';
+        if (!active || !audio) return 'not_active';
+        if (playbackHeld) return null;
+        try {
+          audioMutedBeforeHold = audio.muted === true;
+          playbackHeld = true;
+          playbackGeneration++;
+          audio.muted = true;
+          finishHeld('playback_held');
+          return null;
+        } catch (_) { close('media_failed'); return 'media_failed'; }
+      },
+      async releasePlayback() {
+        if (stopped) return 'cancelled';
+        if (draining) return 'draining';
+        if (!active || !audio) return 'not_active';
+        if (!playbackHeld) return 'not_held';
+        try {
+          audio.muted = audioMutedBeforeHold;
+          playbackHeld = false;
+          whenHeld = new Promise((resolve) => { finishHeld = resolve; });
+        } catch (_) { close('media_failed'); return 'media_failed'; }
+        return play();
+      },
       beginDrain() {
         if (stopped) return 'cancelled';
         if (draining) return null;

@@ -42,6 +42,8 @@ Future<void> main() async {
   transport.send('{"type":"session.update"}', events.single.channelId);
   await transport.activate(events.single.channelId);
   transport.setMuted(true);
+  transport.holdPlayback();
+  await transport.releasePlayback();
   try {
     await transport.resumePlayback();
     throw StateError('missing playback failure');
@@ -77,6 +79,12 @@ Future<void> main() async {
     onEvent: (_) {},
   );
   await drainFailure.activate('server-channel');
+  try {
+    drainFailure.holdPlayback();
+    throw StateError('missing synchronous playback hold failure');
+  } on RealtimeFailure catch (error) {
+    check(error.code == 'media_failed');
+  }
   try {
     drainFailure.beginDrain();
     throw StateError('missing synchronous drain failure');

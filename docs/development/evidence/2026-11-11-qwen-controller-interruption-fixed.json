@@ -1,0 +1,1165 @@
+{
+  "tool": "qwen-webrtc-interrupt-probe",
+  "started_at": "2026-11-11T12:50:57.688916+00:00",
+  "model": "qwen3.8-omni-flash-realtime",
+  "transport_sha256": "8df70fa9ac1c9dcfdbb0e6ee40e76fc0af6eb7cf3e9640129257964a7c1195ad",
+  "exchanges_used": 1,
+  "observations": [
+    {
+      "received_at": "2026-11-11T12:51:18.097292+00:00",
+      "reason": "observation_complete",
+      "exchanges": 1,
+      "sends": {
+        "create": 1,
+        "cancel": 1
+      },
+      "holds": 1,
+      "releases": 0,
+      "response_status": "completed",
+      "usage": {
+        "input_tokens": 754,
+        "output_tokens": 87,
+        "total_tokens": 841,
+        "input_tokens_details": {
+          "text_tokens": 726,
+          "audio_tokens": 28
+        },
+        "output_tokens_details": {
+          "text_tokens": 20,
+          "audio_tokens": 67
+        }
+      },
+      "events": [
+        {
+          "type": "prepared",
+          "at_ms": 459
+        },
+        {
+          "type": "session.created",
+          "at_ms": 1483
+        },
+        {
+          "type": "session.updated",
+          "at_ms": 1659
+        },
+        {
+          "type": "first_synthetic_started",
+          "at_ms": 1662
+        },
+        {
+          "type": "input_audio_buffer.speech_started",
+          "at_ms": 2036
+        },
+        {
+          "type": "conversation.item.created",
+          "at_ms": 2384
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 2385
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 2388
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 2392
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 2763
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 2764
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 3350
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 3361
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 3362
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 3368
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 3372
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 4133
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 4137
+        },
+        {
+          "type": "input_audio_buffer.speech_stopped",
+          "at_ms": 6035
+        },
+        {
+          "type": "input_audio_buffer.committed",
+          "at_ms": 6036
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6244
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6252
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6252
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6263
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6263
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6271
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6275
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6283
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.completed",
+          "at_ms": 6289
+        },
+        {
+          "type": "response.created",
+          "at_ms": 6703
+        },
+        {
+          "type": "response.output_item.added",
+          "at_ms": 6705
+        },
+        {
+          "type": "conversation.item.created",
+          "at_ms": 6706
+        },
+        {
+          "type": "response.content_part.added",
+          "at_ms": 6706
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6706
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6853
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6854
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6854
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6854
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6855
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6855
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6855
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6855
+        },
+        {
+          "type": "second_synthetic_started",
+          "at_ms": 7188
+        },
+        {
+          "type": "conversation.item.created",
+          "at_ms": 7778
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 7778
+        },
+        {
+          "type": "hold",
+          "at_ms": 7779
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 7780
+        },
+        {
+          "type": "input_audio_buffer.speech_started",
+          "at_ms": 7858
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8000
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8002
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8625
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8631
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8636
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8644
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8650
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 9397
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 9400
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 9405
+        },
+        {
+          "type": "response.audio_transcript.done",
+          "at_ms": 9702
+        },
+        {
+          "type": "response.audio.done",
+          "at_ms": 9703
+        },
+        {
+          "type": "response.content_part.done",
+          "at_ms": 9703
+        },
+        {
+          "type": "response.output_item.done",
+          "at_ms": 9703
+        },
+        {
+          "type": "response.done",
+          "at_ms": 9703
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11418
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11422
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11441
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11442
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11442
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11447
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11451
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11459
+        },
+        {
+          "type": "input_audio_buffer.speech_stopped",
+          "at_ms": 11551
+        },
+        {
+          "type": "input_audio_buffer.committed",
+          "at_ms": 11551
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.completed",
+          "at_ms": 11791
+        },
+        {
+          "type": "stopping",
+          "at_ms": 12792
+        }
+      ],
+      "snapshots": [
+        {
+          "phase": "preparing",
+          "playback": "idle",
+          "error": null,
+          "release": "notNeeded",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "connecting",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "connecting",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "connecting",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "connecting",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "connecting",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "configuring",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "configuring",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "configuring",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "configuring",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "paused",
+          "error": null,
+          "release": "pending",
+          "users": 2,
+          "final_users": 2,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "localClosed",
+          "playback": "idle",
+          "error": "stopped",
+          "release": "unconfirmed",
+          "users": 2,
+          "final_users": 2,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "localClosed",
+          "playback": "idle",
+          "error": "stopped",
+          "release": "unconfirmed",
+          "users": 2,
+          "final_users": 2,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "localClosed",
+          "playback": "idle",
+          "error": "stopped",
+          "release": "unconfirmed",
+          "users": 2,
+          "final_users": 2,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        }
+      ],
+      "first_started": true,
+      "second_started": true,
+      "interrupted_before_done": true,
+      "second_final": true,
+      "input_live_at_hold": true,
+      "output_muted_at_hold": true,
+      "remote_signal_seen": true,
+      "error": null,
+      "observe_only": false,
+      "last_event_shape": {
+        "type": "conversation.item.input_audio_transcription.completed",
+        "same_as_first_input": false,
+        "item_created_matches_first": false,
+        "event_id_present": true,
+        "item_id_present": true,
+        "response_id_present": false,
+        "output_index_zero": false,
+        "content_index_zero": true,
+        "text_is_string": false,
+        "stash_is_string": false,
+        "delta_is_string": false,
+        "transcript_is_string": true
+      }
+    }
+  ],
+  "boundary": "Synthetic speech, muted output, one exchange and no automatic retry; local close does not prove upstream termination or billing stop."
+}

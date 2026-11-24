@@ -1,0 +1,32 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><title>Silent loopback calibration</title><button id="run">Run silent loopback</button><pre id="log">Ready</pre><script>
+const log = document.getElementById('log');
+document.getElementById('run').onclick = async () => {
+  document.getElementById('run').disabled = true;
+  const ctx = new AudioContext(); const a = new RTCPeerConnection({iceServers: []}); const b = new RTCPeerConnection({iceServers: []});
+  let source, analyser, sink, timer, oscillator, gain;
+  try {
+    await ctx.resume();
+    const dest = ctx.createMediaStreamDestination(); oscillator = ctx.createOscillator(); gain = ctx.createGain(); gain.gain.value = 0;
+    oscillator.frequency.value = 440; oscillator.connect(gain); gain.connect(dest); oscillator.start();
+    a.onicecandidate = ({candidate}) => { if (candidate) void b.addIceCandidate(candidate); };
+    b.onicecandidate = ({candidate}) => { if (candidate) void a.addIceCandidate(candidate); };
+    const received = new Promise(resolve => b.ontrack = ({track}) => resolve(track));
+    a.addTrack(dest.stream.getAudioTracks()[0], dest.stream);
+    await a.setLocalDescription(await a.createOffer()); await b.setRemoteDescription(a.localDescription);
+    await b.setLocalDescription(await b.createAnswer()); await a.setRemoteDescription(b.localDescription);
+    const track = await Promise.race([received, new Promise((_, reject) => setTimeout(() => reject(Error('track_timeout')), 5000))]);
+    const player = document.createElement('audio'); player.muted = true; player.srcObject = new MediaStream([track]); await player.play();
+    const direct = ctx.createAnalyser(); direct.fftSize = 2048; gain.connect(direct);
+    source = ctx.createMediaStreamSource(new MediaStream([track])); analyser = ctx.createAnalyser(); analyser.fftSize = 2048;
+    sink = ctx.createGain(); sink.gain.value = 0; source.connect(analyser); analyser.connect(sink); sink.connect(ctx.destination); direct.connect(sink);
+    const data = new Float32Array(analyser.fftSize), stats = {silent: {count:0, over:0, max:0}, tone:{count:0, over:0, max:0}};
+    let directMax = 0; const directData = new Float32Array(2048); let phase = 'silent'; timer = setInterval(() => { analyser.getFloatTimeDomainData(data); direct.getFloatTimeDomainData(directData); if (phase === 'tone') for (const v of directData) directMax = Math.max(directMax, Math.abs(v)); let sum = 0; for (const v of data) sum += v*v; const rms = Math.sqrt(sum/data.length), s=stats[phase]; s.count++; if(rms >= 0.001) s.over++; s.max = Math.max(s.max,rms); }, 50);
+    await new Promise(resolve => setTimeout(resolve, 1500)); phase = 'tone'; gain.gain.value = 0.25;
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    const reports = await b.getStats(); const audio = [];
+    reports.forEach(r => {if (r.type === 'inbound-rtp' && r.kind === 'audio') audio.push({bytes:r.bytesReceived, packets:r.packetsReceived, audioLevel:r.audioLevel});});
+    log.textContent = JSON.stringify({stats, a:a.connectionState, b:b.connectionState, audio, context:ctx.state, track:track.readyState, muted:track.muted, directMax, inputState:dest.stream.getAudioTracks()[0].readyState});
+  } catch(e) { log.textContent = 'ERROR ' + e.message; }
+  finally { clearInterval(timer); source?.disconnect(); analyser?.disconnect(); sink?.disconnect(); oscillator?.stop(); gain?.disconnect(); a.close(); b.close(); await ctx.close(); }
+};
+</script></html>

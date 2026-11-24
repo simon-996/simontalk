@@ -112,5 +112,160 @@
     return { append, estimateSeconds: estimate, stop };
   }
 
-  window.simontalkStreamingPcmOutput = { create };
+  // Routes already-authorized PCM to exactly one explicitly started response.
+  // This is local audio isolation, not a context or upstream termination grant.
+  function createResponseRouter(context, sampleRate) {
+    if (!context || context.state !== 'running' ||
+        typeof context.addEventListener !== 'function' ||
+        typeof context.removeEventListener !== 'function' ||
+        !Number.isInteger(sampleRate) || sampleRate < 8000 || sampleRate > 48000) {
+      throw new TypeError('Invalid audio configuration');
+    }
+    const responses = new Set();
+    const items = new Set();
+    const events = new Set();
+    let active = null;
+    let closed = false;
+    let busy = false;
+
+    // Reject malformed Unicode and bound opaque provider identifiers by UTF-8 bytes.
+    function validId(value) {
+      if (typeof value !== 'string' || value.length === 0 || value.length > 256) return false;
+      let bytes = 0;
+      for (const character of value) {
+        const code = character.codePointAt(0);
+        if (code === 0 || (code >= 0xd800 && code <= 0xdfff)) return false;
+        bytes += code < 0x80 ? 1 : code < 0x800 ? 2 : code < 0x10000 ? 3 : 4;
+        if (bytes > 256) return false;
+      }
+      return true;
+    }
+
+    function close() {
+      if (closed) return;
+      closed = true;
+      const previous = active;
+      active = null;
+      if (previous) {
+        try { previous.player.stop(); } catch (_) { /* Best effort release. */ }
+      }
+    }
+
+    function start(responseId, itemId) {
+      if (closed) return false;
+      if (busy || active || !validId(responseId) || !validId(itemId) ||
+          responses.has(responseId) || items.has(itemId) || responses.size >= 64) {
+        close();
+        return false;
+      }
+      busy = true;
+      let player;
+      try {
+        player = create(context, sampleRate);
+        if (closed) { player.stop(); return false; }
+        responses.add(responseId);
+        items.add(itemId);
+        active = { responseId, itemId, player, eventCount: 0 };
+        return true;
+      } catch (_) {
+        if (player) { try { player.stop(); } catch (_) {} }
+        close();
+        return false;
+      } finally { busy = false; }
+    }
+
+    function append(event) {
+      if (closed) return 'rejected';
+      if (busy) { close(); return 'rejected'; }
+      busy = true;
+      try {
+        if (!event || typeof event !== 'object' || !validId(event.responseId)) {
+          close(); return 'rejected';
+        }
+        if (responses.has(event.responseId) && event.responseId !== active?.responseId) {
+          return 'stale';
+        }
+        if (!active || event.responseId !== active.responseId ||
+            event.itemId !== active.itemId || !validId(event.eventId) ||
+            event.outputIndex !== 0 || event.contentIndex !== 0 ||
+            events.has(event.eventId) || active.eventCount >= 256) {
+          close(); return 'rejected';
+        }
+        events.add(event.eventId);
+        active.eventCount++;
+        const player = active.player;
+        if (!player.append(event.bytes) || closed || active?.player !== player) {
+          close(); return 'rejected';
+        }
+        return 'appended';
+      } catch (_) {
+        close(); return 'rejected';
+      } finally { busy = false; }
+    }
+
+    // Accept only a decoded Qwen audio event from an already-authenticated,
+    // configured channel. Never logs or persists provider audio or identifiers.
+    function appendQwenDelta(event) {
+      if (closed) return 'rejected';
+      if (busy) { close(); return 'rejected'; }
+      busy = true;
+      let chunk;
+      try {
+        if (!event || typeof event !== 'object' || event.type !== 'response.audio.delta' ||
+            !validId(event.response_id)) {
+          close(); return 'rejected';
+        }
+        if (responses.has(event.response_id) && event.response_id !== active?.responseId) {
+          return 'stale';
+        }
+        const encoded = event.delta;
+        if (!active || event.response_id !== active.responseId || event.item_id !== active.itemId ||
+            !validId(event.event_id) || events.has(event.event_id) || active.eventCount >= 256 ||
+            event.output_index !== 0 || event.content_index !== 0 ||
+            typeof encoded !== 'string' || encoded.length === 0 ||
+            encoded.length > Math.ceil(sampleRate * 2 / 3) * 4 ||
+            !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(encoded)) {
+          close(); return 'rejected';
+        }
+        const binary = atob(encoded);
+        if (binary.length === 0 || binary.length % 2 || binary.length > sampleRate * 2 ||
+            btoa(binary) !== encoded) {
+          close(); return 'rejected';
+        }
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        chunk = {
+          responseId: event.response_id, itemId: event.item_id, eventId: event.event_id,
+          outputIndex: event.output_index, contentIndex: event.content_index, bytes,
+        };
+      } catch (_) {
+        close(); return 'rejected';
+      } finally { busy = false; }
+      if (closed) return 'rejected';
+      return append(chunk);
+    }
+
+    function stop(responseId) {
+      if (closed) return false;
+      if (busy || !validId(responseId)) { close(); return false; }
+      if (responses.has(responseId) && responseId !== active?.responseId) return false;
+      if (!active || responseId !== active.responseId) { close(); return false; }
+      busy = true;
+      const previous = active;
+      try {
+        const result = previous.player.stop();
+        if (closed || result === null || !Number.isFinite(result) || result < 0) {
+          close(); return false;
+        }
+        active = null;
+        return true;
+      } catch (_) {
+        close(); return false;
+      } finally { busy = false; }
+    }
+
+    return { start, append, appendQwenDelta, stop, dispose: close };
+  }
+
+  window.simontalkStreamingPcmOutput = { create, createResponseRouter };
 })();

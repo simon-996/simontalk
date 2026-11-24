@@ -1,0 +1,10 @@
+{
+  "status": "observed",
+  "connection_attempts": 1,
+  "session_created": true,
+  "model_matched": true,
+  "local_close_returned": true,
+  "response_requested": false,
+  "configuration_confirmed": true,
+  "usage": null
+}

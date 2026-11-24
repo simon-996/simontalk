@@ -30,6 +30,13 @@ class _UnsupportedTransport implements RealtimeTransport {
       throw const RealtimeFailure('unsupported');
 
   @override
+  void holdPlayback() => throw const RealtimeFailure('unsupported');
+
+  @override
+  Future<void> releasePlayback() async =>
+      throw const RealtimeFailure('unsupported');
+
+  @override
   void beginDrain() => throw const RealtimeFailure('unsupported');
 
   @override

@@ -1,6 +1,6 @@
 # 千问播放复测探针（工具）
 
-2026-10-30。为“修复后的生产传输脚本还没有在真实千问上复测”准备的受控实验工具。本环境无法直连外网、Chrome 也无法在此启动，因此工具只在本机做了服务端与静态检查，真实千问路径尚未执行——这不是复测结果。
+2026-10-30。为验证修复后的生产传输脚本准备的受控实验工具。现已在本机 Edge 连接真实千问；结果、首版探针缺陷与证据边界见[播放复测](2026-10-30-qwen-playback-retest.md)。
 
 ## 1. 它解决什么
 
@@ -37,7 +37,7 @@ uv run --project services/api python scripts/qwen_playback_probe.py --port 7391
 2. 交换回调 `POST /exchange`（`application/sdp`），服务端用真实网关换成 answer。
 3. 收到 `session.created` 后发送受限 `session.update`（与 Dart 侧同一组字段：`modalities`、`max_tokens 128`、`enable_search false`、`voice Tina`、`turn_detection server_vad`）。
 4. 收到 `session.updated` 后 `activate(channelId)`，再发一条文本用户消息与 `response.create`，要一句短回复。
-5. 记录 `playback_playing` 等观察；`response.done` 后 2 秒或首次观察后 1.5 秒收尾，超过 45 秒强制结束。
+5. 记录 `playback_playing`、入站音频字节、响应状态及白名单用量；并对远端音轨附加静音 Web Audio 分析支路，只记录三个响应阶段的 RMS 统计而不保存音频。`response.done` 后 2 秒收尾，点击后超过 45 秒强制结束。播放事件可能早于回复；分析信号并不证明设备播放。
 
 ## 4. 本轮验证（工具本身）
 
@@ -47,7 +47,7 @@ uv run --project services/api python scripts/qwen_playback_probe.py --port 7391
 
 ## 5. 边界（重要）
 
-- **真实千问路径未执行**：本机浏览器无法直连供应商，Chrome 在此环境启动即报 `sandbox initialization failed`，因此页面未经真机渲染，`playback_playing` 从未在本轮出现。
+- **真实千问路径已复测**：Edge 观察到 `playback_playing` 和入站音频字节，但播放事件早于模型回复；随后在独立分析支路观察到回复期间的非静音信号，详见[信号验证](2026-10-30-qwen-playback-signal-verification.md)。
 - 探针只证明“生产脚本在这一浏览器里、这一次交换中是否报告了播放”。它不证明人耳听见、不证明文字与音频对齐、不证明上游已终止或计费停止。
 - 页面用文本触发回复，不是真人语音；VAD、自然插话、多轮上下文都没有覆盖。
 - 结论要以实际跑出的证据文件为准；没有出现 `playback_playing` 时，仍然只能写“未确认播放”。

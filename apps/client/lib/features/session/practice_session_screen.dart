@@ -145,6 +145,7 @@ class _PracticeSessionScreenState extends ConsumerState<PracticeSessionScreen> {
           phase: controller.phase,
           playback: controller.playback,
           muted: controller.muted,
+          interruptionNeedsEnd: controller.interruptionNeedsEnd,
           errorCode: controller.errorCode,
           turns: controller.conversation?.turns ?? const [],
           subtitlesVisible: _subtitlesVisible,

@@ -1,0 +1,12 @@
+<!doctype html><meta charset="utf-8"><title>PCM frame verification</title>
+<button id="run">Verify binary frame</button><pre id="result">Ready</pre>
+<script src="streaming_pcm_wire.js"></script><script>
+run.onclick = () => {
+ const pcm = new Uint8Array(3200); pcm[0]=0x12; pcm[1]=0x34; pcm[3199]=0x56;
+ const wire=simontalkPcmWire.encode(0x01020304,0x010203040506,pcm);
+ const bytes=new Uint8Array(wire); const header=Array.from(bytes.slice(0,13),n=>n.toString(16).padStart(2,'0')).join('');
+ pcm.fill(0); const report={size:bytes.length,header,first:bytes[13],second:bytes[14],last:bytes[3212],microphone:false,model:false};
+ report.pass=report.size===3213&&report.header==='01010203040000010203040506'&&report.first===18&&report.second===52&&report.last===86;
+ result.textContent=JSON.stringify(report);
+};
+</script>

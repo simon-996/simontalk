@@ -47,6 +47,7 @@ void main() {
     PracticeMediaPhase phase = PracticeMediaPhase.active,
     MediaPlayback playback = MediaPlayback.idle,
     bool muted = false,
+    bool interruptionNeedsEnd = false,
     String? errorCode,
     List<ConversationTurn> turns = const [],
     VoidCallback? onToggleMute,
@@ -65,6 +66,7 @@ void main() {
     phase: phase,
     playback: playback,
     muted: muted,
+    interruptionNeedsEnd: interruptionNeedsEnd,
     errorCode: errorCode,
     turns: turns,
     completionPending: completionPending,
@@ -121,6 +123,50 @@ void main() {
     await tester.tap(find.text('继续播放'));
     expect(resumed, 1);
   });
+
+  testWidgets(
+    'interrupted narrow view explains microphone and suppresses resume',
+    (tester) async {
+      await pump(
+        tester,
+        view(
+          interruptionNeedsEnd: true,
+          playback: MediaPlayback.blocked,
+          onResumePlayback: () {},
+          onToggleMute: () {},
+          onEnd: () {},
+        ),
+        width: 320,
+        scale: 2,
+        brightness: Brightness.dark,
+      );
+      expect(find.text('对话已中断，暂时无法继续'), findsOneWidget);
+      expect(find.text('说完这句后，请结束并复盘。麦克风仍开启。'), findsOneWidget);
+      expect(find.text('继续播放'), findsNothing);
+      expect(find.text('结束并复盘'), findsOneWidget);
+      expect(find.text('可以直接开口，也可以自然插话。'), findsNothing);
+      expect(
+        tester.getTopLeft(find.text('结束并复盘')).dy,
+        greaterThan(tester.getBottomLeft(find.text('静音麦克风')).dy),
+      );
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'interrupted state disappears after draining and ordinary pause remains distinct',
+    (tester) async {
+      await pump(tester, view(playback: MediaPlayback.paused));
+      expect(find.text('已暂停播放'), findsOneWidget);
+      expect(find.text('对话已中断，暂时无法继续'), findsNothing);
+      await pump(
+        tester,
+        view(phase: PracticeMediaPhase.draining, interruptionNeedsEnd: true),
+      );
+      expect(find.text('正在收尾，等待最后一句识别…'), findsOneWidget);
+      expect(find.text('对话已中断，暂时无法继续'), findsNothing);
+    },
+  );
 
   testWidgets('mute and end are explicit actions during an active call', (
     tester,

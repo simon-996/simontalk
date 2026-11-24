@@ -13,125 +13,200 @@ import '../practice/practice_fixtures.dart';
 import 'media_fixtures.dart';
 
 void main() {
-  testWidgets(
-    'configured channel gates microphone and later speech closes media',
-    (tester) async {
-      const provider = {
-        'provider': 'dashscope',
-        'region': 'cn-beijing',
-        'model': 'qwen3.8-omni-flash-realtime',
-        'config_id': 'qwen-private-v1',
-      };
-      final transport = TestTransport();
-      final signaller = TestSignaller();
-      late ApiClient api;
-      var instance = clientId;
-      api = ApiClient(
-        baseUrl: Uri.parse('http://localhost'),
-        isWeb: true,
-        tokenStore: TestTokenStore(),
-        client: MockClient((request) async {
-          if (request.url.path.endsWith('/csrf')) {
-            return response({'csrf_token': 'test'});
-          }
-          if (request.url.path.endsWith('/connections')) {
-            instance = jsonDecode(request.body)['client_instance_id'] as String;
-            final item = connectionJson(instance: instance);
-            item['configuration'] = {...provider};
-            return response(item, 201);
-          }
-          if (request.url.path.contains('/connections/')) {
-            final item = connectionJson(instance: instance, status: 'closed');
-            item['configuration'] = {...provider};
-            return response(item);
-          }
-          final item = practiceJson();
-          (item['configuration'] as Map<String, dynamic>)['provider'] = {
-            ...provider,
+  for (final earlyDelta in [false, true]) {
+    for (final endImmediately in [false, true]) {
+      testWidgets(
+        'overlap retains the interrupted user turn, immediate end: $endImmediately, early delta: $earlyDelta',
+        (tester) async {
+          const provider = {
+            'provider': 'dashscope',
+            'region': 'cn-beijing',
+            'model': 'qwen3.8-omni-flash-realtime',
+            'config_id': 'qwen-private-v1',
           };
-          return response(item, 201);
-        }),
-      )..expectedAccountId = accountId;
-      final controller = PracticeMediaController(
-        repository: PracticeRepository(api, accountId: accountId),
-        transportFactory: () => transport,
-        signallerFactory: (_, _) => signaller,
-        protocolFactory: QwenGuardedProtocol.new,
+          final transport = TestTransport();
+          final signaller = TestSignaller();
+          late ApiClient api;
+          var instance = clientId;
+          api = ApiClient(
+            baseUrl: Uri.parse('http://localhost'),
+            isWeb: true,
+            tokenStore: TestTokenStore(),
+            client: MockClient((request) async {
+              if (request.url.path.endsWith('/csrf')) {
+                return response({'csrf_token': 'test'});
+              }
+              if (request.url.path.endsWith('/connections')) {
+                instance =
+                    jsonDecode(request.body)['client_instance_id'] as String;
+                final item = connectionJson(instance: instance);
+                item['configuration'] = {...provider};
+                return response(item, 201);
+              }
+              if (request.url.path.contains('/connections/')) {
+                final item = connectionJson(
+                  instance: instance,
+                  status: 'closed',
+                );
+                item['configuration'] = {...provider};
+                return response(item);
+              }
+              final item = practiceJson();
+              (item['configuration'] as Map<String, dynamic>)['provider'] = {
+                ...provider,
+              };
+              return response(item, 201);
+            }),
+          )..expectedAccountId = accountId;
+          final controller = PracticeMediaController(
+            repository: PracticeRepository(api, accountId: accountId),
+            transportFactory: () => transport,
+            signallerFactory: (_, _) => signaller,
+            protocolFactory: QwenGuardedProtocol.new,
+          );
+          unawaited(controller.begin());
+          await tester.pump();
+          expect(controller.phase, PracticeMediaPhase.connecting);
+          await transport.signaller.exchangeOffer('v=0\r\n');
+          transport.observe(const RealtimeObservation('channel_open', 'c0'));
+          transport.connected.complete();
+          await tester.pump();
+          expect(controller.phase, PracticeMediaPhase.configuring);
+          expect(transport.activations, isEmpty);
+          void send(Map<String, Object?> data) =>
+              transport.receive(RealtimeTransportEvent(jsonEncode(data), 'c0'));
+          send({
+            'type': 'session.created',
+            'session': {'id': 's1', 'model': provider['model']},
+          });
+          expect(transport.activations, isEmpty);
+          final outbound = transport.sent.single.substring(3);
+          final update = jsonDecode(outbound) as Map<String, dynamic>;
+          final session = Map<String, dynamic>.from(update['session'] as Map);
+          session['id'] = 's1';
+          session['model'] = provider['model'];
+          send({'type': 'session.updated', 'session': session});
+          await tester.pump();
+          expect(controller.phase, PracticeMediaPhase.active);
+          expect(transport.activations, ['c0']);
+          send({
+            'type': 'input_audio_buffer.speech_started',
+            'event_id': 'e1',
+            'item_id': 'u1',
+          });
+          send({
+            'type': 'input_audio_buffer.speech_stopped',
+            'event_id': 'e2',
+            'item_id': 'u1',
+          });
+          send({
+            'type': 'input_audio_buffer.committed',
+            'event_id': 'e2c',
+            'item_id': 'u1',
+          });
+          send({
+            'type': 'conversation.item.input_audio_transcription.completed',
+            'event_id': 'e3',
+            'item_id': 'u1',
+            'content_index': 0,
+            'transcript': 'Hello',
+          });
+          expect(transport.sent.last, 'c0:{"type":"response.create"}');
+          send({
+            'type': 'response.created',
+            'event_id': 'e4',
+            'response': {'id': 'r1'},
+          });
+          send({
+            'type': 'response.output_item.added',
+            'event_id': 'e5',
+            'response_id': 'r1',
+            'output_index': 0,
+            'item': {'id': 'a1', 'type': 'message', 'role': 'assistant'},
+          });
+          var shouldEnd = endImmediately;
+          controller.addListener(() {
+            if (shouldEnd &&
+                controller.phase == PracticeMediaPhase.active &&
+                controller.playback == MediaPlayback.paused) {
+              shouldEnd = false;
+              unawaited(controller.end());
+            }
+          });
+          if (earlyDelta) {
+            send({
+              'type': 'conversation.item.input_audio_transcription.delta',
+              'event_id': 'early',
+              'item_id': 'u2',
+              'content_index': 0,
+              'text': 'Please',
+              'stash': ' wait',
+            });
+          } else {
+            send({
+              'type': 'input_audio_buffer.speech_started',
+              'event_id': 'e6',
+              'item_id': 'u2',
+            });
+          }
+          await tester.pump();
+          expect(
+            controller.phase,
+            endImmediately
+                ? PracticeMediaPhase.draining
+                : PracticeMediaPhase.active,
+          );
+          expect(transport.holds, 1);
+          expect(transport.sent.last, 'c0:{"type":"response.cancel"}');
+          expect(controller.conversation?.turns, hasLength(3));
+          send({
+            'type': 'response.done',
+            'response': {'id': 'r1', 'status': 'cancelled'},
+          });
+          if (earlyDelta && !endImmediately) {
+            send({
+              'type': 'input_audio_buffer.speech_started',
+              'event_id': 'e6',
+              'item_id': 'u2',
+            });
+          }
+          send({'type': 'input_audio_buffer.speech_stopped', 'item_id': 'u2'});
+          send({'type': 'input_audio_buffer.committed', 'item_id': 'u2'});
+          send({
+            'type': 'conversation.item.input_audio_transcription.completed',
+            'event_id': 'e7',
+            'item_id': 'u2',
+            'content_index': 0,
+            'transcript': 'Please wait',
+          });
+          expect(controller.conversation!.turns.last.text, 'Please wait');
+          expect(controller.conversation!.turns[1].frozenPrefix, isNull);
+          expect(
+            transport.sent.where((value) => value.contains('response.create')),
+            hasLength(1),
+          );
+          expect(
+            transport.sent.where((value) => value.contains('response.cancel')),
+            hasLength(1),
+          );
+          expect(
+            controller.phase,
+            endImmediately
+                ? PracticeMediaPhase.draining
+                : PracticeMediaPhase.active,
+          );
+          if (endImmediately) {
+            await tester.pump(const Duration(seconds: 3));
+          } else {
+            await controller.stop();
+          }
+          controller.dispose();
+          await tester.pump();
+          api.close();
+        },
       );
-      unawaited(controller.begin());
-      await tester.pump();
-      expect(controller.phase, PracticeMediaPhase.connecting);
-      await transport.signaller.exchangeOffer('v=0\r\n');
-      transport.observe(const RealtimeObservation('channel_open', 'c0'));
-      transport.connected.complete();
-      await tester.pump();
-      expect(controller.phase, PracticeMediaPhase.configuring);
-      expect(transport.activations, isEmpty);
-      void send(Map<String, Object?> data) =>
-          transport.receive(RealtimeTransportEvent(jsonEncode(data), 'c0'));
-      send({
-        'type': 'session.created',
-        'session': {'id': 's1', 'model': provider['model']},
-      });
-      expect(transport.activations, isEmpty);
-      final outbound = transport.sent.single.substring(3);
-      final update = jsonDecode(outbound) as Map<String, dynamic>;
-      final session = Map<String, dynamic>.from(update['session'] as Map);
-      session['id'] = 's1';
-      session['model'] = provider['model'];
-      send({'type': 'session.updated', 'session': session});
-      await tester.pump();
-      expect(controller.phase, PracticeMediaPhase.active);
-      expect(transport.activations, ['c0']);
-      send({
-        'type': 'input_audio_buffer.speech_started',
-        'event_id': 'e1',
-        'item_id': 'u1',
-      });
-      send({
-        'type': 'input_audio_buffer.speech_stopped',
-        'event_id': 'e2',
-        'item_id': 'u1',
-      });
-      send({
-        'type': 'input_audio_buffer.committed',
-        'event_id': 'e2c',
-        'item_id': 'u1',
-      });
-      send({
-        'type': 'conversation.item.input_audio_transcription.completed',
-        'event_id': 'e3',
-        'item_id': 'u1',
-        'content_index': 0,
-        'transcript': 'Hello',
-      });
-      expect(transport.sent.last, 'c0:{"type":"response.create"}');
-      send({
-        'type': 'response.created',
-        'event_id': 'e4',
-        'response': {'id': 'r1'},
-      });
-      send({
-        'type': 'response.output_item.added',
-        'event_id': 'e5',
-        'response_id': 'r1',
-        'output_index': 0,
-        'item': {'id': 'a1', 'type': 'message', 'role': 'assistant'},
-      });
-      send({
-        'type': 'input_audio_buffer.speech_started',
-        'event_id': 'e6',
-        'item_id': 'u2',
-      });
-      await tester.pump();
-      expect(controller.phase, PracticeMediaPhase.localClosed);
-      expect(transport.stops, 1);
-      expect(controller.conversation?.turns, hasLength(2));
-      controller.dispose();
-      await tester.pump();
-      api.close();
-    },
-  );
+    }
+  }
   testWidgets('drain only accepts committed user tail and sends no reply', (
     tester,
   ) async {

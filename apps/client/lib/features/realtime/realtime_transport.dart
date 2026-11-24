@@ -35,6 +35,14 @@ abstract interface class RealtimeTransport {
   void setMuted(bool muted);
   Future<void> resumePlayback();
 
+  /// Suppress output without stopping the input track. This is not evidence of
+  /// the last audible sample and does not cancel a provider response.
+  void holdPlayback();
+
+  /// Explicitly release an output hold. The caller must first decide whether
+  /// late provider audio is safe to hear; no context or alignment is inferred.
+  Future<void> releasePlayback();
+
   /// Synchronously stops capture and sound, keeping the configured event channel
   /// for bounded tail evidence and provider completion/cancel controls only.
   /// Requires an active transport; cannot activate media again. The owner bounds

@@ -232,8 +232,21 @@ PAGE = r"""<!doctype html>
   const log = document.getElementById('log');
   const started = [];
   const events = [];
-  let transport, context, oscillator, input;
+  let transport, context, oscillator, input, peer, signalSource, analyser, silentGain, signalTimer;
+  let inboundAudioBytes = null;
+  let responseStatus = null, usage = null, signalPhase = 'before_response';
+  const signal = {
+    threshold_rms: 0.001,
+    before_response: { samples: 0, over_threshold: 0, peak_rms: 0 },
+    during_response: { samples: 0, over_threshold: 0, peak_rms: 0 },
+    after_response: { samples: 0, over_threshold: 0, peak_rms: 0 },
+    error: null,
+  };
+  const originalCreateElement = document.createElement;
+  const originalGetUserMedia = navigator.mediaDevices.getUserMedia;
+  const originalPeerConnection = window.RTCPeerConnection;
   let done = false;
+  let deadline;
   let finish;
   const finished = new Promise((resolve) => { finish = resolve; });
   const startedAt = () => Math.round(performance.now());
@@ -272,35 +285,95 @@ PAGE = r"""<!doctype html>
     };
   }
 
+  function observeRemoteAudio(track) {
+    if (signalSource || track.kind !== 'audio' || done) return;
+    try {
+      signalSource = context.createMediaStreamSource(new window.MediaStream([track]));
+      analyser = context.createAnalyser();
+      analyser.fftSize = 2048;
+      silentGain = context.createGain();
+      silentGain.gain.value = 0;
+      signalSource.connect(analyser);
+      analyser.connect(silentGain);
+      silentGain.connect(context.destination);
+      const data = new Float32Array(analyser.fftSize);
+      signalTimer = setInterval(() => {
+        try {
+          analyser.getFloatTimeDomainData(data);
+          let sum = 0;
+          for (const value of data) sum += value * value;
+          const rms = Math.sqrt(sum / data.length);
+          const sample = signal[signalPhase];
+          sample.samples++;
+          sample.peak_rms = Math.max(sample.peak_rms, rms);
+          if (rms >= signal.threshold_rms) sample.over_threshold++;
+        } catch (_) { signal.error = 'sampling_failed'; clearInterval(signalTimer); }
+      }, 50);
+    } catch (_) { signal.error = 'analysis_unavailable'; }
+  }
+
+  function safeUsage(value) {
+    if (!value || typeof value !== 'object') return null;
+    const clean = {};
+    for (const key of ['input_tokens', 'output_tokens', 'total_tokens']) {
+      if (Number.isSafeInteger(value[key]) && value[key] >= 0) clean[key] = value[key];
+    }
+    for (const key of ['input_tokens_details', 'output_tokens_details']) {
+      const details = value[key];
+      if (!details || typeof details !== 'object') continue;
+      const part = {};
+      for (const field of ['text_tokens', 'audio_tokens']) {
+        if (Number.isSafeInteger(details[field]) && details[field] >= 0) part[field] = details[field];
+      }
+      if (Object.keys(part).length) clean[key] = part;
+    }
+    return Object.keys(clean).length ? clean : null;
+  }
+
   async function finishRun(reason) {
     if (done) return;
     done = true;
+    clearTimeout(deadline);
     const observations = started.slice();
     const inbound = observations.filter((e) => e.code === 'playback_playing').length;
     const waiting = observations.filter((e) => e.code === 'playback_waiting').length;
     const failed = observations.filter((e) => e.code.startsWith('playback_failed')).length;
-    await post('/evidence', JSON.stringify({
+    // Release media before doing any I/O: evidence persistence can fail or hang.
+    clearInterval(signalTimer);
+    try { signalSource?.disconnect(); analyser?.disconnect(); silentGain?.disconnect(); } catch (_) {}
+    try { transport?.stop(); } catch (_) {}
+    try { input?.getTracks().forEach((track) => track.stop()); } catch (_) {}
+    try { if (oscillator) { oscillator.stop(); oscillator.disconnect(); } } catch (_) {}
+    document.createElement = originalCreateElement;
+    navigator.mediaDevices.getUserMedia = originalGetUserMedia;
+    window.RTCPeerConnection = originalPeerConnection;
+    if (context) await context.close().catch(() => {});
+    try {
+      const result = await post('/evidence', JSON.stringify({
       reason,
       script_sha_loaded: true,
       playback: { playing: inbound, waiting, failed },
+      inbound_audio_bytes: inboundAudioBytes,
+      audio_signal: signal,
+      response_status: responseStatus,
+      usage,
       observations,
       protocol_events: events.slice(-40),
-    }), 'application/json');
-    log.textContent += `\n结束：${reason}（playing ${inbound} / waiting ${waiting} / failed ${failed}）`;
-    transport?.stop();
-    input?.getTracks().forEach((track) => track.stop());
-    if (oscillator) { oscillator.stop(); oscillator.disconnect(); }
-    if (context) await context.close().catch(() => {});
-    finish();
+      }), 'application/json');
+      if (result.status !== 204) throw new Error('evidence_failed');
+      log.textContent += `\n结束：${reason}（playing ${inbound} / waiting ${waiting} / failed ${failed}）`;
+    } catch (_) {
+      log.textContent += '\n结束：证据写入失败，媒体已关闭';
+    } finally { finish(); }
   }
 
   run.addEventListener('click', async () => {
     run.disabled = true;
     note('probe_started');
+    deadline = setTimeout(() => finishRun('probe_timeout'), 45000);
     let channel;
     let configured = false;
     let activated = false;
-    let replied = false;
     try {
       context = new AudioContext();
       await context.resume();
@@ -311,6 +384,18 @@ PAGE = r"""<!doctype html>
       oscillator.start();
       input = destination.stream;
       navigator.mediaDevices.getUserMedia = async () => input;
+      document.createElement = function (tag, ...args) {
+        const element = originalCreateElement.call(document, tag, ...args);
+        if (String(tag).toLowerCase() === 'audio') element.muted = true;
+        return element;
+      };
+      window.RTCPeerConnection = new Proxy(originalPeerConnection, {
+        construct(target, args) {
+          peer = Reflect.construct(target, args);
+          peer.addEventListener('track', ({ track }) => observeRemoteAudio(track));
+          return peer;
+        },
+      });
 
       transport = window.simontalkRealtime.create();
       const startedResult = await transport.start(async (offer) => {
@@ -322,14 +407,8 @@ PAGE = r"""<!doctype html>
         }
         note('exchange_ok');
         return result.body.answer;
-      }, (observation) => {
-        note(observation.code, observation.detail);
-        if (observation.code === 'playback_playing' || observation.code === 'playback_failed') {
-          // One explicit close after the first real playback signal.
-          if (observation.code === 'playback_playing' && replied) {
-            setTimeout(() => finishRun('playback_observed'), 1500);
-          }
-        }
+      }, (code, detail) => {
+        note(code, detail);
       }, (json, channelId) => {
         let event;
         try { event = JSON.parse(json); } catch (_) { note('invalid_event'); return; }
@@ -349,11 +428,27 @@ PAGE = r"""<!doctype html>
               item: { type: 'message', role: 'user', content: [{ type: 'input_text', text: 'Say hello in one short sentence.' }] },
             }), channelId);
             transport.send('{"type":"response.create"}', channelId);
-            replied = true;
             note('response_requested');
           });
+        } else if (event.type === 'response.created') {
+          signalPhase = 'during_response';
         } else if (event.type === 'response.done') {
+          signalPhase = 'after_response';
+          if (['completed', 'cancelled', 'failed', 'incomplete'].includes(event.response?.status)) {
+            responseStatus = event.response.status;
+          }
+          usage = safeUsage(event.response?.usage);
           note('response_done');
+          if (peer) void peer.getStats().then((reports) => {
+            let total = 0;
+            for (const report of reports.values()) {
+              if (report.type === 'inbound-rtp' && (report.kind ?? report.mediaType) === 'audio' &&
+                  Number.isSafeInteger(report.bytesReceived) && report.bytesReceived >= 0) {
+                total += report.bytesReceived;
+              }
+            }
+            inboundAudioBytes = total;
+          }).catch(() => {});
           setTimeout(() => finishRun('response_done'), 2000);
         } else if (event.type === 'error') {
           note('upstream_error', JSON.stringify(event.error?.code ?? null));
@@ -365,7 +460,6 @@ PAGE = r"""<!doctype html>
         await finishRun('start_failed');
         return;
       }
-      setTimeout(() => finishRun('probe_timeout'), 45000);
     } catch (error) {
       note('probe_error', error?.message ?? 'unknown');
       await finishRun('probe_error');

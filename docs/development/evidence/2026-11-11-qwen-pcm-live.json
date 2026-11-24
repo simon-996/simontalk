@@ -1,0 +1,19 @@
+{
+  "date": "2026-11-11",
+  "model": "qwen3.8-omni-flash-realtime",
+  "method": "One bounded WebSocket session and fixed-text response, real provider audio events held only in local process and page memory, actual Edge Web Audio destination through a zero-gain node, no microphone and no audio saved. Result manually transcribed from page.",
+  "source_sha256": "6d36ae983841465490600a247a19152469264f5272998aab88cf62ebcc1adeac",
+  "probe_sha256": "b95109c4eae04c883c49939ed568b1921c3da41f8762e74938f32b5707f96363",
+  "result": {
+    "chunks": 4,
+    "total_bytes": 49920,
+    "response_status": "completed",
+    "usage": {"input_tokens": 694, "output_tokens": 17, "total_tokens": 711},
+    "player_started": true,
+    "chunks_appended": 4,
+    "chunks_rejected": 0,
+    "player_stopped": true,
+    "audio_context": "closed"
+  },
+  "limitations": "One short response. Zero-gain output and post-response batch submission do not prove real-time streaming, actual device audibility, heard text, interruption, context correctness, upstream release, or billing settlement."
+}

@@ -1,0 +1,13 @@
+{
+  "browser": "Edge 157.0.4341.46",
+  "frame_bytes": 3213,
+  "header_hex": "01010203040000010203040506",
+  "payload_first_bytes": [18, 52],
+  "payload_last_byte": 86,
+  "independent_copy": true,
+  "microphone": false,
+  "model": false,
+  "pass": true,
+  "source_sha256": "5c343c72476214ea61886fd98257926110df738bca115e4fb037b31cb6fdd3c7",
+  "html_sha256": "5f58a1a36715d6b299983c0ffbba05c04dd0db12642779e2dbc75e7c888ebe7a"
+}

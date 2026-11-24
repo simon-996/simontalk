@@ -65,7 +65,10 @@ final class QwenTranscriptNormalizer {
 
   /// Receives only the explicitly supported event types; callers filter all others.
   /// Any malformed or conflicting event permanently closes this instance.
-  List<ConversationUpdate> accept(Map<String, Object?> event) {
+  List<ConversationUpdate> accept(
+    Map<String, Object?> event, {
+    bool allowUserStartFromDelta = false,
+  }) {
     if (_closed) _invalid();
     try {
       final eventId = _id(event['event_id']);
@@ -117,7 +120,7 @@ final class QwenTranscriptNormalizer {
       }
       final bytes = utf8.encode(eventId).length + utf8.encode(signature).length;
       if (_events.length >= 1024 || _eventBytes + bytes > 262144) _invalid();
-      final updates = _apply(type, normalized);
+      final updates = _apply(type, normalized, allowUserStartFromDelta);
       _events[eventId] = signature;
       _eventBytes += bytes;
       return List.unmodifiable(updates);
@@ -127,7 +130,11 @@ final class QwenTranscriptNormalizer {
     }
   }
 
-  List<ConversationUpdate> _apply(String type, Map<String, Object?> data) {
+  List<ConversationUpdate> _apply(
+    String type,
+    Map<String, Object?> data,
+    bool allowUserStartFromDelta,
+  ) {
     switch (type) {
       case 'input_audio_buffer.speech_started':
         final itemId = data['item_id'] as String;
@@ -162,12 +169,19 @@ final class QwenTranscriptNormalizer {
         return [turn.started()];
       case 'conversation.item.input_audio_transcription.delta':
       case 'conversation.item.input_audio_transcription.completed':
-        final turn = _items[data['item_id']];
-        if (turn == null || turn.role != ConversationRole.user) _invalid();
+        var turn = _items[data['item_id']];
         final isFinal = type.endsWith('.completed');
         final text = isFinal
             ? data['transcript'] as String
             : '${data['text']}${data['stash']}';
+        if (turn == null && !isFinal && allowUserStartFromDelta) {
+          if (text.trim().isEmpty) _invalid();
+          final itemId = data['item_id'] as String;
+          turn = _newTurn(ConversationRole.user)..itemId = itemId;
+          _items[itemId] = turn;
+          return [turn.started(), ...turn.update(text, false)];
+        }
+        if (turn == null || turn.role != ConversationRole.user) _invalid();
         return turn.update(text, isFinal);
       case 'response.audio_transcript.delta':
       case 'response.audio_transcript.done':

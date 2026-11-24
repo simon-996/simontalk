@@ -28,8 +28,9 @@ function setup() {
   };
   const window = {};
   vm.runInNewContext(readFileSync(new URL('../../web/streaming_pcm_output.js', import.meta.url), 'utf8'),
-    { window, Uint8Array, DataView, Float32Array, Number, Math });
-  return { context, nodes, create: () => window.simontalkStreamingPcmOutput.create(context, 8000) };
+    { window, Uint8Array, DataView, Float32Array, Number, Math, atob, btoa });
+  return { context, nodes, create: () => window.simontalkStreamingPcmOutput.create(context, 8000),
+    createRouter: () => window.simontalkStreamingPcmOutput.createResponseRouter(context, 8000) };
 }
 
 const pcm = (samples) => new Uint8Array(samples * 2);
@@ -184,4 +185,157 @@ test('stop during audio preparation does not schedule or retain the new source',
   assert.equal(env.nodes[0].startTime, undefined);
   assert.equal(env.nodes[0].disconnects, 1);
   assert.equal(player.append(pcm(1)), false);
+});
+
+
+const audioEvent = (responseId, itemId, eventId, bytes = pcm(100)) => ({
+  responseId, itemId, eventId, outputIndex: 0, contentIndex: 0, bytes,
+});
+
+test('retired response audio cannot enter a later response player', () => {
+  const env = setup(); const router = env.createRouter();
+  assert.equal(router.start('response-a', 'item-a'), true);
+  assert.equal(router.append(audioEvent('response-a', 'item-a', 'event-a')), 'appended');
+  assert.equal(router.stop('response-a'), true);
+  assert.equal(env.nodes[0].stops, 1);
+  assert.equal(router.start('response-b', 'item-b'), true);
+  assert.equal(router.append(audioEvent('response-a', 'item-a', 'late')), 'stale');
+  assert.equal(router.append(audioEvent('response-b', 'item-b', 'event-b')), 'appended');
+  assert.equal(env.nodes.length, 2);
+  assert.equal(router.stop('response-b'), true);
+  assert.equal(router.start('response-a', 'item-a'), false);
+});
+
+test('unknown identities and duplicate events close playback without scheduling twice', () => {
+  for (const bad of [
+    audioEvent('unknown', 'item-a', 'event-x'),
+    audioEvent('response-a', 'item-other', 'event-x'),
+    {...audioEvent('response-a', 'item-a', 'event-x'), outputIndex: 1},
+    audioEvent('response-a', 'item-a', 'event-a'),
+  ]) {
+    const env = setup(); const router = env.createRouter();
+    assert.equal(router.start('response-a', 'item-a'), true);
+    assert.equal(router.append(audioEvent('response-a', 'item-a', 'event-a')), 'appended');
+    assert.equal(router.append(bad), 'rejected');
+    assert.equal(env.nodes.length, 1);
+    assert.equal(env.nodes[0].stops, 1);
+    assert.equal(router.start('response-b', 'item-b'), false);
+  }
+});
+
+test('local release uncertainty prevents creating another response player', () => {
+  const env = setup(); const router = env.createRouter();
+  assert.equal(router.start('response-a', 'item-a'), true);
+  assert.equal(router.append(audioEvent('response-a', 'item-a', 'event-a')), 'appended');
+  env.nodes[0].disconnect = () => { throw Error('release failure'); };
+  assert.equal(router.stop('response-a'), false);
+  assert.equal(router.start('response-b', 'item-b'), false);
+});
+
+test('reentrant shutdown during audio preparation prevents that chunk from starting', () => {
+  const env = setup(); const router = env.createRouter();
+  assert.equal(router.start('response-a', 'item-a'), true);
+  const original = env.context.createBufferSource;
+  env.context.createBufferSource = () => {
+    const node = original();
+    node.connect = () => { router.dispose(); };
+    return node;
+  };
+  assert.equal(router.append(audioEvent('response-a', 'item-a', 'event-a')), 'rejected');
+  assert.equal(env.nodes[0].startTime, undefined);
+  assert.equal(env.nodes[0].disconnects, 1);
+  assert.equal(router.start('response-b', 'item-b'), false);
+});
+
+test('a response item cannot be reused by a later response', () => {
+  const env = setup(); const router = env.createRouter();
+  assert.equal(router.start('response-a', 'item-a'), true);
+  assert.equal(router.stop('response-a'), true);
+  assert.equal(router.start('response-b', 'item-a'), false);
+  assert.equal(router.start('response-c', 'item-c'), false);
+});
+
+test('invalid audio and unknown stop close the whole router', () => {
+  for (const action of [
+    router => router.append(audioEvent('response-a', 'item-a', 'event-a', new Uint8Array(1))),
+    router => router.stop('other'),
+  ]) {
+    const env = setup(); const router = env.createRouter();
+    assert.equal(router.start('response-a', 'item-a'), true);
+    action(router);
+    assert.equal(router.start('response-b', 'item-b'), false);
+  }
+});
+
+test('response lifetime is bounded and prior identities cannot be forgotten', () => {
+  const env = setup(); const router = env.createRouter();
+  for (let i = 0; i < 64; i++) {
+    assert.equal(router.start(`response-${i}`, `item-${i}`), true);
+    assert.equal(router.stop(`response-${i}`), true);
+  }
+  assert.equal(router.start('response-64', 'item-64'), false);
+});
+
+
+const qwenAudioEvent = (responseId, itemId, eventId, delta = 'AAAAAA==') => ({
+  type: 'response.audio.delta', response_id: responseId, item_id: itemId,
+  event_id: eventId, output_index: 0, content_index: 0, delta,
+});
+
+test('Qwen audio event is decoded only for its explicitly bound response and item', () => {
+  const env = setup(); const router = env.createRouter();
+  assert.equal(router.start('response-a', 'item-a'), true);
+  assert.equal(router.appendQwenDelta(qwenAudioEvent('response-a', 'item-a', 'event-a', 'AID/fwAA')), 'appended');
+  assert.deepEqual(Array.from(env.nodes[0].buffer.getChannelData(0)), [-1, 32767 / 32768, 0]);
+  assert.equal(router.stop('response-a'), true);
+  assert.equal(router.start('response-b', 'item-b'), true);
+  assert.equal(router.appendQwenDelta(qwenAudioEvent('response-a', 'item-a', 'late')), 'stale');
+  assert.equal(router.appendQwenDelta(qwenAudioEvent('response-b', 'item-b', 'event-b')), 'appended');
+  assert.equal(env.nodes.length, 2);
+});
+
+test('Qwen malformed, noncanonical and odd-length Base64 close the active player', () => {
+  for (const delta of ['', 'AA=', 'AB==', 'AA==', 'AA A=', 'AAAA'.repeat(16001)]) {
+    const env = setup(); const router = env.createRouter();
+    assert.equal(router.start('response-a', 'item-a'), true);
+    assert.equal(router.appendQwenDelta(qwenAudioEvent('response-a', 'item-a', 'event-a', delta)), 'rejected');
+    assert.equal(env.nodes.length, 0);
+    assert.equal(router.start('response-b', 'item-b'), false);
+  }
+});
+
+test('Qwen wrong item, duplicate event and non-audio type fail closed', () => {
+  for (const invalid of [
+    qwenAudioEvent('response-a', 'wrong-item', 'event-b'),
+    qwenAudioEvent('response-a', 'item-a', 'event-a'),
+    {...qwenAudioEvent('response-a', 'item-a', 'event-b'), type: 'response.done'},
+  ]) {
+    const env = setup(); const router = env.createRouter();
+    assert.equal(router.start('response-a', 'item-a'), true);
+    assert.equal(router.appendQwenDelta(qwenAudioEvent('response-a', 'item-a', 'event-a')), 'appended');
+    assert.equal(router.appendQwenDelta(invalid), 'rejected');
+    assert.equal(env.nodes.length, 1);
+    assert.equal(env.nodes[0].stops, 1);
+  }
+});
+
+test('reentrant disposal during Qwen event decoding cannot schedule audio', () => {
+  const env = setup(); const router = env.createRouter();
+  assert.equal(router.start('response-a', 'item-a'), true);
+  const event = qwenAudioEvent('response-a', 'item-a', 'event-a');
+  Object.defineProperty(event, 'delta', {get() { router.dispose(); return 'AAAAAA=='; }});
+  assert.equal(router.appendQwenDelta(event), 'rejected');
+  assert.equal(env.nodes.length, 0);
+  assert.equal(router.start('response-b', 'item-b'), false);
+});
+
+test('late Qwen audio is dropped without decoding or reviving the old player', () => {
+  const env = setup(); const router = env.createRouter();
+  assert.equal(router.start('response-a', 'item-a'), true);
+  assert.equal(router.stop('response-a'), true);
+  assert.equal(router.start('response-b', 'item-b'), true);
+  const late = qwenAudioEvent('response-a', 'item-a', 'late');
+  Object.defineProperty(late, 'delta', {get() { throw Error('must not decode old audio'); }});
+  assert.equal(router.appendQwenDelta(late), 'stale');
+  assert.equal(router.appendQwenDelta(qwenAudioEvent('response-b', 'item-b', 'event-b')), 'appended');
 });

@@ -47,6 +47,7 @@ Widget _example({
   PracticeMediaPhase phase = PracticeMediaPhase.active,
   MediaPlayback playback = MediaPlayback.idle,
   bool muted = false,
+  bool interruptionNeedsEnd = false,
   String? errorCode,
   bool completionPending = false,
   bool subtitles = true,
@@ -63,6 +64,7 @@ Widget _example({
     phase: phase,
     playback: playback,
     muted: muted,
+    interruptionNeedsEnd: interruptionNeedsEnd,
     errorCode: errorCode,
     turns: _turns,
     subtitlesVisible: subtitles,
@@ -132,3 +134,16 @@ Widget practiceSessionUnavailablePreview() => _example(
 )
 Widget practiceSessionNoSubtitlesPreview() =>
     _example(subtitles: false, playback: MediaPlayback.playing);
+
+@Preview(
+  name: '通话 · 中断待结束 · 深色320 · 200%',
+  group: '通话中',
+  size: Size(320, 900),
+  wrapper: previewWithFonts,
+)
+Widget practiceSessionInterruptedPreview() => _example(
+  brightness: Brightness.dark,
+  scale: 2,
+  playback: MediaPlayback.paused,
+  interruptionNeedsEnd: true,
+);

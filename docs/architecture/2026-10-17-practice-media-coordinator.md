@@ -53,6 +53,8 @@
 
 setMuted只响应用户明确操作；播放事件不改变上行静音。播放状态独立为idle/waiting/blocked/playing/paused，显式resumePlayback允许恢复浏览器播放限制，不能用active冒充声音已实际播放。
 
+2026-10-30新增传输底层 `holdPlayback` / `releasePlayback`：Web以音频元素静音压制输出，保持上行音轨；普通 `resumePlayback` 不能解除，必须显式释放。协调器在有效的非结束冻结时已调用输出压制，并独立阻止上下文确认后立即恢复音轨或产生新回复；该门不能证明设备听到的前缀、丢弃旧音频或服务端取消。千问受限协议现可对一次有绑定的重叠语音走未知边界隔离并保留用户最终文字，但不能开启下一轮，原生仍返回unsupported。详见[传输验证](../development/2026-10-30-playback-hold-verification.md)及[协调器隔离验证](../development/2026-10-30-playback-quarantine-verification.md)。
+
 ## 释放证据
 
 stop同步封闭回调、停止传输、取消独立信令、释放协议与定时器，立即完成begin等待；API清理不阻塞本地释放。后台、账号作用域变化、销毁、传输local_closed、协议/续租错误及超时都走同一停止入口。回前台不自动开始。账号已变化时不在新身份下发送旧对象清理。
@@ -62,6 +64,8 @@ stop同步封闭回调、停止传输、取消独立信令、释放协议与定�
 关闭前保留快照，采集所有!isFinal话轮（含空文字已发输入）、无可靠输出依据的response及两journal缺口；finish后固定全部已接纳事件的ID/sequence/预算清单一次，包含已ACK及pending。journal不可用时明确journal_unavailable，不把空清单冒充完整。completion先end再manifest串行，稳定key/body、8秒总截止包含CSRF；失败暂停显式retry，refresh只读，不隐式重试失败写。manifest已接受或封存后只读有界等待，每轮最多20次/40秒，超限保留待核对状态；不改变releaseStatus或建连许可。
 
 summary sealed后还须读取原scope及匹配全局hash的receipt，再交两journal按实收refs收敛。已收到而丢ACK的项可确认，未收到的pending记永久未保存并暴露sealed_unsaved，取消在途/忽略晚ACK、停止重试并清正文，不假报ACK或普通拒收。provider在draining、任一队列pending、completion待确认/失败或receipt收敛期间保留原账号作用域；都已收敛后允许无人监听释放。正常end后的同账号离页不取消，身份变化/销毁立即abort。未发正常end的background/page_left/协议错误继续旧中断/安全准备清理，不擅自调用产品结束。
+
+2026-10-30补充：已验证边界的自然中断在冻结前同步压制本地输出；即使截断上下文得到确认，同一连接也不能凭此解除音频隔离或开始新回复，直到另有经验证的旧音频安全恢复机制。详见[隔离验证](../development/2026-10-30-playback-quarantine-verification.md)。
 
 自然中断的归一化freezeResponse固定设备输出上限和原截止，封存独立版本前缀；普通生成及新response须等prepareContext产生的原scope不可变token，经一次sendContextControl及同token/当前revision/原通道的供应商截断确认后才允许。用户输入仍可接收，旧AI的合法final/播放证据在原窗口内继续保存，不回写已确认token。明确推翻已用前缀时先撤销当前资格，再安全stop(context_invalidated)。这些是本地协议门；真实上游截断及旧音频路由仍须供应商准入实测。
 

@@ -1,0 +1,157 @@
+{
+  "tool": "qwen-playback-probe",
+  "started_at": "2026-10-30T08:02:35.503970+00:00",
+  "model": "qwen3.8-omni-flash-realtime",
+  "transport_sha256": "17bef89ce4a62acbcc8557464f9514656d411694b8d91366585eea949bad13e5",
+  "exchanges_used": 1,
+  "observations": [
+    {
+      "received_at": "2026-10-30T08:03:01.611419+00:00",
+      "exchange_limit": 1,
+      "reason": "response_done",
+      "script_sha_loaded": true,
+      "playback": {
+        "playing": 1,
+        "waiting": 0,
+        "failed": 0
+      },
+      "inbound_audio_bytes": 22933,
+      "observations": [
+        {
+          "at": 11162,
+          "code": "probe_started",
+          "detail": null
+        },
+        {
+          "at": 11174,
+          "code": "requesting_microphone",
+          "detail": ""
+        },
+        {
+          "at": 11180,
+          "code": "negotiating",
+          "detail": ""
+        },
+        {
+          "at": 11316,
+          "code": "exchange_requested",
+          "detail": null
+        },
+        {
+          "at": 11700,
+          "code": "exchange_ok",
+          "detail": null
+        },
+        {
+          "at": 11977,
+          "code": "transport_connected",
+          "detail": ""
+        },
+        {
+          "at": 11977,
+          "code": "channel_open",
+          "detail": "channel-0"
+        },
+        {
+          "at": 11977,
+          "code": "channel_open",
+          "detail": "channel-1"
+        },
+        {
+          "at": 11977,
+          "code": "channel_open",
+          "detail": "channel-1"
+        },
+        {
+          "at": 12038,
+          "code": "session_update_sent",
+          "detail": null
+        },
+        {
+          "at": 12214,
+          "code": "microphone_active",
+          "detail": ""
+        },
+        {
+          "at": 12214,
+          "code": "activated",
+          "detail": null
+        },
+        {
+          "at": 12215,
+          "code": "response_requested",
+          "detail": null
+        },
+        {
+          "at": 12216,
+          "code": "playback_playing",
+          "detail": ""
+        },
+        {
+          "at": 13526,
+          "code": "response_done",
+          "detail": null
+        }
+      ],
+      "protocol_events": [
+        {
+          "at": 12038,
+          "type": "session.created"
+        },
+        {
+          "at": 12213,
+          "type": "session.updated"
+        },
+        {
+          "at": 12411,
+          "type": "conversation.item.created"
+        },
+        {
+          "at": 12654,
+          "type": "response.created"
+        },
+        {
+          "at": 12654,
+          "type": "response.output_item.added"
+        },
+        {
+          "at": 12654,
+          "type": "conversation.item.created"
+        },
+        {
+          "at": 12655,
+          "type": "response.content_part.added"
+        },
+        {
+          "at": 12655,
+          "type": "response.audio_transcript.delta"
+        },
+        {
+          "at": 12726,
+          "type": "response.audio_transcript.delta"
+        },
+        {
+          "at": 13526,
+          "type": "response.audio_transcript.done"
+        },
+        {
+          "at": 13526,
+          "type": "response.audio.done"
+        },
+        {
+          "at": 13526,
+          "type": "response.content_part.done"
+        },
+        {
+          "at": 13526,
+          "type": "response.output_item.done"
+        },
+        {
+          "at": 13526,
+          "type": "response.done"
+        }
+      ]
+    }
+  ],
+  "boundary": "Synthetic silent microphone, muted output element, one SDP exchange per run. Playing observations are the transport's own reports and do not prove audible output."
+}

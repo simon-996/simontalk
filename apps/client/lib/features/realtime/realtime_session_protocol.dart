@@ -23,6 +23,7 @@ class RealtimeProtocolCallbacks {
     required this.emitConversation,
     required this.sendDrainControl,
     required this.freezeResponse,
+    required this.quarantineUnknownResponse,
     required this.revokeFrozenPrefix,
     required this.prepareContext,
     required this.sendContextControl,
@@ -36,8 +37,9 @@ class RealtimeProtocolCallbacks {
   final void Function(ConversationUpdate update, String channelId)
   emitConversation;
 
-  /// Only input completion and cancellation of a frozen response are permitted.
-  /// The adapter must validate provider semantics; this is not ordinary send.
+  /// Only input completion and cancellation of a frozen or explicitly
+  /// quarantined response are permitted. The adapter validates provider
+  /// semantics; this is not ordinary send.
   final void Function(
     String json,
     String channelId,
@@ -49,6 +51,11 @@ class RealtimeProtocolCallbacks {
   /// Requires an adapter-verified device output position for this response.
   final void Function(String responseId, int stopBoundaryMs, String channelId)
   freezeResponse;
+
+  /// Hold one known response without claiming any device output boundary.
+  /// No context or playback recovery may be inferred from this operation.
+  final void Function(String responseId, String channelId)
+  quarantineUnknownResponse;
 
   /// An explicit, verified alignment invalidation, not a missing quality signal.
   final void Function(String responseId, String channelId) revokeFrozenPrefix;

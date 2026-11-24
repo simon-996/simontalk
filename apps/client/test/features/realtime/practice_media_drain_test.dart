@@ -545,6 +545,382 @@ void main() {
     },
   );
 
+  testWidgets('verified interruption holds output and ignores stale resumes', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    emit(facts.ai(finalText: false));
+    emit(facts.playback());
+    h.transport.observe(const RealtimeObservation('playback_playing', ''));
+    h.transport.playbackResume = Completer<void>();
+    final oldResume = h.controller.resumePlayback();
+    h.protocol!.callbacks.freezeResponse(facts.responseId, 400, 'channel-0');
+    expect(h.transport.holds, 1);
+    expect(h.controller.playback, MediaPlayback.paused);
+    final previousObservation = h.controller.lastObservationCode;
+    h.transport.observe(const RealtimeObservation('playback_waiting', ''));
+    expect(h.controller.lastObservationCode, previousObservation);
+    h.transport.playbackResume!.completeError(
+      const RealtimeFailure('playback_waiting'),
+    );
+    await oldResume;
+    expect(h.controller.playback, MediaPlayback.paused);
+    final resumes = h.transport.resumes;
+    await h.controller.resumePlayback();
+    expect(h.transport.resumes, resumes);
+    expect(h.controller.phase, PracticeMediaPhase.active);
+    await h.controller.stop();
+  });
+
+  testWidgets('context acknowledgement alone cannot reopen held output', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    emit(facts.ai(finalText: false));
+    emit(facts.playback());
+    final callbacks = h.protocol!.callbacks;
+    callbacks.freezeResponse(facts.responseId, 400, 'channel-0');
+    final candidate = callbacks.prepareContext('channel-0')!;
+    callbacks.sendContextControl('{"type":"replace"}', 'channel-0', candidate);
+    callbacks.confirmContextTruncated(candidate, 'channel-0');
+    final sent = h.transport.sent.length;
+    callbacks.send('{"type":"generate"}', 'channel-0');
+    expect(h.transport.sent.length, sent);
+    expect(h.controller.errorCode, 'playback_quarantined');
+    expect(h.controller.phase, PracticeMediaPhase.localClosed);
+  });
+
+  testWidgets(
+    'output hold failure closes media without cancelling or generating',
+    (tester) async {
+      setup(tester);
+      await h.configured();
+      emit(facts.ai(finalText: false));
+      emit(facts.playback());
+      h.transport.holdError = const RealtimeFailure('media_failed');
+      final sent = h.transport.sent.length;
+      h.protocol!.callbacks.freezeResponse(facts.responseId, 400, 'channel-0');
+      expect(h.controller.errorCode, 'media_failed');
+      expect(h.transport.stops, 1);
+      expect(h.transport.sent.length, sent);
+    },
+  );
+
+  testWidgets('an unknown response cannot trigger an output hold', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    h.protocol!.callbacks.freezeResponse(facts.responseId, 0, 'channel-0');
+    expect(h.transport.holds, 0);
+    expect(h.controller.phase, PracticeMediaPhase.localClosed);
+    expect(h.controller.errorCode, 'conversation_invalid');
+  });
+
+  testWidgets('an in-flight resume returning held does not close the session', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    emit(facts.ai(finalText: false));
+    emit(facts.playback());
+    h.transport.playbackResume = Completer<void>();
+    final resume = h.controller.resumePlayback();
+    h.protocol!.callbacks.freezeResponse(facts.responseId, 400, 'channel-0');
+    h.transport.playbackResume!.completeError(
+      const RealtimeFailure('playback_held'),
+    );
+    await resume;
+    expect(h.controller.phase, PracticeMediaPhase.active);
+    expect(h.controller.playback, MediaPlayback.paused);
+    await h.controller.stop();
+  });
+
+  testWidgets('reentrant send during output hold is blocked', (tester) async {
+    setup(tester);
+    await h.configured();
+    emit(facts.ai(finalText: false));
+    emit(facts.playback());
+    final sent = h.transport.sent.length;
+    h.transport.onHold = () =>
+        h.protocol!.callbacks.send('{"type":"generate"}', 'channel-0');
+    h.protocol!.callbacks.freezeResponse(facts.responseId, 400, 'channel-0');
+    expect(h.transport.sent.length, sent);
+    expect(h.controller.phase, PracticeMediaPhase.localClosed);
+  });
+
+  testWidgets('reentrant freeze during output hold closes without recursion', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    emit(facts.ai(finalText: false));
+    emit(facts.playback());
+    final callbacks = h.protocol!.callbacks;
+    h.transport.onHold = () =>
+        callbacks.freezeResponse(facts.responseId, 400, 'channel-0');
+    callbacks.freezeResponse(facts.responseId, 400, 'channel-0');
+    expect(h.transport.holds, 1);
+    expect(h.controller.errorCode, 'interruption_reentrant');
+    expect(h.controller.phase, PracticeMediaPhase.localClosed);
+  });
+
+  testWidgets('held output permits original cancellation and user input', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    emit(facts.ai(finalText: false));
+    emit(facts.playback());
+    final callbacks = h.protocol!.callbacks;
+    callbacks.freezeResponse(facts.responseId, 400, 'channel-0');
+    final sent = h.transport.sent.length;
+    for (var i = 0; i < 2; i++) {
+      callbacks.sendDrainControl(
+        '{"type":"cancel"}',
+        'channel-0',
+        RealtimeDrainControlKind.cancelResponse,
+        facts.responseId,
+      );
+    }
+    emit(facts.user());
+    expect(h.transport.sent.length, sent + 1);
+    expect(h.controller.conversation!.turns.length, 2);
+    expect(h.controller.phase, PracticeMediaPhase.active);
+    expect(h.controller.playback, MediaPlayback.paused);
+    await h.controller.stop();
+  });
+
+  testWidgets('unknown output is held without inventing a playback boundary', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    emit(facts.ai(finalText: false));
+    final callbacks = h.protocol!.callbacks;
+    callbacks.quarantineUnknownResponse(facts.responseId, 'channel-0');
+    callbacks.quarantineUnknownResponse(facts.responseId, 'channel-0');
+    expect(h.transport.holds, 1);
+    expect(h.controller.playback, MediaPlayback.paused);
+    expect(callbacks.prepareContext('channel-0'), isNull);
+    expect(h.controller.conversation!.turns.single.frozenPrefix, isNull);
+    emit(facts.playback());
+    expect(
+      h.controller.conversation!.turns.single.playback.status,
+      DeliveryStatus.unknown,
+    );
+    final sent = h.transport.sent.length;
+    for (var i = 0; i < 2; i++) {
+      callbacks.sendDrainControl(
+        '{"type":"response.cancel"}',
+        'channel-0',
+        RealtimeDrainControlKind.cancelResponse,
+        facts.responseId,
+      );
+    }
+    expect(h.transport.sent.length, sent + 1);
+    emit(facts.user());
+    emit(facts.ai(revision: 2, text: 'Unheard assistant suffix'));
+    expect(
+      h.controller.conversation!.context.entries.single.role,
+      ConversationRole.user,
+    );
+    expect(h.controller.conversation!.turns.last.frozenPrefix, isNull);
+    expect(callbacks.prepareContext('channel-0'), isNull);
+    await h.controller.stop();
+  });
+
+  for (final wrongChannel in [true, false]) {
+    testWidgets('unknown quarantine rejects invalid scope $wrongChannel', (
+      tester,
+    ) async {
+      setup(tester);
+      await h.configured();
+      if (wrongChannel) emit(facts.ai());
+      h.protocol!.callbacks.quarantineUnknownResponse(
+        facts.responseId,
+        wrongChannel ? 'other-channel' : 'channel-0',
+      );
+      expect(h.transport.holds, 0);
+      expect(h.controller.phase, PracticeMediaPhase.localClosed);
+    });
+  }
+
+  testWidgets('unknown quarantine rejects a response with prior alignment', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    emit(facts.ai(finalText: false));
+    emit(facts.playback());
+    h.protocol!.callbacks.quarantineUnknownResponse(
+      facts.responseId,
+      'channel-0',
+    );
+    expect(h.transport.holds, 0);
+    expect(h.controller.phase, PracticeMediaPhase.localClosed);
+    expect(h.controller.errorCode, 'conversation_invalid');
+  });
+
+  testWidgets('unknown quarantine remembers alignment from an older revision', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    emit(facts.ai(finalText: false));
+    emit(facts.playback());
+    emit(facts.ai(revision: 2, text: 'Changed words', finalText: false));
+    expect(
+      h.controller.conversation!.turns.single.playback.status,
+      DeliveryStatus.unknown,
+    );
+    h.protocol!.callbacks.quarantineUnknownResponse(
+      facts.responseId,
+      'channel-0',
+    );
+    expect(h.transport.holds, 0);
+    expect(h.controller.phase, PracticeMediaPhase.localClosed);
+  });
+
+  testWidgets(
+    'unknown quarantine remembers a prior verified not-played state',
+    (tester) async {
+      setup(tester);
+      await h.configured();
+      emit(facts.ai());
+      emit(
+        facts.playback(status: DeliveryStatus.notPlayed, text: '', until: 0),
+      );
+      emit(facts.ai(revision: 2, text: 'Changed final'));
+      expect(
+        h.controller.conversation!.turns.single.playback.status,
+        DeliveryStatus.unknown,
+      );
+      h.protocol!.callbacks.quarantineUnknownResponse(
+        facts.responseId,
+        'channel-0',
+      );
+      expect(h.transport.holds, 0);
+      expect(h.controller.phase, PracticeMediaPhase.localClosed);
+    },
+  );
+
+  testWidgets('unknown quarantine never extends its cancel deadline', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    emit(facts.ai(finalText: false));
+    final callbacks = h.protocol!.callbacks;
+    callbacks.quarantineUnknownResponse(facts.responseId, 'channel-0');
+    h.manualElapsed = const Duration(seconds: 3);
+    callbacks.quarantineUnknownResponse(facts.responseId, 'channel-0');
+    final sent = h.transport.sent.length;
+    callbacks.sendDrainControl(
+      '{"type":"response.cancel"}',
+      'channel-0',
+      RealtimeDrainControlKind.cancelResponse,
+      facts.responseId,
+    );
+    expect(h.transport.holds, 1);
+    expect(h.transport.sent.length, sent);
+    emit(facts.user());
+    expect(h.controller.phase, PracticeMediaPhase.active);
+    await h.controller.stop();
+  });
+
+  testWidgets('unknown quarantine cannot be converted into a fake freeze', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    emit(facts.ai(finalText: false));
+    final callbacks = h.protocol!.callbacks;
+    callbacks.quarantineUnknownResponse(facts.responseId, 'channel-0');
+    callbacks.freezeResponse(facts.responseId, 0, 'channel-0');
+    expect(h.controller.phase, PracticeMediaPhase.localClosed);
+    expect(h.controller.conversation!.turns.single.frozenPrefix, isNull);
+  });
+
+  testWidgets(
+    'normal end preserves user final without freezing unknown output',
+    (tester) async {
+      final journal = TestTranscriptJournal();
+      setup(tester, journal: journal);
+      await h.configured();
+      emit(facts.ai(finalText: false));
+      final callbacks = h.protocol!.callbacks;
+      callbacks.quarantineUnknownResponse(facts.responseId, 'channel-0');
+      emit(facts.user(finalText: false));
+      final done = end();
+      emit(facts.user(revision: 2, text: 'Last words'));
+      expect(journal.events.single.text, 'Last words');
+      expect(h.controller.conversation!.turns.last.frozenPrefix, isNull);
+      expect(
+        h.controller.conversation!.turns.last.playback.status,
+        DeliveryStatus.unknown,
+      );
+      await tester.pump(const Duration(seconds: 3));
+      await done;
+      expect(journal.finishes, 1);
+    },
+  );
+
+  testWidgets('unknown quarantine fails closed if holding output fails', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    emit(facts.ai(finalText: false));
+    h.transport.holdError = const RealtimeFailure('media_failed');
+    final callbacks = h.protocol!.callbacks;
+    callbacks.quarantineUnknownResponse(facts.responseId, 'channel-0');
+    final sent = h.transport.sent.length;
+    callbacks.sendDrainControl(
+      '{"type":"response.cancel"}',
+      'channel-0',
+      RealtimeDrainControlKind.cancelResponse,
+      facts.responseId,
+    );
+    expect(h.controller.errorCode, 'media_failed');
+    expect(h.transport.stops, 1);
+    expect(h.transport.sent.length, sent);
+  });
+
+  testWidgets('unknown quarantine stops on synchronous reentry', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    emit(facts.ai(finalText: false));
+    final callbacks = h.protocol!.callbacks;
+    h.transport.onHold = () =>
+        callbacks.quarantineUnknownResponse(facts.responseId, 'channel-0');
+    callbacks.quarantineUnknownResponse(facts.responseId, 'channel-0');
+    expect(h.transport.holds, 1);
+    expect(h.controller.errorCode, 'interruption_reentrant');
+    expect(h.controller.phase, PracticeMediaPhase.localClosed);
+  });
+
+  testWidgets('account change while quarantining clears the old conversation', (
+    tester,
+  ) async {
+    setup(tester);
+    await h.configured();
+    emit(facts.ai(finalText: false));
+    h.transport.onHold = () => h.api.expectedAccountId = requestKey;
+    final sent = h.transport.sent.length;
+    h.protocol!.callbacks.quarantineUnknownResponse(
+      facts.responseId,
+      'channel-0',
+    );
+    expect(h.transport.stops, 1);
+    expect(h.transport.sent.length, sent);
+    expect(h.controller.conversation?.turns ?? [], isEmpty);
+  });
+
   testWidgets(
     'exact context acknowledgement fixes supplied version while accepting original tail facts',
     (tester) async {
@@ -570,15 +946,6 @@ void main() {
       );
       expect(h.transport.sent.length, sent + 1);
       callbacks.confirmContextTruncated(candidate, 'channel-0');
-      emit(
-        const TurnStartedUpdate(
-          turnId: requestKey,
-          turnIndex: 3,
-          role: ConversationRole.assistant,
-          responseId: clientId,
-        ),
-      );
-      expect(h.controller.conversation!.turns.length, 3);
       emit(facts.ai(revision: 2, text: 'Old late suffix'));
       expect(
         h.controller.conversation!.turns
@@ -589,6 +956,16 @@ void main() {
       );
       expect(candidate.context.entries.last.text, 'Hello');
       expect(candidate.context.entries.last.transcriptRevision, 1);
+      emit(
+        const TurnStartedUpdate(
+          turnId: requestKey,
+          turnIndex: 3,
+          role: ConversationRole.assistant,
+          responseId: clientId,
+        ),
+      );
+      expect(h.controller.conversation!.turns.length, 2);
+      expect(h.controller.errorCode, 'playback_quarantined');
       await h.controller.stop();
     },
   );

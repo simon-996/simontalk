@@ -1,0 +1,13 @@
+{
+  "browser": "Edge 157.0.4341.46",
+  "source": "oscillator via MediaStreamDestination",
+  "microphone": false,
+  "model": false,
+  "transport": "local WebSocket with origin restriction and synthetic unauthenticated test setup",
+  "client": {"before_mute": 6, "during_mute": 6, "after_unmute": 10, "after_stop": 10, "track_stopped": true, "audio_context_closed": true, "errors": []},
+  "server": {"modes": [[1, false], [2, true], [3, false]], "forwarded_by_epoch": {"1": 6, "3": 4}, "dropped": 0, "stop": true, "provider_fake_frames": 10, "provider_fake_bytes": 32000, "provider_fake_closed": 1, "error": false},
+  "pass": true,
+  "sender_sha256": "4e3c675df7bcffb1fa9049d9fa359107071cdbe9e64e0475d4558272770758f0",
+  "html_sha256": "f9078d72c44aff8190be05fe8e2b81cac27f90bc8064b73cd893542f1fe732d7",
+  "server_sha256": "0fe6d717796fa1dbf00b5a4e5765eb5920ebf1905a26405cf4fc01cf2f0b0b43"
+}

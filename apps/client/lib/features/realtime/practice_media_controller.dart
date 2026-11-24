@@ -89,6 +89,12 @@ class PracticeMediaController extends ChangeNotifier
   MediaReleaseStatus get releaseStatus => _releaseStatus;
   MediaPlayback _playback = MediaPlayback.idle;
   MediaPlayback get playback => _playback;
+
+  /// The current unknown-output interruption cannot safely resume this call.
+  bool get interruptionNeedsEnd =>
+      _phase == PracticeMediaPhase.active &&
+      _outputHeld &&
+      _unknownOutputResponses.isNotEmpty;
   int _playbackRevision = 0;
   String? _errorCode;
   String? get errorCode => _errorCode;
@@ -163,6 +169,7 @@ class PracticeMediaController extends ChangeNotifier
     if (!repository.hasCurrentAccount) {
       _conversation?.clear();
       _greatestPlayedUntil.clear();
+      _responsesWithKnownPlayback.clear();
       _abortTranscripts();
       _abortPlaybackEvidence();
       _abortCompletion();
@@ -203,11 +210,15 @@ class PracticeMediaController extends ChangeNotifier
   final _frozenResponses = <String>{};
   // Source revisions reset current alignment, but cannot erase known output.
   final _greatestPlayedUntil = <String, int>{};
+  final _responsesWithKnownPlayback = <String>{};
   final _drainControls = <String>{};
   final _outputTailDeadlines = <String, Duration>{};
   final _outputTailReasons = <String, InterruptedPrefixReason>{};
+  final _unknownOutputResponses = <String>{};
   final _confirmedContextResponses = <String>{};
   bool _needsContextConfirmation = false;
+  bool _outputHeld = false;
+  bool _holdingOutput = false;
   RealtimeContextSnapshot? _contextCandidate;
   bool _contextControlSent = false;
   final _pendingTail = <(ConversationUpdate, String)>[];
@@ -238,7 +249,9 @@ class PracticeMediaController extends ChangeNotifier
   bool _guard() {
     if (_closed || _disposed) return false;
     final elapsed = _elapsed();
-    final reason = !repository.hasCurrentAccount
+    final reason = _holdingOutput
+        ? 'interruption_reentrant'
+        : !repository.hasCurrentAccount
         ? 'account_changed'
         : !_foreground
         ? 'background'
@@ -355,6 +368,7 @@ class PracticeMediaController extends ChangeNotifier
           emitConversation: _acceptConversation,
           sendDrainControl: _sendDrainControl,
           freezeResponse: _freezeResponse,
+          quarantineUnknownResponse: _quarantineUnknownResponse,
           revokeFrozenPrefix: _revokeFrozenPrefix,
           prepareContext: _prepareContext,
           sendContextControl: _sendContextControl,
@@ -441,6 +455,16 @@ class PracticeMediaController extends ChangeNotifier
 
   void _observe(RealtimeObservation observation) {
     if (!_guard()) return;
+    if (!_draining &&
+        _outputHeld &&
+        {
+          'playback_waiting',
+          'playback_blocked',
+          'playback_playing',
+          'playback_paused',
+        }.contains(observation.code)) {
+      return;
+    }
     _lastObservationCode = _safeCode(observation.code);
     if (observation.code == 'local_closed') {
       unawaited(stop(reason: _safeCode(observation.detail)));
@@ -554,11 +578,19 @@ class PracticeMediaController extends ChangeNotifier
       unawaited(stop(reason: 'context_unconfirmed'));
       return;
     }
+    if (!_draining && _outputHeld && response != null && tailDeadline == null) {
+      unawaited(stop(reason: 'playback_quarantined'));
+      return;
+    }
     if (!_transportReady ||
         channelId != _confirmedChannel ||
         !_channels.contains(channelId) ||
         _conversation == null) {
       unawaited(stop(reason: 'conversation_invalid'));
+      return;
+    }
+    if (update is PlaybackUpdate &&
+        _unknownOutputResponses.contains(update.responseId.toLowerCase())) {
       return;
     }
     try {
@@ -576,6 +608,9 @@ class PracticeMediaController extends ChangeNotifier
           }
         }
         if (update is PlaybackUpdate && _guard()) {
+          if (update.status != DeliveryStatus.unknown) {
+            _responsesWithKnownPlayback.add(update.responseId.toLowerCase());
+          }
           final turn = _conversation!.snapshot.turns.singleWhere(
             (turn) => turn.turnId == update.turnId.toLowerCase(),
           );
@@ -603,6 +638,10 @@ class PracticeMediaController extends ChangeNotifier
     }
     if (_needsContextConfirmation) {
       unawaited(stop(reason: 'context_unconfirmed'));
+      return;
+    }
+    if (_outputHeld) {
+      unawaited(stop(reason: 'playback_quarantined'));
       return;
     }
     if (!_transportReady || !_channels.contains(channelId)) {
@@ -676,7 +715,7 @@ class PracticeMediaController extends ChangeNotifier
 
   void setMuted(bool value) {
     if (!_guard()) return;
-    if (_draining) return;
+    if (_draining || (!value && interruptionNeedsEnd)) return;
     final changed = _muted != value;
     _muted = value;
     _protocolCall(() => _transport?.setMuted(value));
@@ -685,13 +724,14 @@ class PracticeMediaController extends ChangeNotifier
   }
 
   Future<void> resumePlayback() async {
-    if (!_guard() || _phase != PracticeMediaPhase.active) return;
+    if (!_guard() || _phase != PracticeMediaPhase.active || _outputHeld) return;
     final playbackRevision = ++_playbackRevision;
     try {
       await _transport!.resumePlayback();
     } on RealtimeFailure catch (error) {
       if (!_guard()) return;
       if (_draining) return;
+      if (_outputHeld && error.code == 'playback_held') return;
       if (error.code == 'playback_blocked' ||
           error.code == 'playback_waiting') {
         if (playbackRevision != _playbackRevision) return;
@@ -831,6 +871,10 @@ class PracticeMediaController extends ChangeNotifier
       return;
     }
     final key = '${kind.name}:${responseId?.toLowerCase() ?? ''}';
+    if (!_draining && kind == RealtimeDrainControlKind.cancelResponse) {
+      final deadline = _outputTailDeadlines[responseId?.toLowerCase()];
+      if (deadline == null || _elapsed() >= deadline) return;
+    }
     if (!_drainControls.add(key)) return;
     _protocolCall(() => _transport!.send(json, channelId));
   }
@@ -842,6 +886,10 @@ class PracticeMediaController extends ChangeNotifier
     if (channelId != _confirmedChannel ||
         (_draining && !_frozenResponses.contains(responseId.toLowerCase()))) {
       unawaited(stop(reason: 'conversation_invalid'));
+      return;
+    }
+    if (_unknownOutputResponses.contains(id)) {
+      unawaited(stop(reason: 'playback_quarantined'));
       return;
     }
     _protocolCall(() {
@@ -857,6 +905,16 @@ class PracticeMediaController extends ChangeNotifier
       final originalTurns = _conversation!.snapshot.turns
           .where((turn) => turn.responseId == id)
           .toList(growable: false);
+      if (originalTurns.isEmpty ||
+          originalTurns.any(
+            (turn) => turn.role != ConversationRole.assistant,
+          )) {
+        throw const ConversationFailure('conversation_invalid');
+      }
+      if (!_draining && !existing && !_outputHeld) {
+        _holdInterruptedOutput();
+        if (!_guard()) return;
+      }
       final result = _conversation!.freezeResponse(
         responseId,
         stopBoundaryMs: boundary,
@@ -887,6 +945,71 @@ class PracticeMediaController extends ChangeNotifier
         _contextCandidate = null;
         _contextControlSent = false;
       }
+      if (_guard() && !_draining && !existing) _publish(_phase);
+    });
+  }
+
+  void _holdInterruptedOutput() {
+    if (_outputHeld) return;
+    // Gate reentrant callbacks before touching browser output.
+    _outputHeld = true;
+    _needsContextConfirmation = true;
+    _playbackRevision++;
+    _playback = MediaPlayback.paused;
+    _holdingOutput = true;
+    try {
+      _transport!.holdPlayback();
+    } finally {
+      _holdingOutput = false;
+    }
+  }
+
+  void _quarantineUnknownResponse(String responseId, String channelId) {
+    if (!_guard()) return;
+    final id = responseId.toLowerCase();
+    final turns = _conversation?.snapshot.turns
+        .where((turn) => turn.responseId == id)
+        .toList(growable: false);
+    if (_draining ||
+        _phase != PracticeMediaPhase.active ||
+        !_transportReady ||
+        channelId != _confirmedChannel ||
+        _responsesWithKnownPlayback.contains(id) ||
+        turns == null ||
+        turns.isEmpty ||
+        turns.any(
+          (turn) =>
+              turn.role != ConversationRole.assistant ||
+              turn.playback.status != DeliveryStatus.unknown,
+        )) {
+      unawaited(stop(reason: 'conversation_invalid'));
+      return;
+    }
+    if (_unknownOutputResponses.contains(id)) return;
+    if (_outputTailDeadlines.containsKey(id) ||
+        _confirmedContextResponses.contains(id)) {
+      unawaited(stop(reason: 'playback_quarantined'));
+      return;
+    }
+    _protocolCall(() {
+      _unknownOutputResponses.add(id);
+      _needsContextConfirmation = true;
+      _contextCandidate = null;
+      _contextControlSent = false;
+      _holdInterruptedOutput();
+      if (!_guard()) return;
+      final configured = _elapsed() + drainTimeout;
+      final lease = _lease.deadline;
+      _outputTailDeadlines[id] = lease != null && lease < configured
+          ? lease
+          : configured;
+      // Let the adapter register the already-started user item before a
+      // listener can synchronously end and freeze the conversation scope.
+      scheduleMicrotask(() {
+        if (_guard() && !_draining && _unknownOutputResponses.contains(id)) {
+          _publish(_phase);
+        }
+      });
     });
   }
 
@@ -916,6 +1039,7 @@ class PracticeMediaController extends ChangeNotifier
     if (!_guard() ||
         _draining ||
         !_needsContextConfirmation ||
+        _unknownOutputResponses.isNotEmpty ||
         channelId != _confirmedChannel) {
       return null;
     }
@@ -1216,6 +1340,7 @@ class PracticeMediaController extends ChangeNotifier
         reason == 'account_changed') {
       _conversation?.clear();
       _greatestPlayedUntil.clear();
+      _responsesWithKnownPlayback.clear();
       _abortTranscripts();
       _abortPlaybackEvidence();
       _abortCompletion();
@@ -1242,9 +1367,11 @@ class PracticeMediaController extends ChangeNotifier
     _frozenTurns.clear();
     _frozenResponses.clear();
     _greatestPlayedUntil.clear();
+    _responsesWithKnownPlayback.clear();
     _drainControls.clear();
     _outputTailDeadlines.clear();
     _outputTailReasons.clear();
+    _unknownOutputResponses.clear();
     _confirmedContextResponses.clear();
     _contextCandidate = null;
     _needsContextConfirmation = false;

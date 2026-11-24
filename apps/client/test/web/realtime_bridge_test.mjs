@@ -24,7 +24,7 @@ test('compiled Dart bridge passes async signalling, event and cancellation callb
         let closed = false;
         let observe, receive, cancel;
         const instance = {
-          muted: false, sent: [], activated: false, drains: 0,
+          muted: false, sent: [], activated: false, drains: 0, holds: 0, releases: 0,
           async start(exchange, onObservation, onEvent, onCancel) {
             observe = onObservation; receive = onEvent; cancel = onCancel;
             try {
@@ -39,6 +39,8 @@ test('compiled Dart bridge passes async signalling, event and cancellation callb
           async activate(id) { assert.equal(id, 'server-channel'); this.activated = true; return null; },
           send(json, id) { assert.equal(id, 'server-channel'); this.sent.push(json); return null; },
           setMuted(value) { this.muted = value; },
+          holdPlayback() { this.holds++; return instances.indexOf(this) === 2 ? 'media_failed' : null; },
+          async releasePlayback() { this.releases++; return null; },
           async resumePlayback() { return 'playback_blocked'; },
           beginDrain() {
             this.drains++;
@@ -66,8 +68,11 @@ test('compiled Dart bridge passes async signalling, event and cancellation callb
     assert.equal(instances.length, 3);
     assert.equal(instances[0].activated, true);
     assert.equal(instances[0].muted, true);
+    assert.equal(instances[0].holds, 1);
+    assert.equal(instances[0].releases, 1);
     assert.equal(instances[0].drains, 2);
     assert.equal(instances[2].drains, 1);
+    assert.equal(instances[2].holds, 1);
     assert.deepEqual(instances[0].sent, ['{"type":"session.update"}', '{"type":"response.cancel"}']);
     assert.ok(!logs.join('\n').includes('private upstream details'));
   } finally { rmSync(directory, { recursive: true, force: true }); }

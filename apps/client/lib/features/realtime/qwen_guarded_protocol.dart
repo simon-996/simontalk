@@ -28,6 +28,7 @@ final class QwenGuardedProtocol implements RealtimeSessionProtocol {
   String? _userItem;
   String? _providerResponse;
   String? _businessResponse;
+  String? _interruptStartEventId;
   bool _speechStopped = false;
   bool _inputCommitted = false;
   bool _configured = false;
@@ -36,6 +37,7 @@ final class QwenGuardedProtocol implements RealtimeSessionProtocol {
   bool _draining = false;
   bool _closed = false;
   bool _cancelSent = false;
+  bool _interrupting = false;
 
   String get _instructions {
     final level = switch (configuration.effectiveDifficulty) {
@@ -193,7 +195,38 @@ final class QwenGuardedProtocol implements RealtimeSessionProtocol {
     switch (type) {
       case 'input_audio_buffer.speech_started':
         final item = _id(event['item_id']);
-        if (_replyRequested || (_userItem != null && _userItem != item)) {
+        final eventId = _id(event['event_id']);
+        if (_interrupting) {
+          if (_userItem != item ||
+              (_interruptStartEventId != null &&
+                  _interruptStartEventId != eventId)) {
+            throw const FormatException();
+          }
+          _emit(event);
+          _interruptStartEventId ??= eventId;
+          return;
+        }
+        if (_replyRequested) {
+          final response = _businessResponse;
+          if (_providerResponse == null ||
+              response == null ||
+              _responseDone ||
+              _cancelSent ||
+              item == _userItem) {
+            throw const FormatException();
+          }
+          // Validate identity and replay conflicts before muting or cancelling.
+          final updates = _normalizer.accept(event);
+          if (updates.length != 1 ||
+              updates.single is! TurnStartedUpdate ||
+              (updates.single as TurnStartedUpdate).role !=
+                  ConversationRole.user) {
+            throw const FormatException();
+          }
+          _beginInterruption(item, response, updates, startEventId: eventId);
+          return;
+        }
+        if (_userItem != null && _userItem != item) {
           throw const FormatException();
         }
         _userItem = item;
@@ -201,21 +234,44 @@ final class QwenGuardedProtocol implements RealtimeSessionProtocol {
       case 'input_audio_buffer.speech_stopped':
         if (_userItem == null ||
             event['item_id'] != _userItem ||
-            _replyRequested) {
+            (_replyRequested && !_interrupting)) {
           throw const FormatException();
         }
         _speechStopped = true;
       case 'input_audio_buffer.committed':
         if (!_speechStopped ||
             event['item_id'] != _userItem ||
-            _replyRequested) {
+            (_replyRequested && !_interrupting)) {
           throw const FormatException();
         }
         _inputCommitted = true;
       case 'conversation.item.input_audio_transcription.delta':
+        final item = _id(event['item_id']);
+        if (_replyRequested && !_interrupting && item != _userItem) {
+          final response = _businessResponse;
+          if (_providerResponse == null ||
+              response == null ||
+              _responseDone ||
+              _cancelSent) {
+            throw const FormatException();
+          }
+          final updates = _normalizer.accept(
+            event,
+            allowUserStartFromDelta: true,
+          );
+          if (updates.length != 2 ||
+              updates.first is! TurnStartedUpdate ||
+              (updates.first as TurnStartedUpdate).role !=
+                  ConversationRole.user ||
+              updates.last is! TranscriptUpdate) {
+            throw const FormatException();
+          }
+          _beginInterruption(item, response, updates);
+          return;
+        }
         if (_userItem == null ||
-            event['item_id'] != _userItem ||
-            _replyRequested) {
+            item != _userItem ||
+            (_replyRequested && !_interrupting)) {
           throw const FormatException();
         }
         _emit(event);
@@ -269,6 +325,31 @@ final class QwenGuardedProtocol implements RealtimeSessionProtocol {
     }
   }
 
+  void _beginInterruption(
+    String item,
+    String response,
+    List<ConversationUpdate> updates, {
+    String? startEventId,
+  }) {
+    _interrupting = true;
+    _interruptStartEventId = startEventId;
+    _userItem = item;
+    _speechStopped = false;
+    _inputCommitted = false;
+    callbacks.quarantineUnknownResponse(response, _channel!);
+    if (_closed || _draining) return;
+    // Register the input before cancellation can synchronously trigger end.
+    _emitUpdates(updates);
+    if (_closed || _draining) return;
+    _cancelSent = true;
+    callbacks.sendDrainControl(
+      '{"type":"response.cancel"}',
+      _channel!,
+      RealtimeDrainControlKind.cancelResponse,
+      response,
+    );
+  }
+
   bool _sameSettings(Map<dynamic, dynamic> session) {
     final required = _settings;
     final vad = session['turn_detection'];
@@ -293,6 +374,11 @@ final class QwenGuardedProtocol implements RealtimeSessionProtocol {
 
   List<ConversationUpdate> _emit(Map<String, dynamic> event) {
     final updates = _normalizer.accept(event);
+    _emitUpdates(updates);
+    return updates;
+  }
+
+  void _emitUpdates(List<ConversationUpdate> updates) {
     for (final update in updates) {
       if (_closed) break;
       if (update is TurnStartedUpdate &&
@@ -301,7 +387,6 @@ final class QwenGuardedProtocol implements RealtimeSessionProtocol {
       }
       callbacks.emitConversation(update, _channel!);
     }
-    return updates;
   }
 
   void _finishResponse(Map<String, dynamic> event) {
@@ -311,6 +396,8 @@ final class QwenGuardedProtocol implements RealtimeSessionProtocol {
         response['id'] != _providerResponse ||
         !(_draining
                 ? ['completed', 'cancelled', 'failed', 'incomplete']
+                : _interrupting
+                ? ['completed', 'cancelled']
                 : ['completed'])
             .contains(response['status'])) {
       throw const FormatException();
@@ -348,5 +435,6 @@ final class QwenGuardedProtocol implements RealtimeSessionProtocol {
     _userItem = null;
     _providerResponse = null;
     _businessResponse = null;
+    _interruptStartEventId = null;
   }
 }

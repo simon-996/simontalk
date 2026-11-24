@@ -1,8 +1,6 @@
 # 本地开发
 
-开发任务顺序见[基础版本开发路线](../superpowers/plans/2026-10-22-basic-version-development.md)，实际进度和允许操作见根目录[HANDOFF.md](../../HANDOFF.md)。以下启动和检查步骤不代表真实语音网关已经接通。
-
-当前真实页面包括账号/偏好、普通练习首页/准备、Web本机麦克风检查、恢复/保存核验及复盘/已保存文字阅读。B1入口默认只读核对后尝试准备，真实准入仍503；正式通话/结束保存页、真实模型和费用仍缺；本人历史/范围删除已接通，最新指定浏览器验收见[本轮实测](2026-10-24-browser-acceptance-verification.md)。当前 **Flutter Web优先**，原生构建/安装继续暂停；最新证据见[入口验证](2026-10-23-practice-entry-verification.md)。
+项目进度与当前任务见 [HANDOFF.md](../../HANDOFF.md)。本页用于启动标准开发环境。复验同源 WebSocket 语音入口时，使用[单独的浏览器联测说明](2026-11-24-flutter-browser-media-verification.md)和专用测试库。该验证可以使用虚拟麦克风与供应商替身完成。
 
 ## 环境
 

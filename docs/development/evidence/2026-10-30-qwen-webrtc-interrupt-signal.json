@@ -1,0 +1,104 @@
+{
+  "tool": "qwen-webrtc-interrupt-probe",
+  "started_at": "2026-10-30T10:04:03.766160+00:00",
+  "model": "qwen3.8-omni-flash-realtime",
+  "transport_sha256": "8df70fa9ac1c9dcfdbb0e6ee40e76fc0af6eb7cf3e9640129257964a7c1195ad",
+  "exchanges_used": 1,
+  "observations": [
+    {
+      "received_at": "2026-10-30T10:04:45.448178+00:00",
+      "reason": "observation_complete",
+      "response_status": "cancelled",
+      "usage": null,
+      "speech_started": true,
+      "speech_stopped": true,
+      "input_committed": true,
+      "transcript_final": true,
+      "speech_item_matched": true,
+      "speech_before_response_done": true,
+      "hold_result": null,
+      "cancel_sent": true,
+      "cancel_result": null,
+      "input_live_at_hold": true,
+      "output_muted_at_hold": true,
+      "audio_started": true,
+      "audio_ended": true,
+      "unexpected_response": false,
+      "remote_error": false,
+      "signal": {
+        "threshold_rms": 0.001,
+        "before_cancel": {
+          "samples": 45,
+          "over_threshold": 13,
+          "peak_rms": 0.13707859443237566
+        },
+        "after_cancel": {
+          "samples": 38,
+          "over_threshold": 20,
+          "peak_rms": 0.17304476025599067
+        },
+        "after_done": {
+          "samples": 120,
+          "over_threshold": 6,
+          "peak_rms": 0.14535738903604806
+        },
+        "error": null
+      },
+      "events": [
+        {
+          "at": 7158,
+          "type": "probe_started"
+        },
+        {
+          "at": 8177,
+          "type": "session.created"
+        },
+        {
+          "at": 8364,
+          "type": "session.updated"
+        },
+        {
+          "at": 8836,
+          "type": "response.created"
+        },
+        {
+          "at": 9326,
+          "type": "synthetic_speech_started"
+        },
+        {
+          "at": 10003,
+          "type": "input_audio_buffer.speech_started"
+        },
+        {
+          "at": 10003,
+          "type": "hold_attempted"
+        },
+        {
+          "at": 10003,
+          "type": "cancel_attempted"
+        },
+        {
+          "at": 11924,
+          "type": "response.done"
+        },
+        {
+          "at": 13778,
+          "type": "input_audio_buffer.speech_stopped"
+        },
+        {
+          "at": 13778,
+          "type": "input_audio_buffer.committed"
+        },
+        {
+          "at": 14038,
+          "type": "conversation.item.input_audio_transcription.completed"
+        },
+        {
+          "at": 14908,
+          "type": "synthetic_speech_ended"
+        }
+      ]
+    }
+  ],
+  "boundary": "Synthetic speech, muted output, one exchange and no automatic retry; local close does not prove upstream termination or billing stop."
+}

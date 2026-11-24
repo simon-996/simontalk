@@ -8,6 +8,7 @@ import 'package:simontalk_client/features/realtime/practice_media_controller.dar
 import 'package:simontalk_client/features/realtime/practice_media_providers.dart';
 import 'package:simontalk_client/features/session/practice_session_screen.dart';
 
+import '../conversation/conversation_projection_test.dart' as facts;
 import '../practice/practice_fixtures.dart';
 import '../practice/practice_providers_test.dart' show ScopedAccountController;
 import '../realtime/media_fixtures.dart';
@@ -115,6 +116,45 @@ void main() {
     expect(find.text('静音麦克风'), findsNothing);
     await close(tester);
   });
+
+  testWidgets(
+    'quarantined interruption explains next step and microphone state',
+    (tester) async {
+      await open(tester);
+      await harness.configured();
+      harness.protocol!.callbacks.emitConversation(
+        facts.ai(finalText: false),
+        'channel-0',
+      );
+      harness.protocol!.callbacks.quarantineUnknownResponse(
+        facts.responseId,
+        'channel-0',
+      );
+      await tester.pump();
+      expect(find.text('对话已中断，暂时无法继续'), findsOneWidget);
+      expect(find.text('说完这句后，请结束并复盘。麦克风仍开启。'), findsOneWidget);
+      expect(find.text('已暂停播放'), findsNothing);
+      expect(find.text('可以直接开口，也可以自然插话。'), findsNothing);
+      expect(find.text('继续播放'), findsNothing);
+      await tester.tap(find.text('静音麦克风'));
+      await tester.pump();
+      expect(find.text('麦克风已关闭，请结束并复盘。'), findsOneWidget);
+      final microphone = tester.widget<OutlinedButton>(
+        find.widgetWithText(OutlinedButton, '麦克风已关闭'),
+      );
+      expect(microphone.onPressed, isNull);
+      final muteCalls = harness.transport.mutes.length;
+      harness.controller.setMuted(false);
+      expect(harness.controller.muted, isTrue);
+      expect(harness.transport.mutes, hasLength(muteCalls));
+      await tester.tap(find.text('结束并复盘'));
+      await tester.pump();
+      expect(harness.controller.phase, PracticeMediaPhase.draining);
+      expect(find.text('对话已中断，暂时无法继续'), findsNothing);
+      expect(find.text('正在收尾，等待最后一句识别…'), findsOneWidget);
+      await close(tester);
+    },
+  );
 
   testWidgets(
     'subtitles start from the stored preference and toggle in place',

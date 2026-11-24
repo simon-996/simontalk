@@ -20,6 +20,7 @@ class PracticeSessionView extends StatelessWidget {
     required this.phase,
     required this.playback,
     required this.muted,
+    this.interruptionNeedsEnd = false,
     this.errorCode,
     this.turns = const [],
     this.subtitlesVisible = true,
@@ -40,6 +41,7 @@ class PracticeSessionView extends StatelessWidget {
   final PracticeMediaPhase phase;
   final MediaPlayback playback;
   final bool muted;
+  final bool interruptionNeedsEnd;
   final String? errorCode;
   final List<ConversationTurn> turns;
   final bool subtitlesVisible;
@@ -58,6 +60,7 @@ class PracticeSessionView extends StatelessWidget {
   bool get _closed => phase == PracticeMediaPhase.localClosed;
   bool get _live => phase == PracticeMediaPhase.active;
   bool get _draining => phase == PracticeMediaPhase.draining;
+  bool get _interrupted => _live && interruptionNeedsEnd;
 
   /// Phases before the first confirmed media: there is no call to end, only an
   /// attempt to cancel, and the media coordinator still owns the release.
@@ -100,9 +103,16 @@ class PracticeSessionView extends StatelessWidget {
                     phase: phase,
                     playback: playback,
                     muted: muted,
+                    interruptionNeedsEnd: _interrupted,
                     errorCode: errorCode,
                   ),
                   const SizedBox(height: 16),
+                  if (_interrupted) ...[
+                    StatusMessage(
+                      muted ? '麦克风已关闭，请结束并复盘。' : '说完这句后，请结束并复盘。麦克风仍开启。',
+                    ),
+                    const SizedBox(height: 12),
+                  ],
                   if (errorCode != null && !_closed) ...[
                     StatusMessage(_errorMessage(errorCode!), error: true),
                     const SizedBox(height: 12),
@@ -117,10 +127,16 @@ class PracticeSessionView extends StatelessWidget {
                             onViewRecord: onViewRecord,
                           )
                         : subtitlesVisible
-                        ? _TranscriptList(turns: turns, phase: phase)
+                        ? _TranscriptList(
+                            turns: turns,
+                            phase: phase,
+                            interruptionNeedsEnd: _interrupted,
+                          )
                         : const _SubtitlesHidden(),
                   ),
-                  if (playback == MediaPlayback.blocked && _live) ...[
+                  if (playback == MediaPlayback.blocked &&
+                      _live &&
+                      !_interrupted) ...[
                     const SizedBox(height: 12),
                     OutlinedButton(
                       onPressed: onResumePlayback,
@@ -130,22 +146,43 @@ class PracticeSessionView extends StatelessWidget {
                   if (!_closed) ...[
                     const SizedBox(height: 16),
                     if (_live)
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton(
-                              onPressed: onToggleMute,
-                              child: Text(muted ? '打开麦克风' : '静音麦克风'),
+                      LayoutBuilder(
+                        builder: (context, constraints) {
+                          final muteButton = OutlinedButton(
+                            onPressed: _interrupted && muted
+                                ? null
+                                : onToggleMute,
+                            child: Text(
+                              muted
+                                  ? (_interrupted ? '麦克风已关闭' : '打开麦克风')
+                                  : '静音麦克风',
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: FilledButton(
-                              onPressed: onEnd,
-                              child: const Text('结束并复盘'),
-                            ),
-                          ),
-                        ],
+                          );
+                          final endButton = FilledButton(
+                            onPressed: onEnd,
+                            child: const Text('结束并复盘'),
+                          );
+                          final scaledWidth =
+                              constraints.maxWidth /
+                              MediaQuery.textScalerOf(context).scale(1);
+                          if (_interrupted && scaledWidth < 200) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                muteButton,
+                                const SizedBox(height: 8),
+                                endButton,
+                              ],
+                            );
+                          }
+                          return Row(
+                            children: [
+                              Expanded(child: muteButton),
+                              const SizedBox(width: 12),
+                              Expanded(child: endButton),
+                            ],
+                          );
+                        },
                       )
                     else if (_draining)
                       Text(
@@ -180,18 +217,22 @@ class _StatusHeader extends StatelessWidget {
     required this.phase,
     required this.playback,
     required this.muted,
+    required this.interruptionNeedsEnd,
     required this.errorCode,
   });
   final Difficulty difficulty;
   final PracticeMediaPhase phase;
   final MediaPlayback playback;
   final bool muted;
+  final bool interruptionNeedsEnd;
   final String? errorCode;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final status = _statusText(phase, playback, muted, errorCode);
+    final status = interruptionNeedsEnd
+        ? '对话已中断，暂时无法继续'
+        : _statusText(phase, playback, muted, errorCode);
     return Row(
       children: [
         Expanded(
@@ -207,28 +248,34 @@ class _StatusHeader extends StatelessWidget {
             ],
           ),
         ),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surfaceContainerLow,
-            borderRadius: const BorderRadius.all(Radius.circular(999)),
-          ),
-          child: Text(
-            _phaseChip(phase),
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+        if (!interruptionNeedsEnd)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surfaceContainerLow,
+              borderRadius: const BorderRadius.all(Radius.circular(999)),
+            ),
+            child: Text(
+              _phaseChip(phase),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
-        ),
       ],
     );
   }
 }
 
 class _TranscriptList extends StatelessWidget {
-  const _TranscriptList({required this.turns, required this.phase});
+  const _TranscriptList({
+    required this.turns,
+    required this.phase,
+    required this.interruptionNeedsEnd,
+  });
   final List<ConversationTurn> turns;
   final PracticeMediaPhase phase;
+  final bool interruptionNeedsEnd;
 
   @override
   Widget build(BuildContext context) {
@@ -240,7 +287,9 @@ class _TranscriptList extends StatelessWidget {
     if (visible.isEmpty) {
       return Center(
         child: Text(
-          phase == PracticeMediaPhase.active
+          interruptionNeedsEnd
+              ? '本次已识别的对话会显示在这里。'
+              : phase == PracticeMediaPhase.active
               ? '可以直接开口，也可以自然插话。'
               : '连接建立后，你和 AI 的话会显示在这里。',
           style: theme.textTheme.bodySmall,

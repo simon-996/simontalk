@@ -15,6 +15,40 @@ class ApiException implements Exception {
   String toString() => 'ApiException($code)';
 }
 
+/// A short-lived WebSocket first message, usable once in the same account scope.
+final class WebSocketAuthProof {
+  WebSocketAuthProof._(this._accountId, this._token, this._stillCurrent);
+
+  final String _accountId;
+  String? _token;
+  final bool Function() _stillCurrent;
+
+  String consume() {
+    final token = _token;
+    _token = null;
+    if (token == null) {
+      throw const ApiException('realtime_unavailable', '连接凭证已失效，请重新准备。');
+    }
+    var current = false;
+    try {
+      current = _stillCurrent();
+    } on Object {
+      // A failed lifecycle check cannot authorize a connection.
+    }
+    if (!current) {
+      throw const ApiException('account_changed', '当前账号已变化，请确认身份后再操作。');
+    }
+    return jsonEncode({
+      'type': 'authenticate',
+      'account_id': _accountId,
+      'csrf': token,
+    });
+  }
+
+  @override
+  String toString() => 'WebSocketAuthProof';
+}
+
 class ApiClient {
   ApiClient({
     required this.baseUrl,
@@ -34,9 +68,63 @@ class ApiClient {
   final _pendingRequests = <Completer<void>>{};
   bool _closed = false;
   _CsrfState _csrf = _CsrfState();
-  String? expectedAccountId;
+  String? _expectedAccountId;
+  var _identityListeners = <void Function()>{};
+
+  String? get expectedAccountId => _expectedAccountId;
+  set expectedAccountId(String? value) {
+    if (_expectedAccountId == value) return;
+    _expectedAccountId = value;
+    _notifyIdentityChange();
+  }
+
+  /// Wake owned media immediately, including when a parent of a fork changes.
+  void Function() observeIdentity(void Function() listener) {
+    _identityListeners.add(listener);
+    return () => _identityListeners.remove(listener);
+  }
+
+  void _notifyIdentityChange() {
+    for (final listener in _identityListeners.toList()) {
+      Zone.current.runGuarded(listener);
+    }
+  }
 
   bool hasCurrentAccount(String accountId) => _currentAccountId == accountId;
+
+  /// Prepares only the first message; this does not create or authenticate a socket.
+  Future<WebSocketAuthProof> prepareWebSocketAuth({
+    required String accountId,
+    bool Function()? stillCurrent,
+  }) async {
+    final uuid = RegExp(
+      r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$',
+    ).firstMatch(accountId);
+    if (!isWeb || uuid?.group(0) != accountId) {
+      throw const ApiException('realtime_unavailable', '实时语音尚未就绪。');
+    }
+    bool current() {
+      try {
+        return _currentAccountId == accountId && stillCurrent?.call() != false;
+      } on Object {
+        return false;
+      }
+    }
+
+    if (!current()) {
+      throw const ApiException('account_changed', '当前账号已变化，请确认身份后再操作。');
+    }
+    final token = await _csrfToken();
+    if (!current()) {
+      throw const ApiException('account_changed', '当前账号已变化，请确认身份后再操作。');
+    }
+    final match = RegExp(r'^[A-Za-z0-9_-]{32,256}$').firstMatch(token);
+    if (match?.group(0) != token) {
+      if (_csrf.token == token) _csrf.token = null;
+      throw const ApiException('invalid_response', '服务响应异常，请稍后重试。');
+    }
+    return WebSocketAuthProof._(accountId, token, current);
+  }
 
   String? get _currentAccountId => _closed
       ? null
@@ -58,7 +146,8 @@ class ApiClient {
           accountIdentity: () => _currentAccountId,
         )
         ..expectedAccountId = accountId
-        .._csrf = _csrf;
+        .._csrf = _csrf
+        .._identityListeners = _identityListeners;
 
   Future<Map<String, dynamic>> request(
     String method,
@@ -152,6 +241,7 @@ class ApiClient {
   void close() {
     if (_closed) return;
     _closed = true;
+    _notifyIdentityChange();
     for (final abort in _pendingRequests) {
       if (!abort.isCompleted) abort.complete();
     }

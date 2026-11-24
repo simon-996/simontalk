@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-30 Asia/Shanghai",
+  "environment": "macOS Edge 156.0.4314.50, two local RTCPeerConnections, synthetic oscillator input and output, output audio volume 0, no microphone or model call",
+  "source_sha256": "8df70fa9ac1c9dcfdbb0e6ee40e76fc0af6eb7cf3e9640129257964a7c1195ad",
+  "loaded_copy_sha256": "8df70fa9ac1c9dcfdbb0e6ee40e76fc0af6eb7cf3e9640129257964a7c1195ad",
+  "page_sha256": "c7b1f8de5065f98cfc16c7c870031043afb2919d5402c7fa27a19d731cc482ce",
+  "method": "Values manually transcribed from page. Input signal sampled by a zero-gain Web Audio branch on the local remote peer.",
+  "result": {
+    "started": null,
+    "active": null,
+    "before_muted": false,
+    "hold_result": null,
+    "held_muted": true,
+    "input_track_enabled": true,
+    "input_track_state": "live",
+    "sender_uses_input_track": true,
+    "inbound_bytes_before": 4104,
+    "inbound_bytes_after": 8964,
+    "hold_samples_over_threshold": 24,
+    "input_peak_rms": 0.14288361066742772,
+    "ordinary_resume": "playback_held",
+    "muted_after_ordinary_resume": true,
+    "release_result": null,
+    "muted_after_release": false,
+    "output_volume": 0
+  },
+  "boundary": "Local synthetic loopback; muted element property and input packet flow do not prove actual device silence, audio/word boundaries, provider cancel, response context, or remote termination."
+}

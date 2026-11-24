@@ -104,3 +104,15 @@ def test_inline_page_script_parses(tmp_path):
             check=False,
         )
         assert result.returncode == 0, result.stderr
+
+
+def test_page_records_transport_callbacks_and_cleans_up_on_evidence_failure():
+    result = subprocess.run(
+        ["node", str(Path(__file__).with_name("qwen_playback_probe_harness.cjs"))],
+        input=probe_module.PAGE,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=10,
+    )
+    assert result.returncode == 0, result.stderr

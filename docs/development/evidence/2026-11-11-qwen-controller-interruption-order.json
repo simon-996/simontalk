@@ -1,0 +1,831 @@
+{
+  "tool": "qwen-webrtc-interrupt-probe",
+  "started_at": "2026-11-11T12:44:11.878765+00:00",
+  "model": "qwen3.8-omni-flash-realtime",
+  "transport_sha256": "8df70fa9ac1c9dcfdbb0e6ee40e76fc0af6eb7cf3e9640129257964a7c1195ad",
+  "exchanges_used": 1,
+  "observations": [
+    {
+      "received_at": "2026-11-11T12:44:38.186339+00:00",
+      "reason": "controller_closed",
+      "exchanges": 1,
+      "sends": {
+        "create": 1,
+        "cancel": 0
+      },
+      "holds": 0,
+      "releases": 0,
+      "response_status": "completed",
+      "usage": {
+        "input_tokens": 754,
+        "output_tokens": 41,
+        "total_tokens": 795,
+        "input_tokens_details": {
+          "text_tokens": 726,
+          "audio_tokens": 28
+        },
+        "output_tokens_details": {
+          "text_tokens": 11,
+          "audio_tokens": 30
+        }
+      },
+      "events": [
+        {
+          "type": "prepared",
+          "at_ms": 346
+        },
+        {
+          "type": "session.created",
+          "at_ms": 1521
+        },
+        {
+          "type": "session.updated",
+          "at_ms": 1699
+        },
+        {
+          "type": "first_synthetic_started",
+          "at_ms": 1704
+        },
+        {
+          "type": "input_audio_buffer.speech_started",
+          "at_ms": 2091
+        },
+        {
+          "type": "conversation.item.created",
+          "at_ms": 2455
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 2455
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 2460
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 2771
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 2784
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 3428
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 3429
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 3436
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 3440
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 3447
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 4194
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 4197
+        },
+        {
+          "type": "input_audio_buffer.speech_stopped",
+          "at_ms": 6171
+        },
+        {
+          "type": "input_audio_buffer.committed",
+          "at_ms": 6171
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6364
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6369
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6374
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6391
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6391
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6392
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6395
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 6404
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.completed",
+          "at_ms": 6408
+        },
+        {
+          "type": "response.created",
+          "at_ms": 6804
+        },
+        {
+          "type": "response.output_item.added",
+          "at_ms": 6806
+        },
+        {
+          "type": "conversation.item.created",
+          "at_ms": 6807
+        },
+        {
+          "type": "response.content_part.added",
+          "at_ms": 6807
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6807
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6983
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6984
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6984
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6984
+        },
+        {
+          "type": "response.audio_transcript.delta",
+          "at_ms": 6985
+        },
+        {
+          "type": "second_synthetic_started",
+          "at_ms": 7329
+        },
+        {
+          "type": "conversation.item.created",
+          "at_ms": 8045
+        },
+        {
+          "type": "diagnostic_deferral",
+          "at_ms": 8046
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8046
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8049
+        },
+        {
+          "type": "response.done",
+          "at_ms": 8122
+        },
+        {
+          "type": "input_audio_buffer.speech_started",
+          "at_ms": 8122
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8218
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8223
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8856
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8861
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8864
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8873
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 8878
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 9552
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 9557
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 9560
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11573
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11577
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11584
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11590
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11599
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11606
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11609
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.delta",
+          "at_ms": 11610
+        },
+        {
+          "type": "input_audio_buffer.speech_stopped",
+          "at_ms": 11770
+        },
+        {
+          "type": "input_audio_buffer.committed",
+          "at_ms": 11770
+        },
+        {
+          "type": "conversation.item.input_audio_transcription.completed",
+          "at_ms": 12016
+        },
+        {
+          "type": "stopping",
+          "at_ms": 15360
+        }
+      ],
+      "snapshots": [
+        {
+          "phase": "preparing",
+          "playback": "idle",
+          "error": null,
+          "release": "notNeeded",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "connecting",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "connecting",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "connecting",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "connecting",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "connecting",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "configuring",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "configuring",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "configuring",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "configuring",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "idle",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 0,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 0,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 0,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": false
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "active",
+          "playback": "playing",
+          "error": null,
+          "release": "pending",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "localClosed",
+          "playback": "idle",
+          "error": "connection_state_changed",
+          "release": "unconfirmed",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "localClosed",
+          "playback": "idle",
+          "error": "connection_state_changed",
+          "release": "unconfirmed",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        },
+        {
+          "phase": "localClosed",
+          "playback": "idle",
+          "error": "connection_state_changed",
+          "release": "unconfirmed",
+          "users": 1,
+          "final_users": 1,
+          "assistants": 1,
+          "assistant_frozen": false,
+          "assistant_playback_unknown": true
+        }
+      ],
+      "first_started": true,
+      "second_started": true,
+      "interrupted_before_done": false,
+      "second_final": true,
+      "input_live_at_hold": null,
+      "output_muted_at_hold": null,
+      "remote_signal_seen": true,
+      "error": null,
+      "observe_only": true,
+      "last_event_shape": {
+        "type": "conversation.item.input_audio_transcription.completed",
+        "same_as_first_input": false,
+        "item_created_matches_first": false,
+        "event_id_present": true,
+        "item_id_present": true,
+        "response_id_present": false,
+        "output_index_zero": false,
+        "content_index_zero": true,
+        "text_is_string": false,
+        "stash_is_string": false,
+        "delta_is_string": false,
+        "transcript_is_string": true
+      },
+      "diagnostic_deferred": true,
+      "diagnostic_speech_started": true,
+      "diagnostic_speech_stopped": true,
+      "diagnostic_committed": true,
+      "diagnostic_final": true,
+      "event_at_closure": "conversation.item.input_audio_transcription.completed"
+    }
+  ],
+  "boundary": "Synthetic speech, muted output, one exchange and no automatic retry; local close does not prove upstream termination or billing stop."
+}

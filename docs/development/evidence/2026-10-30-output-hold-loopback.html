@@ -1,0 +1,44 @@
+<!doctype html><meta charset="utf-8"><title>Output hold local loopback</title><button id="run">Run local loopback</button><pre id="result">Ready</pre><script src="/realtime_transport.js"></script><script>
+const button = document.getElementById('run'), result = document.getElementById('result');
+button.onclick = async () => {
+  button.disabled = true;
+  const OriginalPeer = window.RTCPeerConnection, originalCreate = document.createElement, originalGet = navigator.mediaDevices.getUserMedia;
+  const context = new AudioContext(), localStream = context.createMediaStreamDestination(), remoteStream = context.createMediaStreamDestination();
+  let inputOsc, remoteOsc, remote, localPeer, transport, audio, remoteAudio, timer, source, analyser, sink, samples = 0, peak = 0;
+  const wait = ms => new Promise(resolve => setTimeout(resolve, ms));
+  const stats = async () => { const all = await remote.getStats(); let bytes=0; all.forEach(s => {if(s.type==='inbound-rtp' && s.kind==='audio') bytes+=s.bytesReceived || 0;}); return bytes; };
+  try {
+    await context.resume();
+    inputOsc=context.createOscillator(); inputOsc.frequency.value=440; const inputGain=context.createGain(); inputGain.gain.value=0.2; inputOsc.connect(inputGain); inputGain.connect(localStream); inputOsc.start();
+    remoteOsc=context.createOscillator(); remoteOsc.frequency.value=330; const remoteGain=context.createGain(); remoteGain.gain.value=0.2; remoteOsc.connect(remoteGain); remoteGain.connect(remoteStream); remoteOsc.start();
+    navigator.mediaDevices.getUserMedia = async () => localStream.stream;
+    document.createElement = function(tag,...args) { const value=originalCreate.call(document,tag,...args); if(tag==='audio') {value.volume=0; audio=value;} return value; };
+    window.RTCPeerConnection = new Proxy(OriginalPeer,{construct(target,args){localPeer=Reflect.construct(target,args); return localPeer;}});
+    let channel;
+    transport = window.simontalkRealtime.create();
+    const started = await transport.start(async offer => {
+      remote = new OriginalPeer({iceServers:[]});
+      remote.addEventListener('track', ({track}) => {
+        remoteAudio=originalCreate.call(document,'audio'); remoteAudio.muted=true; remoteAudio.srcObject=new MediaStream([track]); void remoteAudio.play();
+        source=context.createMediaStreamSource(new MediaStream([track])); analyser=context.createAnalyser(); analyser.fftSize=2048;
+        sink=context.createGain(); sink.gain.value=0; source.connect(analyser); analyser.connect(sink); sink.connect(context.destination);
+        const buffer=new Float32Array(2048); timer=setInterval(()=>{analyser.getFloatTimeDomainData(buffer); let total=0; for(const v of buffer) total+=v*v; const rms=Math.sqrt(total/buffer.length); if(rms>0.001)samples++; peak=Math.max(peak,rms);},50);
+      });
+      await remote.setRemoteDescription({type:'offer',sdp:offer});
+      remote.addTrack(remoteStream.stream.getAudioTracks()[0],remoteStream.stream);
+      await remote.setLocalDescription(await remote.createAnswer());
+      await new Promise(resolve => {if(remote.iceGatheringState==='complete')resolve(); else remote.addEventListener('icegatheringstatechange',()=>{if(remote.iceGatheringState==='complete')resolve();});});
+      return remote.localDescription.sdp;
+    }, (code, detail) => {if(code==='channel_open' && !channel) channel=detail;},()=>{},()=>{});
+    if(started!==null)throw Error('start:'+started);
+    const active=await transport.activate(channel); if(active!==null)throw Error('activate:'+active);
+    await wait(1000); const before=await stats(); const beforeMuted=audio.muted;
+    const held=transport.holdPlayback(), heldMuted=audio.muted, track=localStream.stream.getAudioTracks()[0], enabled=track.enabled, ready=track.readyState, sentTrack=localPeer.getSenders().some(sender=>sender.track===track);
+    const sampleStart=samples; await wait(1200); const after=await stats(), heldSamples=samples-sampleStart;
+    const regularResume=await transport.resumePlayback(), stillMuted=audio.muted;
+    const released=await transport.releasePlayback(), releasedMuted=audio.muted;
+    result.textContent=JSON.stringify({started,active,beforeMuted,held,heldMuted,enabled,ready,sentTrack,bytesBefore:before,bytesAfter:after,heldSamples,peak,regularResume,stillMuted,released,releasedMuted,outputVolume:audio.volume});
+  } catch(error) {result.textContent='ERROR '+error.message;}
+  finally {clearInterval(timer); try{transport?.stop();}catch(_){} try{remote?.close();}catch(_){} try{inputOsc?.stop(); remoteOsc?.stop();}catch(_){} localStream.stream.getTracks().forEach(t=>t.stop()); remoteStream.stream.getTracks().forEach(t=>t.stop()); remoteAudio?.pause(); source?.disconnect(); analyser?.disconnect(); sink?.disconnect(); document.createElement=originalCreate; navigator.mediaDevices.getUserMedia=originalGet; window.RTCPeerConnection=OriginalPeer; await context.close();}
+};
+</script>

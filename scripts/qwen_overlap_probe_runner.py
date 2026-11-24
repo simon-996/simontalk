@@ -116,9 +116,8 @@ def main():
     sys.path.insert(0, str(root / "services" / "api" / "src"))
 
     async def open_socket():
-        from websockets.asyncio.client import connect
-
         from simontalk_api.qwen_config import load_qwen_realtime_settings
+        from simontalk_api.qwen_websocket import no_redirect_connect
 
         settings = load_qwen_realtime_settings(env_file=root / "services" / "api" / ".env")
         if not re.fullmatch(r"llm-[a-z0-9]{1,64}", settings.workspace_id):
@@ -127,7 +126,7 @@ def main():
             f"wss://{settings.workspace_id}.cn-beijing.maas.aliyuncs.com"
             "/api-ws/v1/realtime?model=qwen3.8-omni-flash-realtime"
         )
-        return await connect(
+        return await no_redirect_connect(
             url,
             additional_headers={"Authorization": "Bearer " + settings.api_key},
             open_timeout=7,

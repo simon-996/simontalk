@@ -84,7 +84,7 @@ function environment({ secure = true, blockedPlayback = false, replaceWait = fal
   }
   const document = target({ hidden: false, createElement(kind) {
     assert.equal(kind, 'audio');
-    const audio = target({ srcObject: null, removed: false,
+    const audio = target({ srcObject: null, removed: false, muted: false,
       async play() {
         counters.plays++;
         if (playbackWait) return playback.promise;
@@ -235,6 +235,95 @@ test('muting remains independent of playback and survives configuration delay', 
   const remoteTrack = target({ kind: 'audio', stop() {} });
   env.peers[0].emit('track', { track: remoteTrack, streams: [] }); await flush();
   assert.equal(env.track.enabled, true); assert.equal(env.counters.plays, 1);
+  env.transport.stop();
+});
+
+test('holding output preserves the live microphone and requires an explicit release', async () => {
+  const env = environment(); await env.connect();
+  const id = env.observations.find((event) => event.code === 'channel_open').detail;
+  assert.equal(env.transport.holdPlayback(), 'not_active');
+  await env.transport.activate(id);
+  env.peers[0].emit('track', { track: target({ kind: 'audio', stop() {} }) });
+  await flush();
+  assert.equal(env.transport.holdPlayback(), null);
+  assert.equal(env.audios[0].muted, true);
+  assert.equal(env.track.enabled, true);
+  assert.equal(env.track.stops, 0);
+  assert.equal(env.peers[0].sender.track, env.track);
+  assert.equal(await env.transport.resumePlayback(), 'playback_held');
+  assert.equal(env.audios[0].muted, true);
+  env.transport.setMuted(false);
+  assert.equal(env.audios[0].muted, true);
+  assert.equal(await env.transport.releasePlayback(), null);
+  assert.equal(env.audios[0].muted, false);
+  env.transport.stop();
+});
+
+test('holding output invalidates late playback observations and preserves prior mute', async () => {
+  const env = environment({playbackWait: true}); await env.connect();
+  const id = env.observations.find((event) => event.code === 'channel_open').detail;
+  env.peers[0].emit('track', { track: target({ kind: 'audio', stop() {} }) });
+  env.audios[0].muted = true;
+  await env.transport.activate(id);
+  const count = env.observations.length;
+  assert.equal(env.transport.holdPlayback(), null);
+  env.audios[0].emit('playing');
+  env.playback.reject(Object.assign(new Error('blocked'), {name: 'NotAllowedError'}));
+  await flush();
+  assert.ok(!env.observations.slice(count).some((event) => ['playback_playing', 'playback_blocked'].includes(event.code)));
+  assert.equal(await env.transport.resumePlayback(), 'playback_held');
+  assert.equal(await env.transport.releasePlayback(), 'playback_blocked');
+  assert.equal(env.audios[0].muted, true);
+  env.transport.stop();
+});
+
+test('holding before a remote track prevents its automatic play until release', async () => {
+  const env = environment(); await env.connect();
+  const id = env.observations.find((event) => event.code === 'channel_open').detail;
+  await env.transport.activate(id);
+  assert.equal(env.transport.holdPlayback(), null);
+  assert.equal(env.transport.holdPlayback(), null);
+  env.peers[0].emit('track', { track: target({ kind: 'audio', stop() {} }) });
+  await flush();
+  assert.equal(env.counters.plays, 0);
+  assert.equal(await env.transport.releasePlayback(), null);
+  assert.equal(env.counters.plays, 1);
+  assert.equal(await env.transport.releasePlayback(), 'not_held');
+  env.transport.stop();
+});
+
+test('holding promptly settles an earlier pending playback attempt', async () => {
+  const env = environment({playbackWait: true}); await env.connect();
+  const id = env.observations.find((event) => event.code === 'channel_open').detail;
+  env.peers[0].emit('track', { track: target({ kind: 'audio', stop() {} }) });
+  await env.transport.activate(id);
+  const pending = env.transport.resumePlayback();
+  assert.equal(env.transport.holdPlayback(), null);
+  assert.equal(await Promise.race([pending, flush().then(() => 'still_pending')]), 'playback_held');
+  env.transport.stop();
+});
+
+test('a failed output hold closes local media and cannot disable capture silently', async () => {
+  const env = environment(); await env.connect();
+  const id = env.observations.find((event) => event.code === 'channel_open').detail;
+  await env.transport.activate(id);
+  Object.defineProperty(env.audios[0], 'muted', { get: () => false, set: () => { throw Error('failed'); } });
+  assert.equal(env.transport.holdPlayback(), 'media_failed');
+  assert.equal(env.track.stops, 1);
+  assert.equal(env.peers[0].closes, 1);
+  assert.equal(env.transport.holdPlayback(), 'cancelled');
+  assert.equal(await env.transport.releasePlayback(), 'cancelled');
+});
+
+test('draining while output is held prevents release and ends capture', async () => {
+  const env = environment(); await env.connect();
+  const id = env.observations.find((event) => event.code === 'channel_open').detail;
+  await env.transport.activate(id);
+  assert.equal(env.transport.holdPlayback(), null);
+  assert.equal(env.transport.beginDrain(), null);
+  assert.equal(env.track.stops, 1);
+  assert.equal(await env.transport.releasePlayback(), 'draining');
+  assert.equal(env.audios[0].muted, true);
   env.transport.stop();
 });
 

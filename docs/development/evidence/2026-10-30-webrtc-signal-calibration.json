@@ -1,0 +1,37 @@
+{
+  "date": "2026-10-30 Asia/Shanghai",
+  "environment": "macOS Edge 156.0.4314.50; local dual-peer WebRTC; synthetic oscillator, no physical microphone; audio element muted; analyser output zero gain",
+  "method": "Values transcribed from final calibration page. 50 ms sampling; RMS threshold 0.001; each phase 1.5 s. The HTML is the page used for the final run.",
+  "page_sha256": "25a17a980a29b688d567c207084b1f45a2222c9e48d06f5a1899eb2b2b321564",
+  "without_audio_player_prior_run": {
+    "silent": {
+      "samples": 30,
+      "over_threshold": 0,
+      "peak_rms": 0
+    },
+    "tone": {
+      "samples": 30,
+      "over_threshold": 0,
+      "peak_rms": 0
+    },
+    "direct_tone_max": 0.2499999701976776,
+    "peer_connection": "connected",
+    "inbound_packets": 149
+  },
+  "with_muted_audio_player": {
+    "silent": {
+      "samples": 30,
+      "over_threshold": 0,
+      "peak_rms": 1.2287418147119622e-05
+    },
+    "tone": {
+      "samples": 30,
+      "over_threshold": 29,
+      "peak_rms": 0.17813845947792398
+    },
+    "direct_tone_max": 0.2499999701976776,
+    "peer_connection": "connected",
+    "inbound_packets": 150
+  },
+  "boundary": "Local calibration only. Does not establish audible output, model response content, alignment, or upstream termination."
+}

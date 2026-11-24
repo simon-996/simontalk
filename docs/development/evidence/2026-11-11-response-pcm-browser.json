@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-11",
+  "browser": "Microsoft Edge 157.0.4341.46, macOS",
+  "method": "One loopback page, real Web Audio context, two zero-valued synthetic PCM chunks, no microphone or model, observations transcribed from the page.",
+  "sample_rate_hz": 24000,
+  "chunk_bytes": 2400,
+  "loaded_script_sha256": "b5aad92093ecbfa1d3a2cf99ac5cec3adcab5b9ad45ca0b9e54c9f1039cd1313",
+  "observed": {
+    "start_a": true,
+    "append_a": "appended",
+    "stop_a": true,
+    "start_b": true,
+    "late_a": "stale",
+    "append_b": "appended",
+    "stop_b": true,
+    "reuse_a": false,
+    "context": "closed"
+  },
+  "boundary": "Silent local samples do not demonstrate audible output, device buffer clearance, exact heard text, provider interruption, upstream termination, or a complete conversation."
+}

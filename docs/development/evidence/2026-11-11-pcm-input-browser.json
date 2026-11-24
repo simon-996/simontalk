@@ -1,0 +1,17 @@
+{
+  "browser": "Edge 157.0.4341.46",
+  "source": "oscillator into MediaStreamDestination",
+  "microphone": false,
+  "model": false,
+  "sample_rate": 16000,
+  "frame_bytes": 3200,
+  "before_mute": 6,
+  "during_mute": 6,
+  "after_unmute": 10,
+  "after_stop": 10,
+  "errors": [],
+  "pass": true,
+  "input_js_sha256": "bdef26830ba182b92809dc135f330c2b010e19f4ba1137d4a2dd178077bd31c0",
+  "worklet_js_sha256": "abb916911b7c6369b250787013b331adab0e5624e03e167c03d1690c5be75399",
+  "html_sha256": "fc91822d34c608c930b4bb82c4f49f0cb2f6ce9737d3905b7625dd58325d9651"
+}

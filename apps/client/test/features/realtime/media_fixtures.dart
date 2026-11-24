@@ -66,6 +66,9 @@ class TestTransport implements RealtimeTransport {
   int stops = 0;
   int resumes = 0;
   int drains = 0;
+  int holds = 0;
+  Object? holdError;
+  void Function()? onHold;
   void Function()? onDrain;
   Future<void> Function()? onStart;
   @override
@@ -97,6 +100,16 @@ class TestTransport implements RealtimeTransport {
     resumes++;
     await playbackResume?.future;
   }
+
+  @override
+  void holdPlayback() {
+    holds++;
+    onHold?.call();
+    if (holdError case final error?) throw error;
+  }
+
+  @override
+  Future<void> releasePlayback() async {}
 
   @override
   void beginDrain() {
