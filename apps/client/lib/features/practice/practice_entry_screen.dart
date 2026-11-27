@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../account/account_controller.dart';
+import 'daily_topic.dart';
 import 'practice_entry_provider.dart';
 import 'practice_entry_view.dart';
 import 'practice_preparation_controller.dart';
@@ -58,6 +59,13 @@ class PracticeHomeScreen extends ConsumerWidget {
                 if (canOpenPreparation()) context.push('/practice/prepare');
               }
             : null,
+        onTopicSelected: canOpenPreparation(checkRoute: false)
+            ? (topic) {
+                if (canOpenPreparation()) {
+                  context.push('/practice/prepare?topic=${topic.id}');
+                }
+              }
+            : null,
         onSettings: account.busy
             ? null
             : () {
@@ -75,15 +83,22 @@ class PracticeHomeScreen extends ConsumerWidget {
 }
 
 class PracticePreparationScreen extends ConsumerWidget {
-  const PracticePreparationScreen({super.key});
+  const PracticePreparationScreen({super.key, this.topic});
+
+  final DailyTopic? topic;
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final account = ref.watch(accountControllerProvider);
     final difficulty = account.session?.preferences.difficulty;
     final entry = ref.watch(practiceEntryProvider);
     if (entry == null || difficulty == null) return const SizedBox.shrink();
+    final displayedUri = GoRouterState.of(context).uri;
     bool canActivate({bool requireApiOwner = true}) {
-      if (!_isCurrentPage(context, '/practice/prepare')) return false;
+      if (!_isCurrentPage(context, '/practice/prepare') ||
+          GoRouter.of(context).routeInformationProvider.value.uri !=
+              displayedUri) {
+        return false;
+      }
       final current = ref.read(accountControllerProvider);
       return current.phase == SessionPhase.signedIn &&
           !current.busy &&
@@ -93,9 +108,14 @@ class PracticePreparationScreen extends ConsumerWidget {
           identical(ref.read(practiceEntryProvider), entry);
     }
 
+    bool displayedDifficultyIsCurrent() =>
+        ref.read(accountControllerProvider).session?.preferences.difficulty ==
+        difficulty;
+
     return ListenableBuilder(
       listenable: entry,
       builder: (context, _) => PracticePreparationView(
+        topic: topic,
         difficulty: entry.preparationDifficulty ?? difficulty,
         phase: entry.preparation.phase,
         errorCode: entry.preparation.errorCode,
@@ -105,13 +125,33 @@ class PracticePreparationScreen extends ConsumerWidget {
             ? () {
                 if (canActivate() &&
                     entry.canStart &&
-                    ref
-                            .read(accountControllerProvider)
-                            .session
-                            ?.preferences
-                            .difficulty ==
-                        difficulty) {
-                  unawaited(entry.begin(difficulty));
+                    displayedDifficultyIsCurrent()) {
+                  final selected = topic;
+                  unawaited(
+                    entry.begin(
+                      difficulty,
+                      onAvailable: selected == null
+                          ? null
+                          : () {
+                              if (!canActivate() ||
+                                  !displayedDifficultyIsCurrent()) {
+                                return;
+                              }
+                              context.push(
+                                '/practice/session',
+                                extra: TopicSessionLaunch(
+                                  accountId: entry
+                                      .preparation
+                                      .repository
+                                      .accountId
+                                      .toLowerCase(),
+                                  topic: selected,
+                                  difficulty: difficulty,
+                                ),
+                              );
+                            },
+                    ),
+                  );
                 }
               }
             : null,

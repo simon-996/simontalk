@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import '../../design/account_components.dart';
 import '../audio_check/microphone_check_panel.dart';
 import '../practice/practice_recovery_panel.dart';
+import '../usage/usage_panel.dart';
 import 'account_controller.dart';
 import 'account_models.dart';
 
@@ -231,7 +232,7 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
               activeTrackColor: colors.primary,
               contentPadding: EdgeInsets.zero,
               title: const Text('允许中文表达提示'),
-              subtitle: const Text('需要帮助时，提供中文思路和英文开头。'),
+              subtitle: const Text('为新对话显示简短的中文开口提示，可在通话中单独关闭。'),
               value: draft.chineseHintsEnabled,
               onChanged: state.busy
                   ? null
@@ -276,6 +277,8 @@ class _PreferencesScreenState extends ConsumerState<PreferencesScreen> {
           ],
           const Divider(),
           if (!widget.onboarding) ...[
+            AccountUsagePanel(key: ValueKey('usage-${session.user.id}')),
+            const SizedBox(height: 24),
             PracticeRecoveryPanel(key: ValueKey('recovery-${session.user.id}')),
             const SizedBox(height: 24),
           ],

@@ -6,6 +6,7 @@ from uuid import UUID
 from simontalk_api.errors import APIError
 from simontalk_api.practice import own_preparation
 from simontalk_api.practice_completion import canonical
+from simontalk_api.qwen_websocket_session import RehearsalPrompt
 from simontalk_api.review_input_policy import wire_size
 from simontalk_api.review_inputs import read_review_input
 from simontalk_api.review_jobs import read_review_job
@@ -236,3 +237,31 @@ def read_child_target(db, user_id, child_id):
     if child.kind != "rehearsal":
         raise APIError(404, "rehearsal_not_found", "没有找到这次重练。")
     return verified_frozen_target(db, user_id, child)
+
+
+def verified_rehearsal_prompt(child, user_id) -> RehearsalPrompt:
+    try:
+        snapshot = child.rehearsal_target
+        target_hash = child.rehearsal_target_hash
+        if (
+            child.kind != "rehearsal"
+            or child.source_kind != "ordinary"
+            or type(child.source_session_id) is not UUID
+            or type(child.source_review_item_id) is not UUID
+            or child.source_session_id == child.id
+            or type(target_hash) is not str
+            or re.fullmatch(r"[a-f0-9]{64}", target_hash) is None
+        ):
+            raise ValueError("invalid rehearsal linkage")
+        _frozen_shape(snapshot, child, user_id)
+        if type(snapshot) is not dict or digest(canonical(snapshot)) != target_hash:
+            raise ValueError("invalid rehearsal target digest")
+        return RehearsalPrompt(
+            target_hash=target_hash,
+            kind=snapshot["kind"],
+            source_text=snapshot["source_text"],
+            exact_quote=snapshot["exact_quote"],
+            suggestion=snapshot["suggestion"],
+        )
+    except (APIError, KeyError, TypeError, ValueError, UnicodeError):
+        raise APIError(409, "practice_configuration_changed", "语音配置已更改。") from None

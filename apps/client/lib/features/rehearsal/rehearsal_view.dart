@@ -22,6 +22,7 @@ class RehearsalView extends StatelessWidget {
     this.onConfirm,
     this.onReplay,
     this.onRefresh,
+    this.onEnterSession,
     this.onDiscard,
     this.onBack,
     this.onHistory,
@@ -39,6 +40,7 @@ class RehearsalView extends StatelessWidget {
   final VoidCallback? onConfirm,
       onReplay,
       onRefresh,
+      onEnterSession,
       onDiscard,
       onBack,
       onHistory,
@@ -201,6 +203,19 @@ class RehearsalView extends StatelessWidget {
                   ? '语音尚未开启。未结束的准备可在练习页查看和处理。'
                   : '本次练习状态已变化，请查看本次记录或当前练习。',
             ),
+            if (!readOnly &&
+                state == RehearsalState.prepared &&
+                preparation!.status == PracticeStatus.created &&
+                preparation!.connectionEpoch == 0 &&
+                onEnterSession != null) ...[
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: blocked ? null : onEnterSession,
+                child: const Text('进入重练通话'),
+              ),
+              const SizedBox(height: 8),
+              Text('进入后才连接语音并打开麦克风，本次作为独立重练记录保存与计量。', style: text.bodySmall),
+            ],
             const SizedBox(height: 16),
             Wrap(
               spacing: 12,

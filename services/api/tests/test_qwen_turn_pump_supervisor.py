@@ -1,6 +1,7 @@
 """Local integration: real supervisor and pump, synthetic identity and socket."""
 
 import asyncio
+import json
 from types import MappingProxyType
 from uuid import uuid4
 
@@ -21,6 +22,30 @@ class PumpSocket(FakeSocket):
     def __init__(self):
         super().__init__()
         self.incoming = asyncio.Queue()
+        self.bad_pace_update = False
+
+    async def send(self, value):
+        await super().send(value)
+        if len(self.sent) > 1 and self.sent[-1].get("type") == "session.update":
+            session = dict(self.sent[-1]["session"])
+            session.update(
+                {
+                    "id": "sess_other" if self.bad_pace_update else "sess_test",
+                    "object": "realtime.session",
+                    "model": CONFIG["model"],
+                    "input_audio_format": "pcm",
+                    "output_audio_format": "pcm",
+                }
+            )
+            self.incoming.put_nowait(
+                json.dumps(
+                    {
+                        "event_id": f"event_updated_{len(self.sent)}",
+                        "type": "session.updated",
+                        "session": session,
+                    }
+                )
+            )
 
     async def recv(self):
         if self.calls < 2:

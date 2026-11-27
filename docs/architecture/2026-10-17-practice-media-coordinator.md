@@ -80,3 +80,11 @@ connection属性保留最近一次业务HTTP快照，信令后在下次读取/�
 2026-10-18已接入可选journal工厂：登记成功后才创建，传输、配置确认、激活、播放及显式静音分别记录client_observed事实；停止先释放媒体，再记录一次local_closed并finish，账号已变则abort。工厂和上报错误只影响观测错误/队列，不阻塞媒体安全清理。默认503不创建journal；构造provider仍无API或媒体副作用。后端持久化及只读分页均不改变连接/租约/终止，不能用客户端关闭事实释放unknown。详见[观测契约](2026-10-18-connection-observations-api.md)。
 
 原协调验证见[记录](../development/2026-10-17-practice-media-coordinator-verification.md)，新增组合证据见[观测验证](../development/2026-10-18-connection-observations-verification.md)及[持久播放验证](../development/2026-10-21-playback-evidence-verification.md)，本批固化接入证据由新验证报告记录。偏好页[只读恢复查看](2026-10-18-readonly-recovery-client.md)不控制此协调器。供应商收尾/配置/对齐协议、可信终止执行器、完整反馈资格与任务、用量、跨进程媒体/上下文恢复和正式练习页仍缺；blocked核验意图和输入固化不构成真实语音闭环。
+
+2026-11-24补充：新增可选 `mediaSessionFactory`（`realtimeMediaSessionCreatorProvider`，生产默认 `null`）与 `QwenServerMediaProtocol`，供隔离配置将同源 WebSocket 浏览器媒体会话接入正式 `/practice/session` 页面协调器。启用时不构造 `RealtimeSignaller` 或 WebRTC `RealtimeTransport`，在 WebSocket 升级前保持可安全取消预留、升级发起后置 `signallingAttempted`，由服务端 `ready` 触发 `configuring`、本地采集启动触发 `active`，`beginDrain` 同步停轨静音并保留收尾转写窗口。多轮推进以浏览器 `AudioBufferSourceNode.onended` 自然播完后上报的 `settled` 控制帧为门控（最多 64 轮），网络 `response.done` 后若用户在缓冲音频播完前插话则由服务端直接下发 `quarantine` 停播且不虚构 `PlaybackUpdate`（助手播放证据保持 `unknown`）。正式语音准入仍关闭，详见[接入验证](../development/2026-11-24-practice-session-websocket-verification.md)。
+
+2026-11-25补充：`begin` 新增可选 `preparation` 参数（与 `difficulty` 互斥），用于承接一级重练已登记且仍处于 `created`、`connection_epoch == 0` 的独立 `PracticePreparation`，直接在其 `session_id` 上预留连接并沿用同一套租约、转写/播放账本、有界收尾与封存流程，不重复调用 `POST /v1/practice-sessions`；握手前取消按连接→原重练准备顺序安全取消，非初始状态准备立即本地拒绝且不改写服务端。服务端 `claim_websocket` 与 `QwenSessionGate` 同步核验冻结重练目标摘要并生成 JSON 转义的有界重练伙伴提示。详见[一级重练实时语音验证](../development/2026-11-25-rehearsal-live-voice-verification.md)。
+
+2026-11-26补充：支持输出时钟的浏览器在音源自然结束后，等 `getOutputTimestamp().contextTime` 到达最后一片音频的排程终点再发送 `settled`。时钟无效、超时或等待期间上下文暂停走现有 `playback_failed` 收口。缺少接口的浏览器沿用音源结束结算，插话或离开会取消等待。此结算仅负责轮次推进，持久播放证据仍为 `unknown`。[输出结算验证](../development/2026-11-26-websocket-output-clock-settlement.md)
+
+2026-11-26补充：WebSocket 采集源触发 `mute` 或 `ended` 时立即按 `device_lost` 释放采集与播放，工作线程迟到 PCM 在发送前复核音轨与输入上下文状态。输出上下文完成初始化后，即使没有待播回复，变为非运行状态也按 `playback_failed` 释放会话。异常退出走既有中断流程，不触发主动结束保存；记录入口仍可查看服务器状态。两种设备异常都保留原连接的未知终止状态。[设备中断验证](../development/2026-11-26-browser-media-device-interruption.md)

@@ -7,6 +7,13 @@ from uuid import UUID
 from simontalk_api.connections import _expire, own_connection
 from simontalk_api.errors import APIError
 from simontalk_api.practice import own_preparation
+from simontalk_api.practice_topics import PracticeTopic, practice_topic
+from simontalk_api.qwen_websocket_session import (
+    QwenSessionError,
+    QwenSessionGate,
+    RehearsalPrompt,
+)
+from simontalk_api.rehearsal_targets import verified_rehearsal_prompt
 from simontalk_api.security import digest, now
 from simontalk_api.websocket_identity import lock_websocket_identity
 
@@ -24,6 +31,8 @@ class WebSocketClaim:
     speech_pace: str
     configuration: MappingProxyType
     provider_attempt: object = field(repr=False, compare=False)
+    rehearsal: RehearsalPrompt | None = None
+    topic: PracticeTopic | None = None
 
 
 def _fingerprint(user_id, session_id, connection_id, client_instance_id, epoch):
@@ -92,6 +101,25 @@ def claim_websocket(
             or pace not in {"normal", "slow"}
         ):
             raise APIError(409, "practice_configuration_changed", "语音配置已更改。")
+        if practice.kind == "ordinary":
+            if (
+                practice.source_session_id is not None
+                or practice.source_kind is not None
+                or practice.source_review_item_id is not None
+                or practice.rehearsal_target is not None
+                or practice.rehearsal_target_hash is not None
+            ):
+                raise APIError(409, "practice_configuration_changed", "语音配置已更改。")
+            rehearsal = None
+        elif practice.kind == "rehearsal":
+            rehearsal = verified_rehearsal_prompt(practice, auth.user_id)
+        else:
+            raise APIError(409, "practice_configuration_changed", "语音配置已更改。")
+        topic = practice_topic(practice)
+        try:
+            QwenSessionGate(difficulty, pace, rehearsal=rehearsal, topic=topic)
+        except QwenSessionError:
+            raise APIError(409, "practice_configuration_changed", "语音配置已更改。") from None
         # QwenWebSocketGateway.attempt performs local validation only; no network.
         provider_attempt = gateway.attempt(dict(configuration))
         latest_auth = lock_websocket_identity(db, identity)
@@ -122,6 +150,8 @@ def claim_websocket(
             pace,
             MappingProxyType(configuration),
             provider_attempt,
+            rehearsal=rehearsal,
+            topic=topic,
         )
         db.commit()
         return result

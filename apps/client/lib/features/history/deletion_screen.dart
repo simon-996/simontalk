@@ -12,6 +12,7 @@ import '../practice/saved_practice_status_providers.dart';
 import '../rehearsal/rehearsal_providers.dart';
 import '../rehearsal/rehearsal_list_providers.dart';
 import '../transcript/saved_transcript_providers.dart';
+import '../usage/usage_providers.dart';
 import 'deletion_controller.dart';
 import 'deletion_view.dart';
 import 'history_providers.dart';
@@ -77,6 +78,8 @@ class _DeletionScreenState extends ConsumerState<DeletionScreen> {
         ref.invalidate(practiceReviewProvider);
         ref.invalidate(savedTranscriptProvider);
         ref.invalidate(savedPracticeStatusProvider);
+        ref.invalidate(accountUsageProvider);
+        ref.invalidate(practiceUsageProvider);
         // End cached reading/target scopes, including retained readers and GETs.
         // Reservation/media lifecycles keep their independent safety state.
         ref.invalidate(practiceRecoveryProvider);

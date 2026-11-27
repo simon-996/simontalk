@@ -66,3 +66,62 @@ test('reentrant stop while enabling cannot unmute or revive capture', () => {
   assert.ok(!x.capture.modes.includes(false)); assert.equal(x.releases(),1);
   assert.equal(x.sender.send(new Uint8Array(3200)),false);
 });
+
+test('drain mutes, stops capture and releases tracks once while stop closes socket', () => {
+  const x=setup(), pcm=new Uint8Array(3200);
+  assert.equal(x.sender.setMuted(false),true);
+  assert.equal(x.sender.send(pcm),true);
+  assert.equal(x.sender.drain(),true);
+  assert.equal(x.sender.drain(),true);
+  assert.deepEqual(x.socket.sent.slice(2).map(JSON.parse),[{kind:'drain'}]);
+  assert.equal(x.capture.stops,1);
+  assert.equal(x.releases(),1);
+  assert.equal(x.socket.closed,0);
+  assert.equal(x.sender.send(pcm),false);
+  assert.equal(x.sender.setMuted(false),false);
+  x.sender.stop();
+  assert.deepEqual(JSON.parse(x.socket.sent[3]),{kind:'stop'});
+  assert.equal(x.capture.stops,1);
+  assert.equal(x.releases(),1);
+  assert.equal(x.socket.closed,1);
+  assert.deepEqual(x.errors,[]);
+});
+
+test('sendSettled sends canonical control and rejects invalid or draining calls', () => {
+  const x=setup();
+  assert.equal(x.sender.sendSettled('resp_1'),true);
+  assert.deepEqual(JSON.parse(x.socket.sent[0]),{kind:'settled',response_id:'resp_1'});
+  assert.equal(x.sender.drain(),true);
+  assert.deepEqual(x.socket.sent.slice(1).map(JSON.parse),[{kind:'drain'}]);
+  assert.equal(x.sender.sendSettled('resp_2'),false);
+  const bad=setup();
+  assert.equal(bad.sender.sendSettled('bad id'),false);
+  assert.equal(bad.socket.closed,1);
+});
+
+test('sendSlowPace sends canonical pace control once and fails closed on duplicate or draining', () => {
+  const x=setup();
+  assert.equal(x.sender.sendSlowPace(),true);
+  assert.deepEqual(JSON.parse(x.socket.sent[0]),{kind:'pace',pace:'slow'});
+  assert.equal(x.sender.sendSlowPace(),false);
+  assert.equal(x.socket.closed,1);
+  assert.deepEqual(x.errors,['transport_failed']);
+
+  const draining=setup();
+  assert.equal(draining.sender.drain(),true);
+  assert.equal(draining.sender.sendSlowPace(),false);
+  assert.equal(draining.socket.sent.length,1);
+});
+
+test('sendInterrupt requires unmuted active state and sends canonical control at most once', () => {
+  const muted=setup();
+  assert.equal(muted.sender.sendInterrupt(),false);
+  assert.equal(muted.socket.closed,1);
+
+  const active=setup();
+  assert.equal(active.sender.setMuted(false),true);
+  assert.equal(active.sender.sendInterrupt(),true);
+  assert.deepEqual(JSON.parse(active.socket.sent[1]),{kind:'interrupt'});
+  assert.equal(active.sender.sendInterrupt(),false);
+  assert.equal(active.socket.closed,1);
+});

@@ -1,16 +1,23 @@
-"""Internal supervised one-turn session; no WebSocket route or admission."""
+"""Internal supervised media session; no WebSocket route or admission."""
 
 import asyncio
+import logging
+from concurrent.futures import ThreadPoolExecutor
 
 from simontalk_api.qwen_turn_pump import QwenTurnPump
+from simontalk_api.voice_response_usage import record_response_usage
 from simontalk_api.websocket_supervisor import supervise_websocket
 
 _MAX_SESSIONS = 128
 _MAX_REJECT_CLOSES = 128
 _CLEANUP_WAIT = 7.0
+_DRAIN_TIMEOUT = 5.0
+_MAX_USAGE_OBSERVATIONS = 64
+_USAGE_WRITERS = ThreadPoolExecutor(max_workers=2, thread_name_prefix="voice-usage")
 _SESSIONS = set()
 _REJECT_CLOSES = set()
 _OWNED_DOWNSTREAMS = set()
+_LOG = logging.getLogger(__name__)
 
 
 class SessionError(Exception):
@@ -69,6 +76,27 @@ async def run_pump_session(
     finished = False
     close_task = None
     pump = None
+    session_gate = None
+    usage_writer = None
+    usage_queue = (
+        asyncio.Queue(maxsize=_MAX_USAGE_OBSERVATIONS + 1) if session_factory is not None else None
+    )
+
+    def enqueue_usage(measurement):
+        if usage_queue.qsize() >= _MAX_USAGE_OBSERVATIONS:
+            _LOG.warning("voice_usage_queue_full")
+            return
+        usage_queue.put_nowait(measurement)
+
+    async def write_usage():
+        loop = asyncio.get_running_loop()
+        while (measurement := await usage_queue.get()) is not None:
+            try:
+                await loop.run_in_executor(
+                    _USAGE_WRITERS, record_response_usage, session_factory, claim, measurement
+                )
+            except Exception:
+                _LOG.warning("voice_usage_write_failed")
 
     def track(task):
         pending.add(task)
@@ -97,27 +125,53 @@ async def run_pump_session(
         await asyncio.shield(start_close())
 
     async def read_client():
+        loop = asyncio.get_running_loop()
+        deadline = None
         while True:
-            value = await downstream.receive()
-            if await pump.accept_client(value) == "stopped":
+            async with asyncio.timeout_at(deadline):
+                value = await downstream.receive()
+            received_at = loop.time()
+            if deadline is not None and received_at >= deadline:
+                raise SessionError("session_unavailable")
+            result = await pump.accept_client(value)
+            if result == "stopped":
                 return "stopped"
+            if result == "draining":
+                deadline = received_at + _DRAIN_TIMEOUT
 
     async def read_provider():
         while True:
             await pump.receive_one()
 
+    def capture_gate(gate):
+        nonlocal session_gate
+        session_gate = gate
+
     try:
         try:
             async with supervise_websocket(
-                session_factory, identity, claim, admission, on_owned=on_owned
+                session_factory,
+                identity,
+                claim,
+                admission,
+                on_owned=on_owned,
+                on_configured=capture_gate,
             ) as connection:
-                pump = QwenTurnPump(connection, downstream.send, close_downstream)
+                pump = QwenTurnPump(
+                    connection,
+                    downstream.send,
+                    close_downstream,
+                    on_response_usage=enqueue_usage if usage_queue is not None else None,
+                    session_gate=session_gate,
+                )
                 if on_ready is not None:
                     try:
                         await on_ready()
                     except BaseException:
                         await pump.close()
                         raise
+                if usage_queue is not None:
+                    usage_writer = track(asyncio.create_task(write_usage()))
                 client = track(asyncio.create_task(read_client()))
                 provider = track(asyncio.create_task(read_provider()))
                 try:
@@ -145,6 +199,8 @@ async def run_pump_session(
 
                     async def wait_for_idle():
                         await asyncio.gather(client, provider, return_exceptions=True)
+                        if usage_queue is not None:
+                            usage_queue.put_nowait(None)
                         await pump.wait_for_quiescence()
 
                     track(asyncio.create_task(wait_for_idle()))
@@ -157,8 +213,9 @@ async def run_pump_session(
         closing = start_close()
         finished = True
         await asyncio.wait({closing}, timeout=_CLEANUP_WAIT)
-        if pending:
-            await asyncio.wait(set(pending), timeout=_CLEANUP_WAIT)
+        foreground = pending - {usage_writer}
+        if foreground:
+            await asyncio.wait(foreground, timeout=_CLEANUP_WAIT)
         if not pending:
             _SESSIONS.discard(slot)
             _OWNED_DOWNSTREAMS.discard(downstream_id)

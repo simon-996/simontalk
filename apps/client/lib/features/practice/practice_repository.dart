@@ -4,6 +4,7 @@ import '../conversation/conversation_models.dart';
 import '../conversation/final_transcript_read_models.dart';
 import '../conversation/playback_evidence_read_models.dart';
 import 'connection_observation_models.dart';
+import 'daily_topic.dart';
 import 'practice_models.dart';
 import 'practice_completion_models.dart';
 import 'termination_check_models.dart';
@@ -238,6 +239,7 @@ class PracticeRepository {
   Future<PracticePreparation> createPractice({
     required String key,
     Difficulty? difficulty,
+    DailyTopic? topic,
   }) async {
     _uuid(key);
     return _read<PracticePreparation>(
@@ -246,12 +248,15 @@ class PracticeRepository {
         '/v1/practice-sessions',
         key: key,
         body: {
-          'mode': 'free_chat',
+          'mode': topic == null ? 'free_chat' : 'daily_topic',
+          if (topic != null) 'topic_id': topic.id,
           if (difficulty != null) 'difficulty_override': difficulty.name,
         },
       ),
       PracticePreparation.fromJson,
-      (_) => true,
+      (practice) =>
+          practice.kind == 'ordinary' &&
+          practice.configuration.topic?.id == topic?.id,
     );
   }
 
@@ -276,6 +281,9 @@ class PracticeRepository {
     PracticePreparation.fromJson,
     (p) =>
         p.id == original.id &&
+        p.kind == original.kind &&
+        p.sourceSessionId == original.sourceSessionId &&
+        p.sourceReviewItemId == original.sourceReviewItemId &&
         p.connectionEpoch == original.connectionEpoch &&
         p.status == PracticeStatus.cancelled &&
         p.endedAt != null &&

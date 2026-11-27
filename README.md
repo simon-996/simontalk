@@ -6,11 +6,11 @@ GitHub 仓库：[simon-996/simontalk](https://github.com/simon-996/simontalk)。
 
 ## 开发交接
 
-当前优先开发 Flutter Web。账号、练习准备、历史与复盘阅读已接入。浏览器语音客户端和服务端已在隔离环境走通单次连接，验证了换号停轨与插话停播；其中麦克风是 Chromium 虚拟设备，千问使用测试替身。正式通话准入保持关闭。
+当前优先开发 Flutter Web。账号、练习准备（自由聊天与四个日常话题）、历史、复盘阅读、一级重练（目标准备、隔离实时通话与两轴评价）、通话内中文开口提示、主动辅助（英文开头、逐句翻译、说慢一点）、真实轮次/播报状态与显式「我来说」受控打断以及本人只读用量已接入。浏览器 WebSocket 语音会话已在隔离配置下接入正式通话页（`/practice/session`）协调器，并用真实千问（合成语音、静音输出）验证了双轮对话、生成中与缓冲播放期插话、尾句显式提交收尾、逐回复用量落库、中途慢速指令配置切换及同次练习复盘；真实 Chrome + PostgreSQL 17 另已走通自由聊天多轮调速、显式「我来说」点击打断与静音保护、周末计划话题与主动求助、以及普通复盘建议到一级重练实时通话、独立封存、两轴评价与用量汇总的完整闭环。正式通话准入与主动求助提供方默认保持关闭。
 
 1. 从 [HANDOFF.md 第 2 节和第 4 节](HANDOFF.md) 确认当前进度和下一项任务。
-2. 按[本地开发说明](docs/development/local-development.md)安装锁定依赖，启动 PostgreSQL、API 和 Flutter Web。
-3. 按[浏览器媒体验证记录](docs/development/2026-11-24-flutter-browser-media-verification.md)复验单次连接。下一项开发工作是在隔离配置中把这条连接接入正式练习页，验证开始、静音、离开与结束保存。
+2. 换到 Windows 时按 [Windows 接续开发](docs/development/windows-handoff.md)克隆接续分支并启动；其他环境按[本地开发说明](docs/development/local-development.md)安装锁定依赖，启动 PostgreSQL、API 和 Flutter Web。
+3. 按[真实千问联测记录](docs/development/2026-11-25-live-qwen-practice-session-verification.md)、[一级重练实时语音验证](docs/development/2026-11-25-rehearsal-live-voice-verification.md)与[本人只读用量验证](docs/development/2026-11-25-owner-usage-read-verification.md)复验普通/重练通话保存、复盘评价及用量查看。下一项开发工作是使用物理麦克风与扬声器实测普通与重练通话的回声及延迟，推进插话后的已听前缀/上下文续聊与可信远端退出及账单核对。
 
 偏好页可明确查看未结束练习/客户端连接记录，并在确认后安全清理未开始上游的准备；unknown保留占用，不冒充已结束。契约与验证见[准备清理](docs/architecture/2026-10-18-preparation-discard-api.md)。
 

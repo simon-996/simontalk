@@ -18,7 +18,8 @@ from sqlalchemy import text
 
 from simontalk_api.deletion_archive import (
     MAX_ARCHIVE_BYTES,
-    SUPPORTED_SCHEMA_REVISION,
+    ArchiveSchemaRevision,
+    check_archive_schema,
     export_deletions_in_snapshot,
     load_archive_bytes,
     write_archive,
@@ -55,7 +56,7 @@ class _File(_Strict):
 class _Manifest(_Strict):
     schema_version: Literal["backup_bundle_v1"]
     created_at: AwareDatetime
-    schema_revision: Literal[SUPPORTED_SCHEMA_REVISION]
+    schema_revision: ArchiveSchemaRevision
     postgres_version: int = Field(strict=True, ge=170000, lt=180000)
     source_database: str = Field(strict=True, pattern=r"^[A-Za-z0-9_][A-Za-z0-9_-]{0,62}$")
     deletion_archive_hash: str = Field(strict=True, pattern=r"^[a-f0-9]{64}$")
@@ -366,6 +367,7 @@ def _create(factory, path, pg_dump, timeout_seconds):
             version = int(db.scalar(text("SHOW server_version_num")))
             if not 170000 <= version < 180000:
                 raise BackupError("backup_postgres_version_unsupported")
+            schema_revision = check_archive_schema(db)
             archive = export_deletions_in_snapshot(db)
             snapshot = db.scalar(text("SELECT pg_export_snapshot()"))
             remember("deletions.json", write_archive(path / "deletions.json", archive))
@@ -384,7 +386,7 @@ def _create(factory, path, pg_dump, timeout_seconds):
             manifest = {
                 "schema_version": "backup_bundle_v1",
                 "created_at": datetime.now(UTC).isoformat(),
-                "schema_revision": SUPPORTED_SCHEMA_REVISION,
+                "schema_revision": schema_revision,
                 "postgres_version": version,
                 "source_database": env["PGDATABASE"],
                 "deletion_archive_hash": archive.content_hash,

@@ -13,7 +13,9 @@
         typeof window.simontalkPcmWire?.encode !== 'function') {
       throw new TypeError('Invalid PCM sender configuration');
     }
-    let closed = false, muted = true, changing = false, epoch = 0, sequence = 0;
+    let closed = false, draining = false, mediaReleased = false, muted = true, changing = false;
+    let paceSent = false, interruptSent = false;
+    let epoch = 0, sequence = 0;
     const listeners = [];
 
     function listen(target, name, callback) {
@@ -27,10 +29,9 @@
         socket.bufferedAmount >= 0 && socket.bufferedAmount + size <= MAX_BUFFERED;
     }
 
-    function finish(reason, sendStop) {
-      if (closed) return;
-      closed = true;
-      muted = true;
+    function releaseLocalMedia() {
+      if (mediaReleased) return false;
+      mediaReleased = true;
       let failed = false;
       try { if (capture.setMuted(true) !== true) failed = true; } catch (_) { failed = true; }
       try { capture.stop(); } catch (_) { failed = true; }
@@ -41,6 +42,15 @@
           failed = true;
         } else if (result === false) failed = true;
       } catch (_) { failed = true; }
+      return failed;
+    }
+
+    function finish(reason, sendStop) {
+      if (closed) return;
+      closed = true;
+      draining = false;
+      muted = true;
+      let failed = releaseLocalMedia();
       for (const remove of listeners.splice(0)) { try { remove(); } catch (_) {} }
       if (sendStop) {
         try { if (canSend(32)) socket.send('{"kind":"stop"}'); } catch (_) { failed = true; }
@@ -52,7 +62,7 @@
     }
 
     function setMuted(value) {
-      if (closed || typeof value !== 'boolean') return false;
+      if (closed || draining || typeof value !== 'boolean') return false;
       if (changing) { finish('transport_failed', false); return false; }
       if (value === muted) return true;
       changing = true;
@@ -82,16 +92,32 @@
       finally { changing = false; }
     }
 
+    function drain() {
+      if (closed) return false;
+      if (draining) return true;
+      if (changing) { finish('transport_failed', false); return false; }
+      draining = true;
+      muted = true;
+      try {
+        if (releaseLocalMedia() || closed || !canSend(32)) {
+          finish('transport_failed', false);
+          return false;
+        }
+        socket.send('{"kind":"drain"}');
+        return !closed;
+      } catch (_) { finish('transport_failed', false); return false; }
+    }
+
     function send(pcm) {
-      if (closed || muted || changing) return false;
+      if (closed || draining || muted || changing) return false;
       try {
         if (sequence >= Number.MAX_SAFE_INTEGER || !canSend(3213)) {
           finish('transport_failed', false); return false;
         }
         const next = sequence + 1;
         const frame = window.simontalkPcmWire.encode(epoch, next, pcm);
-        if (closed || muted || changing || !canSend(3213)) {
-          if (!closed && !muted && !changing) finish('transport_failed', false);
+        if (closed || draining || muted || changing || !canSend(3213)) {
+          if (!closed && !draining && !muted && !changing) finish('transport_failed', false);
           return false;
         }
         sequence = next;
@@ -100,7 +126,55 @@
       } catch (_) { finish('transport_failed', false); return false; }
     }
 
-    const sender = { setMuted, send, stop: () => finish(null, true) };
+    function sendSettled(responseId) {
+      if (closed || draining || changing || typeof responseId !== 'string' ||
+          !/^[A-Za-z0-9_-]{1,128}$/.test(responseId)) {
+        if (!closed && !draining) finish('transport_failed', false);
+        return false;
+      }
+      try {
+        const payload = JSON.stringify({kind: 'settled', response_id: responseId});
+        if (!canSend(256)) { finish('transport_failed', false); return false; }
+        socket.send(payload);
+        return !closed;
+      } catch (_) { finish('transport_failed', false); return false; }
+    }
+
+    function sendSlowPace() {
+      if (closed || draining || changing || paceSent) {
+        if (!closed && !draining) finish('transport_failed', false);
+        return false;
+      }
+      paceSent = true;
+      try {
+        if (!canSend(64)) { finish('transport_failed', false); return false; }
+        socket.send('{"kind":"pace","pace":"slow"}');
+        return !closed;
+      } catch (_) { finish('transport_failed', false); return false; }
+    }
+
+    function sendInterrupt() {
+      if (closed || draining || muted || changing || interruptSent) {
+        if (!closed && !draining) finish('transport_failed', false);
+        return false;
+      }
+      interruptSent = true;
+      try {
+        if (!canSend(64)) { finish('transport_failed', false); return false; }
+        socket.send('{"kind":"interrupt"}');
+        return !closed;
+      } catch (_) { finish('transport_failed', false); return false; }
+    }
+
+    const sender = {
+      setMuted,
+      send,
+      sendSettled,
+      sendSlowPace,
+      sendInterrupt,
+      drain,
+      stop: () => finish(null, true),
+    };
     try {
       listen(socket, 'error', () => finish('transport_failed', false));
       listen(socket, 'close', () => finish('transport_failed', false));

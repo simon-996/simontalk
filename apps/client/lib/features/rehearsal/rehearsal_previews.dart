@@ -4,6 +4,7 @@ import 'package:flutter/widget_previews.dart';
 import '../../design/app_theme.dart';
 import '../../design/preview_surface.dart';
 import '../account/account_models.dart';
+import '../practice/practice_models.dart';
 import 'rehearsal_controller.dart';
 import 'rehearsal_models.dart';
 import 'rehearsal_view.dart';
@@ -101,3 +102,52 @@ Widget rehearsalUnknownPreview() => _sample(state: RehearsalState.unconfirmed);
   wrapper: previewWithFonts,
 )
 Widget rehearsalUnavailablePreview() => _sample(state: RehearsalState.failed);
+
+@Preview(
+  name: '已登记准备 · 可进入重练通话',
+  group: '逐句重练',
+  size: Size(760, 1050),
+  wrapper: previewWithFonts,
+)
+Widget rehearsalPreparedPreview() => MaterialApp(
+  theme: buildAppTheme(Brightness.light),
+  home: RehearsalView(
+    state: RehearsalState.prepared,
+    target: rehearsalPreviewTarget(),
+    preparation: PracticePreparation.fromJson({
+      'id': '99999999-9999-4999-8999-999999999999',
+      'mode': 'free_chat',
+      'kind': 'rehearsal',
+      'source_session_id': '22222222-2222-4222-8222-222222222222',
+      'source_review_item_id': '77777777-7777-4777-8777-777777777777',
+      'status': 'created',
+      'connection_epoch': 0,
+      'configuration': {
+        'schema_version': 1,
+        'preferences': {
+          'difficulty': 'beginner',
+          'speech_pace': 'normal',
+          'subtitle_default': true,
+          'chinese_hints_enabled': true,
+          'translation_mode': 'on_demand',
+          'version': 1,
+        },
+        'effective_difficulty': 'intermediate',
+        'provider': {
+          'provider': 'dashscope',
+          'region': 'cn-beijing',
+          'model': 'qwen3.8-omni-flash-realtime',
+          'config_id': 'preview-v1',
+        },
+      },
+      'created_at': '2026-11-25T00:00:00Z',
+      'ended_at': null,
+    }),
+    difficulty: Difficulty.intermediate,
+    onEnterSession: rehearsalPreviewNoop,
+    onHistory: rehearsalPreviewNoop,
+    onDiscard: rehearsalPreviewNoop,
+    onBack: rehearsalPreviewNoop,
+    onPractice: rehearsalPreviewNoop,
+  ),
+);

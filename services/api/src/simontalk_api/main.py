@@ -11,6 +11,8 @@ from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from starlette.exceptions import HTTPException
 
+from simontalk_api.assistance import run_assistance_batch
+from simontalk_api.assistance_routes import router as assistance_router
 from simontalk_api.completion_routes import router as completion_router
 from simontalk_api.config import Settings
 from simontalk_api.connection_routes import router as connection_router
@@ -26,14 +28,15 @@ from simontalk_api.practice_maintenance import PracticeMaintenanceRunner
 from simontalk_api.practice_routes import router as practice_router
 from simontalk_api.rehearsal_routes import router as rehearsal_router
 from simontalk_api.review_job_routes import router as review_job_router
-from simontalk_api.review_providers import create_review_gateway
+from simontalk_api.review_providers import create_assistance_gateway, create_review_gateway
 from simontalk_api.review_routes import router as review_router
-from simontalk_api.review_worker import ReviewJobRunner
+from simontalk_api.review_worker import ModelJobRunner, ReviewJobRunner
 from simontalk_api.routes import router
 from simontalk_api.saved_transcript_routes import router as saved_transcript_router
 from simontalk_api.signalling import UnavailableSignallingGateway
 from simontalk_api.signalling_routes import router as signalling_router
 from simontalk_api.transcript_routes import router as transcript_router
+from simontalk_api.usage_routes import router as usage_router
 
 logger = logging.getLogger(__name__)
 
@@ -74,14 +77,26 @@ def create_app(settings: Settings | None = None):
         )
         application.state.review_job_runner = review_runner
         review_runner.start()
+        assistance_runner = ModelJobRunner(
+            application.state.settings.database_url,
+            lambda: application.state.assistance_gateway,
+            interval_seconds=0.5,
+            run_batch=run_assistance_batch,
+            name="assistance",
+        )
+        application.state.assistance_job_runner = assistance_runner
+        assistance_runner.start()
         try:
             yield
         finally:
             try:
                 try:
-                    await asyncio.to_thread(review_runner.stop)
+                    await asyncio.to_thread(assistance_runner.stop)
                 finally:
-                    await asyncio.to_thread(runner.stop)
+                    try:
+                        await asyncio.to_thread(review_runner.stop)
+                    finally:
+                        await asyncio.to_thread(runner.stop)
             finally:
                 application.state.engine.dispose()
 
@@ -91,6 +106,7 @@ def create_app(settings: Settings | None = None):
     app.state.settings = settings or Settings()
     app.state.practice_admission = UnavailableAdmission()
     app.state.review_gateway = create_review_gateway(app.state.settings)
+    app.state.assistance_gateway = create_assistance_gateway(app.state.settings)
     app.state.signalling_gateway = UnavailableSignallingGateway()
     app.state.engine, app.state.session_factory = create_database(app.state.settings.database_url)
     app.add_middleware(ConnectionBodyLimitMiddleware)
@@ -167,6 +183,7 @@ def create_app(settings: Settings | None = None):
 
     app.include_router(router)
     app.include_router(practice_router)
+    app.include_router(assistance_router)
     app.include_router(history_router)
     app.include_router(deletion_router)
     app.include_router(connection_router)
@@ -179,4 +196,5 @@ def create_app(settings: Settings | None = None):
     app.include_router(review_job_router)
     app.include_router(saved_transcript_router)
     app.include_router(rehearsal_router)
+    app.include_router(usage_router)
     return app

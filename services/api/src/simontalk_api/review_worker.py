@@ -424,10 +424,19 @@ async def run_review_batch(factory, gateway, *, limit=10, stop=None):
     return count
 
 
-class ReviewJobRunner:
+class ModelJobRunner:
     """Private pool and serial async loop; database row locks coordinate API processes."""
 
-    def __init__(self, database_url, gateway, *, interval_seconds=5, limit=5):
+    def __init__(
+        self,
+        database_url,
+        gateway,
+        *,
+        interval_seconds=5,
+        limit=5,
+        run_batch=run_review_batch,
+        name="review",
+    ):
         if (
             type(interval_seconds) not in {int, float}
             or not math.isfinite(interval_seconds)
@@ -438,6 +447,7 @@ class ReviewJobRunner:
             raise ValueError("Invalid review batch limit")
         self._engine, self._factory = create_database(database_url)
         self._gateway = gateway
+        self._run_batch, self._name = run_batch, name
         self._interval, self._limit = interval_seconds, limit
         self._stop, self._guard = Event(), Lock()
         self._thread = None
@@ -450,7 +460,9 @@ class ReviewJobRunner:
         with self._guard:
             if self._thread is not None or self._stop.is_set():
                 raise RuntimeError("Review runner already started or closed")
-            self._thread = Thread(target=self._run, name="simontalk-review-jobs", daemon=True)
+            self._thread = Thread(
+                target=self._run, name=f"simontalk-{self._name}-jobs", daemon=True
+            )
             self._thread.start()
 
     def stop(self):
@@ -470,12 +482,12 @@ class ReviewJobRunner:
             while not self._stop.wait(self._interval):
                 try:
                     loop.run_until_complete(
-                        run_review_batch(
+                        self._run_batch(
                             self._factory, self._gateway(), limit=self._limit, stop=self._stop
                         )
                     )
                 except Exception:
-                    logger.warning("Review job batch failed")
+                    logger.warning("%s job batch failed", self._name)
         finally:
             pending = asyncio.all_tasks(loop)
             for task in pending:
@@ -484,3 +496,7 @@ class ReviewJobRunner:
                 loop.run_until_complete(asyncio.wait(pending, timeout=0.1))
             loop.close()
             self._engine.dispose()
+
+
+class ReviewJobRunner(ModelJobRunner):
+    """The existing review worker with its default batch and cadence."""

@@ -295,6 +295,10 @@ class PracticeRecoveryView extends StatelessWidget {
               else if (practice == null)
                 Semantics(liveRegion: true, child: const Text('没有未结束的练习'))
               else ...[
+                if (practice.configuration.topic case final topic?) ...[
+                  Text(topic.title),
+                  const SizedBox(height: 8),
+                ],
                 Text(
                   '服务器记录：${savedCompletion == null && endRegistered ? '已登记结束' : _practiceLabel(savedCompletion?.status == PracticeCompletionStatus.sealed
                             ? PracticeStatus.completed

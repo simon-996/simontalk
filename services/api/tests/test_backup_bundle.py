@@ -385,6 +385,10 @@ def test_successful_writer_never_claims_an_external_replacement(
         def scalar(self, query):
             return 170000 if str(query) == "SHOW server_version_num" else "snapshot"
 
+        def scalars(self, query):
+            assert str(query) == "SELECT version_num FROM alembic_version"
+            return SimpleNamespace(all=lambda: ["4f6a58cd2e32"])
+
     class Factory:
         kw = {
             "bind": SimpleNamespace(url=make_url("postgresql+psycopg://test:test@localhost/test"))

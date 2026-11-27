@@ -1,11 +1,12 @@
 """Atomic content erasure; deletion is never evidence of upstream termination."""
 
 from pydantic import Field
-from sqlalchemy import delete, or_, select
+from sqlalchemy import delete, or_, select, update
 
 from simontalk_api.errors import APIError
 from simontalk_api.models import (
     OCCUPIED_CONNECTION_STATES,
+    AssistanceJob,
     ConnectionObservation,
     FinalTranscript,
     PlaybackEvidence,
@@ -187,7 +188,7 @@ def delete_practice(db, user_id, session_id, payload, key):
     return _receipt(receipt)
 
 
-def purge_practice_content(db, user_id, members, stamp):
+def purge_practice_content(db, user_id, members, stamp, *, has_assistance=True):
     """Caller holds the owner and practice locks; never commits or creates receipts."""
     if not members or any(row.user_id != user_id for row in members):
         raise ValueError("Invalid deletion owner")
@@ -223,6 +224,12 @@ def purge_practice_content(db, user_id, members, stamp):
         row.ended_at = row.ended_at or max(stamp, row.created_at)
     for model in (ReviewInput, PracticeCompletion):
         db.execute(delete(model).where(model.session_id.in_(ids)))
+    if has_assistance:
+        db.execute(
+            update(AssistanceJob)
+            .where(AssistanceJob.user_id == user_id, AssistanceJob.session_id.in_(ids))
+            .values(status="expired", result=None)
+        )
     connection_ids = [c.id for c in connections]
     for model in (FinalTranscript, PlaybackEvidence, ConnectionObservation):
         db.execute(delete(model).where(model.connection_id.in_(connection_ids)))

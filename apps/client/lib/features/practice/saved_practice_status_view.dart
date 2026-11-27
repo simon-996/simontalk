@@ -15,6 +15,7 @@ class SavedPracticeStatusView extends StatelessWidget {
     this.errorCode,
     this.busy = false,
     this.accountBusy = false,
+    this.usageChild,
     this.onRefresh,
     this.onBack,
     this.onConfirmAccount,
@@ -24,6 +25,7 @@ class SavedPracticeStatusView extends StatelessWidget {
   final PracticeCompletionSummary? completion;
   final String? errorCode;
   final bool busy, accountBusy;
+  final Widget? usageChild;
   final VoidCallback? onRefresh, onBack, onConfirmAccount;
   @override
   Widget build(BuildContext context) {
@@ -93,6 +95,10 @@ class SavedPracticeStatusView extends StatelessWidget {
                     ? '仍有连接与用量待核对。文字保存不会解除连接占用。'
                     : '记录中暂无待核对连接。实际用量仍需另行核对。',
               ),
+              if (usageChild != null) ...[
+                const SizedBox(height: 12),
+                usageChild!,
+              ],
             ],
           ],
         ],

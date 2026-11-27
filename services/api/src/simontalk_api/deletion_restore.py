@@ -45,7 +45,7 @@ def replay_deletions(factory, archive, *, apply=False, confirm_database=None):
         db.execute(text("SET LOCAL transaction_timeout = '30s'"))
         db.execute(text("SET LOCAL statement_timeout = '5s'"))
         db.execute(text("SET LOCAL lock_timeout = '1s'"))
-        check_archive_schema(db)
+        revision = check_archive_schema(db)
         owners = sorted({r.account_id for r in archive.receipts})
         present_owners = {
             owner
@@ -140,7 +140,13 @@ def replay_deletions(factory, archive, *, apply=False, confirm_database=None):
             return result
         for entry, members, previous in plans:
             if members:
-                purge_practice_content(db, entry.account_id, members, entry.deleted_at)
+                purge_practice_content(
+                    db,
+                    entry.account_id,
+                    members,
+                    entry.deleted_at,
+                    has_assistance=revision in {"7cfa81b28360", "19d7a3ec0b51"},
+                )
             if previous is None:
                 db.add(PracticeDeletionReceipt(**_receipt_values(entry)))
         db.commit()

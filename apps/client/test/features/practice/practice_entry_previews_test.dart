@@ -7,6 +7,7 @@ void main() {
     (practiceHomeDarkPreview, '当前难度：轻松起步'),
     (practicePreparationIdlePreview, '本次难度：轻松起步'),
     (practicePreparationUnavailablePreview, '本次难度：轻松起步'),
+    (practiceTopicPreview, '描述一个想去的地方'),
   ]) {
     testWidgets('isolated entry preview $preview renders without services', (
       t,

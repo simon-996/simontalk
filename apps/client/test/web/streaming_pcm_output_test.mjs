@@ -6,6 +6,20 @@ import vm from 'node:vm';
 function setup() {
   const nodes = [];
   const listeners = new Set();
+  const timers = new Map();
+  let now = 0, nextTimer = 0;
+  const performance = {now: () => now};
+  function advance(milliseconds) {
+    const end = now + milliseconds;
+    while (timers.size) {
+      const [key, timer] = [...timers].sort((a, b) => a[1].due - b[1].due)[0];
+      if (timer.due > end) break;
+      now = timer.due;
+      timers.delete(key);
+      timer.run();
+    }
+    now = end;
+  }
   const context = {
     state: 'running', currentTime: 10, outputTime: 10, performanceTime: 100,
     destination: {},
@@ -28,9 +42,13 @@ function setup() {
   };
   const window = {};
   vm.runInNewContext(readFileSync(new URL('../../web/streaming_pcm_output.js', import.meta.url), 'utf8'),
-    { window, Uint8Array, DataView, Float32Array, Number, Math, atob, btoa });
+    { window, Uint8Array, DataView, Float32Array, Number, Math, atob, btoa,
+      performance,
+      setTimeout(run, delay) { const key = ++nextTimer; timers.set(key, {due: now + delay, run}); return key; },
+      clearTimeout(key) { timers.delete(key); } });
   return { context, nodes, create: () => window.simontalkStreamingPcmOutput.create(context, 8000),
-    createRouter: () => window.simontalkStreamingPcmOutput.createResponseRouter(context, 8000) };
+    createRouter: () => window.simontalkStreamingPcmOutput.createResponseRouter(context, 8000),
+    advance, timers, performance };
 }
 
 const pcm = (samples) => new Uint8Array(samples * 2);
@@ -133,6 +151,20 @@ test('context suspension stops pending audio and prevents late resume', () => {
   env.context.changeState('running');
   assert.equal(player.append(pcm(100)), false);
   assert.equal(player.estimateSeconds(), null);
+});
+
+test('quarantine stops audio when a reliable output timestamp is unavailable', () => {
+  const env = setup();
+  const router = env.createRouter();
+  env.context.getOutputTimestamp = undefined;
+  assert.equal(router.start('response-a', 'item-a'), true);
+  assert.equal(router.append({
+    responseId: 'response-a', itemId: 'item-a', eventId: 'event-a',
+    outputIndex: 0, contentIndex: 0, bytes: pcm(100),
+  }), 'appended');
+  assert.equal(router.stop('response-a'), true);
+  assert.equal(env.nodes[0].stops, 1);
+  assert.equal(env.nodes[0].disconnects, 1);
 });
 
 test('a backwards output timestamp performance clock invalidates the estimate', () => {
@@ -338,4 +370,134 @@ test('late Qwen audio is dropped without decoding or reviving the old player', (
   Object.defineProperty(late, 'delta', {get() { throw Error('must not decode old audio'); }});
   assert.equal(router.appendQwenDelta(late), 'stale');
   assert.equal(router.appendQwenDelta(qwenAudioEvent('response-b', 'item-b', 'event-b')), 'appended');
+});
+
+test('complete waits for graph end and the output clock to reach the last sample', () => {
+  const env = setup(); const router = env.createRouter();
+  let settled = 0;
+  assert.equal(router.start('response-a', 'item-a'), true);
+  assert.equal(router.append(audioEvent('response-a', 'item-a', 'e1')), 'appended');
+  assert.equal(router.append(audioEvent('response-a', 'item-a', 'e2')), 'appended');
+  assert.equal(router.complete('response-a', () => { settled++; }), true);
+  assert.equal(settled, 0);
+  assert.equal(env.nodes[0].stops, 0);
+  assert.equal(env.nodes[1].stops, 0);
+  env.nodes[0].onended();
+  assert.equal(settled, 0);
+  const end = env.nodes[1].startTime + env.nodes[1].buffer.duration;
+  env.context.currentTime = end + 0.04;
+  env.context.outputTime = end - 0.025;
+  env.nodes[1].onended();
+  assert.equal(settled, 0);
+  env.advance(80);
+  assert.equal(settled, 0);
+  env.context.outputTime = end;
+  env.advance(40);
+  assert.equal(settled, 1);
+  assert.equal(env.timers.size, 0);
+  assert.equal(router.start('response-b', 'item-b'), true);
+});
+
+test('graph progress during output sampling does not invalidate a current timestamp', () => {
+  const env = setup(); const router = env.createRouter();
+  let settled = 0;
+  let unavailable = 0;
+  assert.equal(router.start('response-a', 'item-a'), true);
+  assert.equal(router.append(audioEvent('response-a', 'item-a', 'e1')), 'appended');
+  assert.equal(router.complete('response-a', () => { settled++; }, () => { unavailable++; }), true);
+  const end = env.nodes[0].startTime + env.nodes[0].buffer.duration;
+  env.context.currentTime = end + 0.01;
+  env.context.getOutputTimestamp = () => {
+    env.context.currentTime = end + 0.03;
+    return { contextTime: end + 0.02, performanceTime: 100 };
+  };
+  env.nodes[0].onended();
+  assert.equal(settled, 1);
+  assert.equal(unavailable, 0);
+});
+
+test('a timestamp query that crosses the deadline cannot settle playback', () => {
+  const env = setup(); const router = env.createRouter();
+  let settled = 0;
+  let unavailable = 0;
+  assert.equal(router.start('response-a', 'item-a'), true);
+  assert.equal(router.append(audioEvent('response-a', 'item-a', 'e1')), 'appended');
+  assert.equal(router.complete('response-a', () => { settled++; }, () => { unavailable++; }), true);
+  const end = env.nodes[0].startTime + env.nodes[0].buffer.duration;
+  env.nodes[0].onended();
+  env.context.currentTime = end + 0.04;
+  env.context.getOutputTimestamp = () => {
+    env.performance.now = () => 1001;
+    return { contextTime: end, performanceTime: 100 };
+  };
+  env.advance(25);
+  assert.equal(unavailable, 1);
+  assert.equal(settled, 0);
+  assert.equal(env.timers.size, 0);
+});
+
+test('missing output clock retains the graph-end settlement path', () => {
+  const env = setup();
+  env.context.getOutputTimestamp = undefined;
+  const router = env.createRouter();
+  let settled = 0;
+  assert.equal(router.start('response-a', 'item-a'), true);
+  assert.equal(router.append(audioEvent('response-a', 'item-a', 'e1')), 'appended');
+  assert.equal(router.complete('response-a', () => { settled++; }), true);
+  env.nodes[0].onended();
+  assert.equal(settled, 1);
+  assert.equal(env.timers.size, 0);
+});
+
+test('a supported clock that stalls or goes backwards never settles the reply', () => {
+  for (const regress of [false, true]) {
+    const env = setup(); const router = env.createRouter();
+    let settled = 0, unavailable = 0;
+    assert.equal(router.start('response-a', 'item-a'), true);
+    assert.equal(router.append(audioEvent('response-a', 'item-a', 'e1')), 'appended');
+    assert.equal(router.complete('response-a', () => { settled++; }, () => { unavailable++; }), true);
+    env.context.currentTime = 10.2;
+    env.context.outputTime = 10.04;
+    env.nodes[0].onended();
+    assert.equal(unavailable, 0);
+    if (regress) env.context.outputTime = 10.03;
+    env.advance(regress ? 35 : 1200);
+    assert.equal(settled, 0);
+    assert.equal(unavailable, 1);
+    assert.equal(env.timers.size, 0);
+    assert.equal(router.start('response-b', 'item-b'), false);
+  }
+});
+
+test('quarantine during device settlement cancels the pending clock observation', () => {
+  const env = setup(); const router = env.createRouter();
+  let settled = 0, unavailable = 0;
+  assert.equal(router.start('response-a', 'item-a'), true);
+  assert.equal(router.append(audioEvent('response-a', 'item-a', 'e1')), 'appended');
+  assert.equal(router.complete('response-a', () => { settled++; }, () => { unavailable++; }), true);
+  env.context.currentTime = 10.2;
+  env.context.outputTime = 10.04;
+  env.nodes[0].onended();
+  assert.equal(env.timers.size, 1);
+  assert.equal(router.stop('response-a'), true);
+  assert.equal(env.timers.size, 0);
+  env.context.outputTime = 10.2;
+  env.advance(1200);
+  assert.equal(settled, 0);
+  assert.equal(unavailable, 0);
+});
+
+test('stop while completing immediately stops remaining nodes and suppresses settled callback', () => {
+  const env = setup(); const router = env.createRouter();
+  let settled = 0;
+  assert.equal(router.start('response-a', 'item-a'), true);
+  assert.equal(router.append(audioEvent('response-a', 'item-a', 'e1')), 'appended');
+  assert.equal(router.append(audioEvent('response-a', 'item-a', 'e2')), 'appended');
+  assert.equal(router.complete('response-a', () => { settled++; }), true);
+  env.nodes[0].onended();
+  assert.equal(router.stop('response-a'), true);
+  assert.equal(env.nodes[0].stops, 0);
+  assert.equal(env.nodes[1].stops, 1);
+  env.nodes[1].onended?.();
+  assert.equal(settled, 0);
 });

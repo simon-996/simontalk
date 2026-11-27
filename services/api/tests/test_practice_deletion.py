@@ -1,12 +1,15 @@
 """Deletion removes content, never unknown upstream occupancy or usage evidence."""
 
 import asyncio
+from types import SimpleNamespace
 from uuid import UUID, uuid4
 
 import pytest
 from sqlalchemy import select, text
 from test_connection_reservations import prepared as prepared
 from test_practice_history import add_records, headers
+from test_practice_preparation import account as account
+from test_practice_preparation import admission as admission
 from test_rehearsal_preparations import create, release, target
 from test_rehearsal_targets import rows
 from test_rehearsal_targets import target_source as target_source
@@ -32,6 +35,44 @@ def erase(client, sid, h, scope, key=None):
         headers=h | {"Idempotency-Key": str(key or uuid4())},
         json={"scope_version": scope["scope_version"]},
     )
+
+
+@pytest.mark.parametrize("occupied", [False, True])
+def test_deleting_topic_erases_the_snapshot_but_preserves_unknown_occupancy(
+    client, factory, account, admission, occupied
+):
+    identity, h = account
+    response = client.post(
+        "/v1/practice-sessions",
+        headers=h | {"Idempotency-Key": str(uuid4())},
+        json={"mode": "daily_topic", "topic_id": "travel"},
+    )
+    assert response.status_code == 201
+    practice = response.json()
+    sid = practice["id"]
+    if occupied:
+        scope = SimpleNamespace(identity=identity, headers=h, session=practice)
+        reserved = reserve(client, scope)
+        with factory.begin() as db:
+            connection = db.get(RealtimeConnection, UUID(reserved["id"]))
+            connection.status = "ready"
+            connection.termination_status = "unknown"
+            connection.offer_digest = "a" * 64
+            connection.signalling_started_at = connection.created_at
+    deleted = erase(client, sid, h, snapshot(client, sid, h))
+    assert deleted.status_code == 200
+    assert deleted.json()["connection_pending"] is occupied
+    assert client.get(f"{PATH}/{sid}", headers=h).status_code == 404
+    with factory() as db:
+        row = db.get(PracticeSession, UUID(sid))
+        assert row.deleted_at is not None and "topic" not in row.configuration
+    current = client.get("/v1/practice-sessions/current", headers=h).json()
+    if occupied:
+        assert current["connection"]["termination_status"] == "unknown"
+        assert current["practice"]["state_reason"] == "content_deleted"
+        assert "topic" not in current["practice"]["configuration"]
+    else:
+        assert current == {"practice": None, "connection": None}
 
 
 def test_scope_is_owner_only_bounded_and_zero_write(client, signup, factory):

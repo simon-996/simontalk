@@ -70,6 +70,24 @@ def test_stop_closes_both_sides_after_pcm_and_provider_event(supervisor_stubs):
     asyncio.run(run())
 
 
+def test_end_cannot_keep_the_session_open_without_a_stop(supervisor_stubs, monkeypatch):
+    from simontalk_api import supervised_pump_session as module
+
+    monkeypatch.setattr(module, "_DRAIN_TIMEOUT", 0.02, raising=False)
+
+    async def run():
+        socket, down = PumpSocket(), Downstream()
+        task = await start(socket, down)
+        await down.incoming.put('{"kind":"drain"}')
+        with pytest.raises(SessionError):
+            await asyncio.wait_for(task, 0.5)
+        assert socket.close_calls == down.closed == 1
+        assert supervisor_stubs == ["disconnected"]
+        assert [event["type"] for event in socket.sent] == ["session.update"]
+
+    asyncio.run(run())
+
+
 def test_invalid_client_payload_closes_both_sides_with_fixed_error(supervisor_stubs):
     async def run():
         socket, down = PumpSocket(), Downstream()
@@ -271,5 +289,31 @@ def test_cancelled_late_delivery_prevents_downstream_reuse(supervisor_stubs, mon
                 break
             await asyncio.sleep(0.001)
         assert not module._SESSIONS
+
+    asyncio.run(run())
+
+
+def test_supervised_pump_session_forwards_slow_pace_once_and_rejects_bad_provider_echo(
+    supervisor_stubs,
+):
+    async def run():
+        socket, down = PumpSocket(), Downstream()
+        task = await start(socket, down)
+        await down.incoming.put('{"kind":"pace","pace":"slow"}')
+        pace_event = await asyncio.wait_for(down.output.get(), 1)
+        assert pace_event == {"kind": "pace_updated", "pace": "slow"}
+        assert [event["type"] for event in socket.sent] == ["session.update", "session.update"]
+        assert "natural conversational pace" in socket.sent[0]["session"]["instructions"]
+        assert "Speak slowly and clearly." in socket.sent[1]["session"]["instructions"]
+        await down.incoming.put('{"kind":"stop"}')
+        assert await asyncio.wait_for(task, 1) == "stopped"
+
+        bad_socket, bad_down = PumpSocket(), Downstream()
+        bad_socket.bad_pace_update = True
+        bad_task = await start(bad_socket, bad_down)
+        await bad_down.incoming.put('{"kind":"pace","pace":"slow"}')
+        with pytest.raises(SessionError):
+            await asyncio.wait_for(bad_task, 1)
+        assert bad_socket.close_calls == bad_down.closed == 1
 
     asyncio.run(run())

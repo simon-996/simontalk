@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 
 import '../../design/account_components.dart';
 import '../account/account_controller.dart';
+import '../usage/usage_panel.dart';
 import 'practice_models.dart';
 import 'saved_practice_status_controller.dart';
 import 'saved_practice_status_providers.dart';
@@ -114,6 +115,14 @@ class _SavedPracticeStatusScreenState
       errorCode: c?.errorCode ?? (c == null ? 'invalid_source' : null),
       busy: c?.busy ?? false,
       accountBusy: account.busy,
+      usageChild: account.session == null
+          ? null
+          : PracticeUsagePanel(
+              key: ValueKey(
+                'practice-usage-${account.session!.user.id}-${widget.sessionId.toLowerCase()}',
+              ),
+              sessionId: widget.sessionId,
+            ),
       onRefresh: c == null
           ? null
           : () {

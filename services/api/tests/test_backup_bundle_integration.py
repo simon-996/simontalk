@@ -27,6 +27,9 @@ def test_create_and_check_are_read_only_with_private_ready_files(factory, tmp_pa
     )
     assert result["created"] and result["integrity_verified"] and not result["restore_verified"]
     assert check_backup(path)["manifest_hash"] == result["manifest_hash"]
+    with factory() as db:
+        revision = db.scalar(text("SELECT version_num FROM alembic_version"))
+    assert json.loads((path / "manifest.json").read_text())["schema_revision"] == revision
     assert rows(factory) == before
     assert {p.name for p in path.iterdir()} == {"database.dump", "deletions.json", "manifest.json"}
     assert path.stat().st_mode & 0o777 == 0o700
@@ -35,6 +38,7 @@ def test_create_and_check_are_read_only_with_private_ready_files(factory, tmp_pa
 
 def test_current_schema_is_required_and_failure_does_not_leave_ready_directory(factory, tmp_path):
     with factory.begin() as db:
+        revision = db.scalar(text("SELECT version_num FROM alembic_version"))
         db.execute(text("UPDATE alembic_version SET version_num='unrecognized'"))
     try:
         with pytest.raises(BackupError):
@@ -42,7 +46,9 @@ def test_current_schema_is_required_and_failure_does_not_leave_ready_directory(f
         assert not (tmp_path / "backup").exists()
     finally:
         with factory.begin() as db:
-            db.execute(text("UPDATE alembic_version SET version_num='4f6a58cd2e32'"))
+            db.execute(
+                text("UPDATE alembic_version SET version_num=:version"), {"version": revision}
+            )
 
 
 def test_export_session_cannot_silently_read_a_different_snapshot(factory):
@@ -205,13 +211,18 @@ def test_concurrent_delete_is_outside_exported_snapshot_and_latest_replay_is_req
     from simontalk_api import backup_bundle as module
     from simontalk_api.deletion_archive import export_deletions, read_archive
     from simontalk_api.deletion_restore import replay_deletions
-    from simontalk_api.models import RealtimeConnection
+    from simontalk_api.models import RealtimeConnection, VoiceResponseUsage
 
     source = target_source
     with factory.begin() as db:
         c = db.get(RealtimeConnection, UUID(source.connection["id"]))
         c.status, c.termination_status, c.ended_at = "unknown", "unknown", None
         c.offer_digest, c.signalling_started_at = "a" * 64, c.created_at
+        db.add(
+            VoiceResponseUsage(
+                connection_id=c.id, response_digest="b" * 64, status="completed", input_tokens=37
+            )
+        )
     before = rows(factory)
     original = module._dump
 
@@ -235,6 +246,8 @@ def test_concurrent_delete_is_outside_exported_snapshot_and_latest_replay_is_req
                 assert db.scalar(text(f"SELECT count(*) FROM {table}")) == 0
             c = db.get(RealtimeConnection, UUID(source.connection["id"]))
             assert c.status == "unknown" and c.termination_status == "unknown"
+            usage = db.get(VoiceResponseUsage, (c.id, "b" * 64))
+            assert usage.input_tokens == 37 and usage.output_tokens is None
         replayed = rows(target)
         replay_deletions(target, latest, apply=True, confirm_database=name)
         assert rows(target) == replayed

@@ -269,8 +269,8 @@ User → 多个 PracticeSession → 多个 RealtimeConnection / Turn；PracticeS
 | POST /v1/auth/password-reset/confirm | reset_token、new_password；Web 来源/CSRF 防护 | 204 原子更新密码、消耗单次凭证、撤销全部登录会话；要求重新登录；不接收目标账号 ID |
 | GET /v1/me | 无 | 200 本人基本信息，不返回 password_hash/token_hash |
 | GET / PATCH /v1/me/preferences | PATCH 含 difficulty、speech_pace、subtitle_default、chinese_hints_enabled、translation_mode 中的允许字段及期望 version | 200 偏好与新 version；版本冲突 409；首版 translation_mode 仅 on_demand；显示开关可立即生效，生成策略用于新练习，不修改当前或历史快照 |
-| GET /v1/topics | 可选分页/类别 | 200 可用的日常主题，不接受自定义上游提示词 |
-| POST /v1/practice-sessions | topic_id 或 free_chat、可选难度覆盖；Idempotency-Key | 201 session_id、快照、准入结果；同 key 返回原练习 |
+| GET /v1/topics | 可选分页/类别 | 可更新目录的候选接口。首批四个固定主题随客户端发布，后端核验 ID |
+| POST /v1/practice-sessions | `mode=free_chat` 或 `mode=daily_topic`。后者必填固定 `topic_id`，均可覆盖难度，须带 Idempotency-Key | 已实现。201 返回练习和配置快照，同原输入及 key 可返回原练习。话题只接受目录 ID，由后端生成会话配置 |
 | POST /v1/practice-sessions/{sid}/connections | client_instance_id、expected_epoch；Idempotency-Key | 201连接准备对象、epoch及公开配置；真实准入仍关闭；旧连接未知时拒绝新建，详见实际契约 |
 | POST /v1/practice-sessions/{sid}/discard-preparation | expected_epoch | 已实现；锁后验证完整历史未开始上游，原子取消整项准备；unknown拒绝，不调用供应商 |
 | POST /v1/practice-sessions/{sid}/connections/{cid}/offer | client_instance_id、epoch、offer；单次受限JSON | 已实现；200 JSON answer，仅进入configuring；失败/重复保持可信边界，网关实际关闭，详见[信令契约](2026-10-17-guarded-signalling-api.md) |
@@ -290,10 +290,12 @@ User → 多个 PracticeSession → 多个 RealtimeConnection / Turn；PracticeS
 | GET /v1/practice-sessions/{sid}/connections/{cid}/completion | 无 | 已实现；原scope临时覆盖或固化snapshot及候选话轮/前缀引用，recoverable=false |
 | GET /v1/practice-sessions/{sid}/connections/{cid}/completion-receipt | 无 | 已实现；封存实收IDs、成员hash及全局hash，供pending明确收敛；未固化409，不证明上游终止 |
 | GET /v1/practice-history | cursor、limit（1–20，默认10） | 已实现；本人摘要，created_at/id倒序tuple seek，账号绑定游标，不加载正文 |
-| GET /v1/practice-history/{sid} | 本人ID | 已实现；原难度/业务及保存状态，连接占用独立；跨账号与不存在统一404 |
+| GET /v1/practice-history/{sid} | 本人ID | 已实现。返回当时的话题（如有）、难度、业务及保存状态，连接占用独立。跨账号与不存在统一404 |
 | GET /v1/practice-sessions/{sid} | 无 | 200 快照、连接摘要、最终话语、反馈状态；不返回临时凭证或 SDP |
-| POST /v1/practice-sessions/{sid}/assistance | kind 为 english_starter 或 translation、期望上下文 revision；翻译必填 source_turn_id；Idempotency-Key | 202 辅助请求 ID 与状态；核对本人所有权、准入与输入，创建唯一持久任务；已有同一结果可直接返回，不自动朗读 |
-| GET /v1/practice-sessions/{sid}/assistance/{aid} | 无 | 200 本人请求状态和辅助文字；失败可显式重试，不能把超时伪装成成功 |
+| GET /v1/practice-sessions/{sid}/assistance/context | 原 connection_id、epoch、kind。翻译须指定 source_turn_id 和 source_turn_revision | 已实现。只读返回可用状态、固定输入摘要和同输入请求 ID。不返回原话 |
+| POST /v1/practice-sessions/{sid}/assistance | 原连接、kind、input_revision，翻译也带精确话轮 ID 和版本。使用 Idempotency-Key | 已实现。202 返回辅助请求状态，按本人、当前连接和同输入复用 |
+| GET /v1/practice-sessions/{sid}/assistance/{aid} | 无 | 已实现。本人和原版本核验后返回请求状态和独立文字 |
+| POST /v1/practice-sessions/{sid}/assistance/{aid}/retry | 原请求字段、attempt_count、Idempotency-Key | 已实现。仅明确知道可重试且未耗尽时允许，不重发结果未知的调用 |
 | POST /v1/practice-sessions/{sid}/review-input | input_revision、原input_hash | 已实现；绑定原seal的资格/引用投影；GET同路径纯读，见[复盘输入](2026-10-21-review-inputs.md) |
 | POST /v1/practice-sessions/{sid}/review | 原input_revision、practice_input_hash、review_input_hash、policy_version；Idempotency-Key | 202持久任务；同输入复用，默认blocked/0次，见[反馈任务](2026-10-21-review-jobs.md)；没有真实模型适配 |
 | GET /v1/practice-sessions/{sid}/review | 无 | 200本人当前任务及通过来源/引用/hash校验的结果；纯读，不自动创建或重试 |

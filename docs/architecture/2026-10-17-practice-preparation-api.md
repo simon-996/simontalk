@@ -8,6 +8,8 @@
 
 通过真实准入后，登记保存服务器选定的供应商公开配置标识、当前偏好全量快照与版本。不同账号互不可见；客户端不指定owner、供应商URL、模型密钥或任意提示词。首批只允许`mode=free_chat`、可选`difficulty_override`，必须已完成个人初始难度。
 
+2026-11-25 扩展普通练习接受 `mode=daily_topic`。此模式必须提供固定目录中的 `topic_id`，服务端冻结话题目标和千问提示。旧自由聊天的幂等键仍按原摘要重放。[话题契约及验证](../development/2026-11-25-daily-practice-topics.md)
+
 ## HTTP
 
 所有端点均需现有认证；Web POST继续要求Origin/CSRF和X-Account-ID，保持多标签身份绑定。

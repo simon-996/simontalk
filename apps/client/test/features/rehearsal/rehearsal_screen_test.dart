@@ -116,6 +116,7 @@ void main() {
   for (final action in [
     'refresh',
     'difficulty',
+    'enterSession',
     'history',
     'practice',
     'settings',
@@ -123,7 +124,7 @@ void main() {
     for (final change in ['busy', 'route']) {
       testWidgets('old rehearsal $action rejects $change', (t) async {
         await launch(t);
-        if (action == 'history') {
+        if (action == 'history' || action == 'enterSession') {
           view(t).onConfirm!();
           await t.pumpAndSettle();
         }
@@ -137,6 +138,7 @@ void main() {
         final callback = switch (action) {
           'refresh' => shown.onRefresh!,
           'difficulty' => () => shown.onDifficulty!(Difficulty.advanced),
+          'enterSession' => shown.onEnterSession!,
           'history' => shown.onHistory!,
           'practice' => shown.onPractice!,
           _ => shown.onSettings!,
@@ -457,6 +459,31 @@ void main() {
       );
       expect(find.text('Yes, I enjoy English.'), findsNothing);
       expect(find.text('确认并准备'), findsNothing);
+    },
+  );
+  testWidgets(
+    'session route rejects missing or foreign rehearsal launch extra',
+    (t) async {
+      await launch(t);
+      final r = router(t);
+      r.go('/practice/session');
+      await t.pumpAndSettle();
+      expect(r.routeInformationProvider.value.uri.path, '/practice');
+
+      final foreignTarget = RehearsalTarget.fromJson(
+        {...rehearsalTargetJson(), 'account_id': childId},
+        accountId: childId,
+        sourceSessionId: practiceId,
+        itemId: itemId,
+      );
+      final foreignLaunch = RehearsalSessionLaunch(
+        accountId: childId,
+        preparation: PracticePreparation.fromJson(childJson()),
+        target: foreignTarget,
+      );
+      r.go('/practice/session', extra: foreignLaunch);
+      await t.pumpAndSettle();
+      expect(r.routeInformationProvider.value.uri.path, '/practice');
     },
   );
 }

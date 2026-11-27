@@ -10,15 +10,19 @@ import '../conversation/conversation_models.dart';
 import '../conversation/conversation_projection.dart';
 import '../conversation/final_transcript_journal.dart';
 import '../conversation/playback_evidence_journal.dart';
+import '../practice/daily_topic.dart';
 import '../practice/practice_models.dart';
 import '../practice/practice_repository.dart';
 import '../practice/practice_completion_client.dart';
 import '../practice/practice_completion_models.dart';
 import '../practice/submission_manifest.dart';
+import 'browser_media_session.dart';
 import 'connection_lease_watchdog.dart';
 import 'connection_observation_journal.dart';
 import 'realtime_session_protocol.dart';
 import 'realtime_transport.dart';
+
+const _webSocketChannel = 'websocket';
 
 enum PracticeMediaPhase {
   idle,
@@ -34,6 +38,8 @@ enum MediaReleaseStatus { notNeeded, pending, released, unconfirmed }
 
 enum MediaPlayback { idle, waiting, blocked, playing, paused }
 
+enum SessionSpeechPace { normal, slowing, slow }
+
 typedef RealtimeSignallerFactory = RealtimeSignaller Function(
   ConnectionReservation connection,
   String clientInstanceId,
@@ -46,6 +52,7 @@ class PracticeMediaController extends ChangeNotifier
     required this.repository,
     required this.transportFactory,
     required this.signallerFactory,
+    this.mediaSessionFactory,
     this.protocolFactory = unavailableRealtimeProtocol,
     this.observationJournalFactory,
     this.transcriptJournalFactory,
@@ -72,6 +79,7 @@ class PracticeMediaController extends ChangeNotifier
   final PracticeRepository repository;
   final RealtimeTransport Function() transportFactory;
   final RealtimeSignallerFactory signallerFactory;
+  final RealtimeMediaSessionFactory? mediaSessionFactory;
   final RealtimeProtocolFactory protocolFactory;
   final ObservationJournalFactory? observationJournalFactory;
   final TranscriptJournalFactory? transcriptJournalFactory;
@@ -114,6 +122,9 @@ class PracticeMediaController extends ChangeNotifier
   }
 
   int get transcriptPendingCount => transcriptJournal?.pendingCount ?? 0;
+  bool get hasPendingAssistanceInput =>
+      _transcriptJournal is FinalTranscriptJournal &&
+      (_transcriptJournal as FinalTranscriptJournal).hasPendingLearnerTurn;
   int get transcriptRejectedCount => transcriptJournal?.rejectedCount ?? 0;
   String? get transcriptErrorCode =>
       _transcriptError ?? transcriptJournal?.errorCode;
@@ -157,6 +168,29 @@ class PracticeMediaController extends ChangeNotifier
       _completionError ?? practiceCompletion?.errorCode;
   bool _muted = false;
   bool get muted => _muted;
+  SessionSpeechPace _speechPace = SessionSpeechPace.normal;
+  SessionSpeechPace get speechPace => _speechPace;
+  bool get supportsSlowPaceRequest => mediaSessionFactory != null;
+  bool get canRequestSlowPace =>
+      _phase == PracticeMediaPhase.active &&
+      !_draining &&
+      !_outputHeld &&
+      !interruptionNeedsEnd &&
+      _mediaSession != null &&
+      _mediaSessionActivated &&
+      _speechPace == SessionSpeechPace.normal;
+  bool _activeReplyUnsettled = false;
+  bool _interruptRequested = false;
+  bool get hasInterruptibleReply =>
+      _phase == PracticeMediaPhase.active &&
+      !_draining &&
+      !_outputHeld &&
+      !interruptionNeedsEnd &&
+      _mediaSession != null &&
+      _mediaSessionActivated &&
+      _activeReplyUnsettled &&
+      !_interruptRequested;
+  bool get canTakeOverTurn => hasInterruptibleReply && !_muted;
   bool _signallingAttempted = false;
   bool get signallingAttempted => _signallingAttempted;
   PracticePreparation? _practice;
@@ -187,11 +221,13 @@ class PracticeMediaController extends ChangeNotifier
   bool _foreground = true;
   bool _transportReady = false;
   bool _answerReceived = false;
+  bool _mediaSessionActivated = false;
   String? _confirmedChannel;
   final _channels = <String>{};
   final _events = <RealtimeTransportEvent>[];
   int _eventBytes = 0;
   RealtimeTransport? _transport;
+  RealtimeMediaSession? _mediaSession;
   RealtimeSignaller? _signaller;
   RealtimeSessionProtocol? _protocol;
   Timer? _setupTimer;
@@ -270,28 +306,57 @@ class PracticeMediaController extends ChangeNotifier
   }
 
   /// Completes on configuration + microphone activation, or immediate local closure.
-  Future<void> begin({Difficulty? difficulty}) {
+  Future<void> begin({
+    Difficulty? difficulty,
+    PracticePreparation? preparation,
+    DailyTopic? topic,
+  }) {
     if (_begun != null) return _begun!.future;
     if (_closed || _disposed) return Future.value();
+    if (preparation != null && (difficulty != null || topic != null)) {
+      throw ArgumentError('Cannot override an existing preparation');
+    }
     _begun = Completer<void>();
-    unawaited(_run(difficulty));
+    unawaited(_run(difficulty, topic: topic, existingPreparation: preparation));
     return _begun!.future;
   }
 
-  Future<void> _run(Difficulty? difficulty) async {
+  Future<void> _run(
+    Difficulty? difficulty, {
+    DailyTopic? topic,
+    PracticePreparation? existingPreparation,
+  }) async {
     _creating = true;
     _publish(PracticeMediaPhase.preparing);
     try {
       if (!_guard()) return;
-      _practiceRequested = true;
-      _releaseStatus = MediaReleaseStatus.pending;
-      _practice = await repository.createPractice(
-        key: practiceKey,
-        difficulty: difficulty,
-      );
-      if (!_guard()) return;
-      if (_practice!.status != PracticeStatus.created) {
-        throw const RealtimeFailure('preparation_state_changed');
+      if (mediaSessionFactory == null &&
+          (topic != null || existingPreparation?.configuration.topic != null)) {
+        throw const RealtimeFailure('realtime_unavailable');
+      }
+      if (existingPreparation != null) {
+        if (existingPreparation.status != PracticeStatus.created ||
+            existingPreparation.connectionEpoch != 0) {
+          throw const RealtimeFailure('preparation_state_changed');
+        }
+        _practice = existingPreparation;
+        _practiceRequested = true;
+        _releaseStatus = MediaReleaseStatus.pending;
+      } else {
+        _practiceRequested = true;
+        _releaseStatus = MediaReleaseStatus.pending;
+        _practice = await repository.createPractice(
+          key: practiceKey,
+          difficulty: difficulty,
+          topic: topic,
+        );
+        if (!_guard()) return;
+        if (_practice!.status != PracticeStatus.created) {
+          throw const RealtimeFailure('preparation_state_changed');
+        }
+      }
+      if (_practice!.configuration.preferences.speechPace == 'slow') {
+        _speechPace = SessionSpeechPace.slow;
       }
       final started = _elapsed();
       _connectionRequested = true;
@@ -380,6 +445,10 @@ class PracticeMediaController extends ChangeNotifier
         return;
       }
       _protocol = protocol;
+      if (mediaSessionFactory != null) {
+        await _runMediaSession();
+        return;
+      }
       final signaller = signallerFactory(_connection!, clientInstanceId);
       if (!_guard()) {
         signaller.cancel();
@@ -442,7 +511,8 @@ class PracticeMediaController extends ChangeNotifier
       if (!_closed) {
         if (_practice == null &&
             error is ApiException &&
-            error.code == 'realtime_unavailable') {
+            (error.code == 'realtime_unavailable' ||
+                error.code == 'practice_in_progress')) {
           _practiceRequested = false;
         }
         await stop(reason: _code(error));
@@ -451,6 +521,140 @@ class PracticeMediaController extends ChangeNotifier
       _creating = false;
       if (_closed) await _cleanup();
     }
+  }
+
+  Future<void> _runMediaSession() async {
+    final session = mediaSessionFactory!(
+      connection: _connection!,
+      onEvent: _onMediaSessionEvent,
+      onClosed: _onMediaSessionClosed,
+    );
+    if (!_guard()) {
+      session.stop();
+      return;
+    }
+    _mediaSession = session;
+    if (!_mediaSession!.setMuted(_muted)) {
+      throw const RealtimeFailure('transport_failed');
+    }
+    _publish(PracticeMediaPhase.connecting);
+    if (!_guard()) return;
+    _setupDeadline = _elapsed() + const Duration(seconds: 60);
+    _setupTimer = Timer(
+      const Duration(seconds: 60),
+      () => unawaited(stop(reason: 'connection_timeout')),
+    );
+    await _mediaSession!.start();
+    if (!_guard()) return;
+    if (!_mediaSessionActivated) {
+      throw const RealtimeFailure('invalid_transport_state');
+    }
+  }
+
+  void _onMediaSessionEvent(String kind, String payload) {
+    if (!_guard()) return;
+    switch (kind) {
+      case 'opening':
+        if (_draining || _signallingAttempted) {
+          unawaited(stop(reason: 'invalid_transport_state'));
+          return;
+        }
+        _signallingAttempted = true;
+        _recordObservation('negotiating');
+      case 'ready':
+        if (_draining || !_signallingAttempted || _transportReady) {
+          unawaited(stop(reason: 'invalid_transport_state'));
+          return;
+        }
+        _setupTimer?.cancel();
+        _setupDeadline = null;
+        _answerReceived = true;
+        _transportReady = true;
+        _configurationDeadline = _elapsed() + const Duration(seconds: 30);
+        _configurationTimer = Timer(
+          const Duration(seconds: 30),
+          () => unawaited(stop(reason: 'configuration_timeout')),
+        );
+        _recordObservation('transport_connected');
+        if (!_guard()) return;
+        _publish(PracticeMediaPhase.configuring);
+        _channels.add(_webSocketChannel);
+        _protocolCall(() => _protocol!.channelOpened(_webSocketChannel));
+        if (!_closed && _confirmedChannel != _webSocketChannel) {
+          unawaited(stop(reason: 'configuration_failed'));
+        }
+      case 'active':
+        if (_draining ||
+            !_transportReady ||
+            _mediaSessionActivated ||
+            _confirmedChannel != _webSocketChannel ||
+            _phase != PracticeMediaPhase.configuring) {
+          unawaited(stop(reason: 'invalid_transport_state'));
+          return;
+        }
+        _mediaSessionActivated = true;
+        _configurationTimer?.cancel();
+        _configurationDeadline = null;
+        _recordObservation('microphone_active');
+        if (!_guard()) return;
+        _publish(PracticeMediaPhase.active);
+        _completeBegin();
+      case 'pace_updated':
+        if (!_mediaSessionActivated ||
+            _draining ||
+            payload != 'slow' ||
+            _speechPace != SessionSpeechPace.slowing) {
+          unawaited(stop(reason: 'invalid_event'));
+          return;
+        }
+        _speechPace = SessionSpeechPace.slow;
+        if (_guard()) _publish(_phase);
+      case 'playback':
+        if (!_mediaSessionActivated) {
+          unawaited(stop(reason: 'invalid_event'));
+          return;
+        }
+        if (_draining || _outputHeld) return;
+        switch (payload) {
+          case 'waiting':
+            _activeReplyUnsettled = true;
+            _interruptRequested = false;
+            _observe(const RealtimeObservation('playback_waiting', ''));
+          case 'playing':
+            _activeReplyUnsettled = true;
+            _observe(const RealtimeObservation('playback_playing', ''));
+          case 'idle':
+            _activeReplyUnsettled = false;
+            _interruptRequested = false;
+            _playbackRevision++;
+            _playback = MediaPlayback.idle;
+            if (_guard()) _publish(_phase);
+          default:
+            unawaited(stop(reason: 'invalid_event'));
+        }
+      case 'provider_event':
+      case 'quarantine':
+        if (!_mediaSessionActivated) {
+          unawaited(stop(reason: 'invalid_event'));
+          return;
+        }
+        if (kind == 'quarantine') {
+          _activeReplyUnsettled = false;
+        }
+        _receive(
+          RealtimeTransportEvent(
+            jsonEncode({'kind': kind, 'payload': payload}),
+            _webSocketChannel,
+          ),
+        );
+      default:
+        unawaited(stop(reason: 'invalid_event'));
+    }
+  }
+
+  void _onMediaSessionClosed(String reason) {
+    if (_closed || _disposed) return;
+    unawaited(stop(reason: _safeCode(reason)));
   }
 
   void _observe(RealtimeObservation observation) {
@@ -632,6 +836,10 @@ class PracticeMediaController extends ChangeNotifier
 
   void _send(String json, String channelId) {
     if (!_guard()) return;
+    if (_mediaSession != null) {
+      unawaited(stop(reason: 'unsupported'));
+      return;
+    }
     if (_draining) {
       unawaited(stop(reason: 'drain_protocol_violation'));
       return;
@@ -664,6 +872,10 @@ class PracticeMediaController extends ChangeNotifier
     if (_confirmedChannel != null) return;
     _confirmedChannel = channelId;
     _recordObservation('configuration_confirmed');
+    if (_mediaSession != null) {
+      _recordObservation('requesting_microphone');
+      return;
+    }
     unawaited(_activate(channelId));
   }
 
@@ -718,13 +930,50 @@ class PracticeMediaController extends ChangeNotifier
     if (_draining || (!value && interruptionNeedsEnd)) return;
     final changed = _muted != value;
     _muted = value;
-    _protocolCall(() => _transport?.setMuted(value));
+    if (_mediaSession != null) {
+      if (!_mediaSession!.setMuted(value)) {
+        if (!_closed) unawaited(stop(reason: 'transport_failed'));
+        return;
+      }
+    } else {
+      _protocolCall(() => _transport?.setMuted(value));
+    }
     if (changed && _guard()) _recordObservation(value ? 'muted' : 'unmuted');
     if (_guard()) _publish(_phase);
   }
 
+  bool requestSlowPace() {
+    if (!_guard() || !canRequestSlowPace) return false;
+    _speechPace = SessionSpeechPace.slowing;
+    if (!_mediaSession!.requestSlowPace()) {
+      if (!_closed) unawaited(stop(reason: 'transport_failed'));
+      return false;
+    }
+    if (_guard()) _publish(_phase);
+    return true;
+  }
+
+  bool requestTurnTakeover() {
+    if (!_guard() || !canTakeOverTurn) return false;
+    _interruptRequested = true;
+    _activeReplyUnsettled = false;
+    _playbackRevision++;
+    _playback = MediaPlayback.paused;
+    if (!_mediaSession!.interruptPlayback()) {
+      if (!_closed) unawaited(stop(reason: 'transport_failed'));
+      return false;
+    }
+    if (_guard()) _publish(_phase);
+    return true;
+  }
+
   Future<void> resumePlayback() async {
-    if (!_guard() || _phase != PracticeMediaPhase.active || _outputHeld) return;
+    if (!_guard() ||
+        _phase != PracticeMediaPhase.active ||
+        _outputHeld ||
+        _mediaSession != null) {
+      return;
+    }
     final playbackRevision = ++_playbackRevision;
     try {
       await _transport!.resumePlayback();
@@ -859,6 +1108,10 @@ class PracticeMediaController extends ChangeNotifier
                 kind == RealtimeDrainControlKind.cancelResponse))) {
       return;
     }
+    if (_mediaSession != null) {
+      unawaited(stop(reason: 'unsupported'));
+      return;
+    }
     if (channelId != _confirmedChannel ||
         (kind == RealtimeDrainControlKind.finishInput && responseId != null) ||
         (kind == RealtimeDrainControlKind.cancelResponse &&
@@ -958,7 +1211,11 @@ class PracticeMediaController extends ChangeNotifier
     _playback = MediaPlayback.paused;
     _holdingOutput = true;
     try {
-      _transport!.holdPlayback();
+      if (_mediaSession != null) {
+        _mediaSession!.holdPlayback();
+      } else {
+        _transport!.holdPlayback();
+      }
     } finally {
       _holdingOutput = false;
     }
@@ -1069,6 +1326,10 @@ class PracticeMediaController extends ChangeNotifier
     if (!_guard() ||
         !_validContext(snapshot, channelId) ||
         _contextControlSent) {
+      return;
+    }
+    if (_mediaSession != null) {
+      unawaited(stop(reason: 'unsupported'));
       return;
     }
     _contextControlSent = true;
@@ -1283,6 +1544,8 @@ class PracticeMediaController extends ChangeNotifier
     _drainDeadline = lease != null && lease < configured ? lease : configured;
     _lease.stopRenewal();
     _draining = true;
+    _activeReplyUnsettled = false;
+    _interruptRequested = false;
     _phase = PracticeMediaPhase.draining;
     _preparingDrain = true;
     for (final turn in _conversation!.snapshot.turns) {
@@ -1294,7 +1557,11 @@ class PracticeMediaController extends ChangeNotifier
     _requestCompletionEnd();
     if (!_guard()) return done;
     try {
-      _transport!.beginDrain();
+      if (_mediaSession != null) {
+        _mediaSession!.beginDrain();
+      } else {
+        _transport!.beginDrain();
+      }
       if (!_guard()) return done;
       _protocol!.beginDrain();
       if (!_guard()) return done;
@@ -1377,8 +1644,11 @@ class PracticeMediaController extends ChangeNotifier
     _needsContextConfirmation = false;
     _pendingTail.clear();
     _pendingTailBytes = 0;
+    _activeReplyUnsettled = false;
+    _interruptRequested = false;
     _playback = MediaPlayback.idle;
     for (final release in [
+      () => _mediaSession?.stop(),
       () => _transport?.stop(),
       () => _signaller?.cancel(),
       () => _protocol?.dispose(),

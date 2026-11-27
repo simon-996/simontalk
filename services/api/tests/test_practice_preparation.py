@@ -111,6 +111,46 @@ def test_same_key_different_input_conflicts(client, account, admission, factory)
     assert row_count(factory) == 1
 
 
+def test_daily_topic_is_validated_frozen_and_owner_scoped(client, account, signup, admission):
+    _, headers = account
+    key = uuid.uuid4()
+    first = start(client, headers, key=key, mode="daily_topic", topic_id="weekend_plans")
+    assert first.status_code == 201, first.text
+    saved = first.json()
+    assert saved["mode"] == "daily_topic" and saved["kind"] == "ordinary"
+    assert saved["configuration"]["topic"]["title"] == "周末计划"
+    assert (
+        start(client, headers, key=key, mode="daily_topic", topic_id="weekend_plans").json()
+        == saved
+    )
+    assert start(client, headers, key=key, mode="daily_topic", topic_id="food").status_code == 409
+    assert start(client, headers, key=key).status_code == 409
+    assert client.get("/v1/practice-sessions/current", headers=headers).json()["practice"] == saved
+    history = f"/v1/practice-history/{saved['id']}"
+    detail = client.get(history, headers=headers).json()["item"]
+    assert detail["topic"] == {
+        "id": "weekend_plans",
+        "title": "周末计划",
+        "goal": "分享一个周末安排",
+    }
+    stranger = {"Authorization": f"Bearer {signup(username='other')['access_token']}"}
+    assert client.get(history, headers=stranger).status_code == 404
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"mode": "daily_topic"},
+        {"mode": "daily_topic", "topic_id": "made_up"},
+        {"mode": "free_chat", "topic_id": "food"},
+        {"mode": "daily_topic", "topic_id": "food", "prompt": "user instructions"},
+    ],
+)
+def test_invalid_topic_preparation_writes_nothing(client, account, admission, factory, body):
+    assert start(client, account[1], **body).status_code == 422
+    assert row_count(factory) == 0
+
+
 def test_different_keys_cannot_open_two_preparations(client, account, admission):
     _, headers = account
     assert start(client, headers).status_code == 201

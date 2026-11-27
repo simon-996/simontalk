@@ -401,14 +401,16 @@ def test_late_database_confirmation_cannot_revive_cancelled_claim(
     asyncio.run(run())
 
 
-@pytest.mark.parametrize("invalidation", ["revoke", "expire_lease"])
+@pytest.mark.parametrize("invalidation", ["revoke", "expire_lease", "completed_practice"])
 def test_running_session_is_closed_after_authorization_or_lease_loss(
     factory, app, supervisor_scope, invalidation
 ):
     from datetime import timedelta
 
+    from simontalk_api.models import PracticeSession
+
     async def run():
-        _, connection, identity, auth_id = supervisor_scope
+        prepared, connection, identity, auth_id = supervisor_scope
         closed = asyncio.Event()
 
         class ObservableSocket(FakeSocket):
@@ -426,11 +428,26 @@ def test_running_session_is_closed_after_authorization_or_lease_loss(
                         .where(AuthSession.id == auth_id)
                         .values(revoked_at=now())
                     )
-                else:
+                elif invalidation == "expire_lease":
                     db.execute(
                         update(RealtimeConnection)
                         .where(RealtimeConnection.id == UUID(connection["id"]))
                         .values(lease_expires_at=now() - timedelta(seconds=1))
+                    )
+                else:
+                    db.execute(
+                        update(PracticeSession)
+                        .where(PracticeSession.id == UUID(prepared.session["id"]))
+                        .values(status="ending")
+                    )
+            if invalidation == "completed_practice":
+                await asyncio.sleep(1.2)
+                assert not closed.is_set()
+                with factory.begin() as db:
+                    db.execute(
+                        update(PracticeSession)
+                        .where(PracticeSession.id == UUID(prepared.session["id"]))
+                        .values(status="completed")
                     )
             await asyncio.wait_for(closed.wait(), timeout=4)
         check_unknown(factory, connection)
@@ -485,5 +502,107 @@ def test_stalled_runtime_database_fails_closed_without_repeated_checks(
             release.set()
         assert await asyncio.to_thread(exited.wait, 5)
         check_unknown(factory, connection)
+
+    asyncio.run(run())
+
+
+def test_rehearsal_supervisor_sends_rehearsal_instructions_and_stops_on_source_delete(
+    client, app, account, factory, monkeypatch
+):
+    from datetime import timedelta
+
+    from test_rehearsal_preparations import create, release
+    from test_saved_transcripts import base, event, seal, successful_review
+
+    from simontalk_api import websocket_supervisor as module
+
+    monkeypatch.setattr(module, "_RECHECK_INTERVAL", 0.05)
+
+    class Admission:
+        def admit(self, user_id):
+            return SimpleNamespace(**CONFIG)
+
+    app.state.practice_admission = Admission()
+    identity, headers = account
+    parent_resp = client.post(
+        "/v1/practice-sessions",
+        headers={**headers, "Idempotency-Key": str(uuid4())},
+        json={"mode": "free_chat"},
+    )
+    assert parent_resp.status_code == 201
+    parent_scope = SimpleNamespace(identity=identity, headers=headers, session=parent_resp.json())
+    original = event(text="I enjoy English. 我喜欢英语。")
+    _, completion = seal(client, parent_scope, [original])
+    job = successful_review(client, parent_scope, completion, factory)
+    item = job["result"]["items"][0]
+    source = SimpleNamespace(
+        scope=parent_scope,
+        item=item,
+        path=base(parent_scope) + f"/review-items/{item['id']}/rehearsal-target",
+    )
+    release(factory, source)
+    target = client.get(source.path, headers=source.scope.headers).json()
+    rehearsal_session = create(
+        client, source, target["target_hash"], difficulty_override="advanced"
+    ).json()["practice"]
+    rehearsal_prepared = SimpleNamespace(
+        identity=source.scope.identity,
+        headers=source.scope.headers,
+        session=rehearsal_session,
+    )
+    connection = reserve(client, rehearsal_prepared).json()
+    user_id = UUID(source.scope.identity["user"]["id"])
+    auth_id, token_digest = uuid4(), digest("rehearsal-supervisor-web-session")
+    with factory.begin() as db:
+        db.add(
+            AuthSession(
+                id=auth_id,
+                user_id=user_id,
+                token_digest=token_digest,
+                platform="web",
+                expires_at=now() + timedelta(hours=1),
+            )
+        )
+    rehearsal_scope = (
+        rehearsal_prepared,
+        connection,
+        HandshakeIdentity(user_id, token_digest),
+        auth_id,
+    )
+
+    async def run():
+        closed = asyncio.Event()
+
+        class ObservableSocket(FakeSocket):
+            async def close(self, code=1000):
+                await super().close(code)
+                closed.set()
+
+        socket = ObservableSocket()
+        claim, calls = make_claim(factory, app, rehearsal_scope, socket)
+        assert claim.rehearsal is not None
+        async with supervise_websocket(
+            factory, rehearsal_scope[2], claim, app.state.practice_admission
+        ):
+            assert len(calls) == 1 and len(socket.sent) == 1
+            instructions = socket.sent[0]["session"]["instructions"]
+            assert "helping the learner rehearse one expression" in instructions
+            assert target["exact_quote"] in instructions
+            assert target["suggestion"] in instructions
+            scope_resp = client.get(
+                f"/v1/practice-history/{source.scope.session['id']}/deletion-scope",
+                headers=source.scope.headers,
+            )
+            assert scope_resp.status_code == 200
+            del_resp = client.request(
+                "DELETE",
+                f"/v1/practice-history/{source.scope.session['id']}",
+                headers={**source.scope.headers, "Idempotency-Key": str(uuid4())},
+                json={"scope_version": scope_resp.json()["scope_version"]},
+            )
+            assert del_resp.status_code == 200
+            await asyncio.wait_for(closed.wait(), timeout=2)
+        check_unknown(factory, connection)
+        assert socket.close_calls == 1
 
     asyncio.run(run())

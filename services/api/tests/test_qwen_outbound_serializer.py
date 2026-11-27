@@ -63,6 +63,28 @@ def test_control_is_serialized_ahead_of_waiting_audio():
     asyncio.run(run())
 
 
+def test_end_discards_a_reply_waiting_behind_an_in_flight_write():
+    async def run():
+        connection = Connection()
+        sender = QwenSerializedSender(connection)
+        first = asyncio.create_task(sender.send(audio(1)))
+        await connection.entered.wait()
+        reply = asyncio.create_task(sender.send('{"type": "response.create"}'))
+        await asyncio.sleep(0)
+        try:
+            sender.stop_creating_responses()
+            connection.release.set()
+            await asyncio.gather(first, reply)
+            await sender.send('{"type":"response.create"}')
+            await sender.send('{"type":"response.cancel"}')
+            assert connection.sent == ["input_audio_buffer.append", "response.cancel"]
+        finally:
+            await sender.close()
+            await asyncio.gather(first, reply, return_exceptions=True)
+
+    asyncio.run(run())
+
+
 @pytest.mark.parametrize(
     "value",
     [
@@ -173,5 +195,45 @@ def test_transport_failure_rejects_inflight_and_closes_once():
         assert "private" not in str(caught.value)
         await sender.close()
         assert connection.closes == 1
+
+    asyncio.run(run())
+
+
+def test_session_update_is_allowed_once_via_dedicated_method_and_skipped_after_drain():
+    async def run():
+        connection = Connection()
+        sender = QwenSerializedSender(connection)
+        first = asyncio.create_task(sender.send(audio(1)))
+        await connection.entered.wait()
+        second = asyncio.create_task(sender.send(audio(2)))
+        await asyncio.sleep(0)
+        pace = asyncio.create_task(
+            sender.send_session_update(
+                '{"type":"session.update","session":{"instructions":"slow"}}'
+            )
+        )
+        await asyncio.sleep(0)
+        connection.release.set()
+        await asyncio.gather(first, second, pace)
+        assert connection.sent == [
+            "input_audio_buffer.append",
+            "session.update",
+            "input_audio_buffer.append",
+        ]
+        with pytest.raises(QwenSendError):
+            await sender.send_session_update(
+                '{"type":"session.update","session":{"instructions":"slow"}}'
+            )
+        assert connection.closes == 1
+
+        draining_conn = Connection()
+        draining_conn.block = False
+        draining_sender = QwenSerializedSender(draining_conn)
+        draining_sender.stop_creating_responses()
+        await draining_sender.send_session_update(
+            '{"type":"session.update","session":{"instructions":"slow"}}'
+        )
+        assert draining_conn.sent == []
+        await draining_sender.close()
 
     asyncio.run(run())

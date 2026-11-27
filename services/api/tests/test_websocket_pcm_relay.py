@@ -49,6 +49,12 @@ def test_controls_and_pcm_allow_only_current_unmuted_generation():
         assert await relay.accept(mode(3, False)) == "mode"
         assert await relay.accept(frame(3, 4)) == "forwarded"
         assert [e["type"] for e in connection.sent] == ["input_audio_buffer.append"] * 2
+        assert await relay.accept('{"kind":"pace","pace":"slow"}') == ("pace", "slow")
+        assert await relay.accept('{"kind":"interrupt"}') == "interrupt"
+        assert await relay.accept('{"kind":"settled","response_id":"resp_1"}') == (
+            "settled",
+            "resp_1",
+        )
         assert await relay.accept('{"kind":"stop"}') == "stopped"
         assert connection.closes == 1
         with pytest.raises(PcmRelayError):
@@ -61,11 +67,21 @@ def test_controls_and_pcm_allow_only_current_unmuted_generation():
     "message",
     [
         "{}",
+        '{"kind":"drain","extra":"secret"}',
         '{"kind":"mode","kind":"mode","epoch":1,"muted":false}',
         '{"kind":"mode","epoch":2,"muted":false}',
         '{"kind":"mode","epoch":1,"muted":0}',
         '{"kind":"mode","epoch":1,"muted":false,"provider":"secret"}',
         '{"kind":"response.create"}',
+        '{"kind":"settled"}',
+        '{"kind":"settled","response_id":""}',
+        '{"kind":"settled","response_id":"bad id"}',
+        '{"kind":"settled","response_id":"r","extra":1}',
+        '{"kind":"pace"}',
+        '{"kind":"pace","pace":"normal"}',
+        '{"kind":"pace","pace":"slow","extra":1}',
+        '{"kind":"interrupt"}',
+        '{"kind":"interrupt","extra":1}',
         '{"kind":"stop","extra":"secret"}',
         "x" * 1025,
         "\ud800",
@@ -82,6 +98,29 @@ def test_invalid_controls_and_frames_fail_closed(message):
         assert connection.sent == [] and connection.closes == 1
         with pytest.raises(PcmRelayError):
             await relay.accept(mode(1, False))
+
+    asyncio.run(run())
+
+
+@pytest.mark.parametrize(
+    "late",
+    [
+        frame(1, 2),
+        mode(2, True),
+        '{"kind":"drain"}',
+        '{"kind":"pace","pace":"slow"}',
+        '{"kind":"interrupt"}',
+        '{"kind":"settled","response_id":"r"}',
+    ],
+)
+def test_drain_rejects_further_audio_and_controls_other_than_stop(late):
+    async def run():
+        connection, relay = make()
+        assert await relay.accept(mode(1, False)) == "mode"
+        assert await relay.accept('{"kind":"drain"}') == "draining"
+        with pytest.raises(PcmRelayError):
+            await relay.accept(late)
+        assert connection.sent == [] and connection.closes == 1
 
     asyncio.run(run())
 
@@ -190,5 +229,23 @@ def test_close_during_async_mode_change_never_reopens_delivery():
         assert adapter.closes == 1
         with pytest.raises(PcmRelayError):
             await relay.accept(frame(1, 1))
+
+    asyncio.run(run())
+
+
+def test_duplicate_pace_control_fails_closed():
+    async def run():
+        connection, relay = make()
+        assert await relay.accept('{"kind":"pace","pace":"slow"}') == ("pace", "slow")
+        with pytest.raises(PcmRelayError):
+            await relay.accept('{"kind":"pace","pace":"slow"}')
+        assert connection.closes == 1
+
+        c2, r2 = make()
+        await r2.accept(mode(1, False))
+        assert await r2.accept('{"kind":"interrupt"}') == "interrupt"
+        with pytest.raises(PcmRelayError):
+            await r2.accept('{"kind":"interrupt"}')
+        assert c2.closes == 1
 
     asyncio.run(run())

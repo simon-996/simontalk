@@ -88,6 +88,9 @@ class FinalTranscriptJournal extends ChangeNotifier
     return _queue.length;
   }
 
+  bool get hasPendingLearnerTurn =>
+      _ownsAccount() && _queue.any((event) => event['role'] == 'user');
+
   @override
   int get rejectedCount => _rejected;
 

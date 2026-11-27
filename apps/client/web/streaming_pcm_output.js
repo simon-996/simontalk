@@ -1,6 +1,9 @@
 (() => {
   'use strict';
 
+  const outputClockPollMs = 25;
+  const outputClockWaitMs = 1000;
+
   // Estimates only. This component does not produce playback evidence.
   function create(context, sampleRate) {
     if (!context || context.state !== 'running' || typeof context.addEventListener !== 'function' ||
@@ -9,19 +12,27 @@
       throw new TypeError('Invalid audio configuration');
     }
     const chunks = [];
+    const hasOutputClock = typeof context.getOutputTimestamp === 'function';
     let stopped = false;
+    let completed = false;
+    let settled = false;
+    let onSettledCallback = null;
+    let onUnavailableCallback = null;
+    let clockDeadline = null;
+    let clockTimer = null;
     let invalidClock = false;
+    let releaseFailed = false;
     let lastOutputTime = null;
     let lastGraphTime = null;
     let lastPerformanceTime = null;
     let frozen = null;
 
-    function estimate() {
-      if (stopped) return frozen;
+    function readOutputTime() {
       if (invalidClock) return null;
       try {
-        const graphTime = context.currentTime;
         const timestamp = context.getOutputTimestamp();
+        // The audio graph can advance during the timestamp query.
+        const graphTime = context.currentTime;
         const outputTime = timestamp.contextTime;
         if (context.state !== 'running' || !Number.isFinite(graphTime) || graphTime < 0 ||
             !Number.isFinite(outputTime) || outputTime < 0 || outputTime > graphTime ||
@@ -35,30 +46,83 @@
         lastOutputTime = outputTime;
         lastGraphTime = graphTime;
         lastPerformanceTime = timestamp.performanceTime;
-        return chunks.reduce((total, chunk) =>
-          total + Math.max(0, Math.min(outputTime, chunk.end) - chunk.start), 0);
+        return outputTime;
       } catch (_) {
         invalidClock = true;
         return null;
       }
     }
 
-    function stop() {
+    function estimate() {
       if (stopped) return frozen;
-      frozen = estimate();
+      const outputTime = readOutputTime();
+      if (outputTime === null) return null;
+      return chunks.reduce((total, chunk) =>
+        total + Math.max(0, Math.min(outputTime, chunk.end) - chunk.start), 0);
+    }
+
+    function checkSettled() {
+      if (stopped || settled || !completed || !chunks.every((chunk) => chunk.ended)) return;
+      const last = chunks.at(-1);
+      if (last && hasOutputClock) {
+        clockDeadline ??= performance.now() + outputClockWaitMs;
+        const outputTime = readOutputTime();
+        if (stopped) return;
+        const now = performance.now();
+        if (!Number.isFinite(clockDeadline) || !Number.isFinite(now) ||
+            outputTime === null || now >= clockDeadline) {
+          fail();
+          return;
+        }
+        if (outputTime < last.end) {
+          clockTimer = setTimeout(() => {
+            clockTimer = null;
+            checkSettled();
+          }, Math.min(outputClockPollMs, clockDeadline - now));
+          return;
+        }
+      }
+      settled = true;
+      try { context.removeEventListener('statechange', stateChanged); } catch (_) {}
+      const callback = onSettledCallback;
+      onSettledCallback = null;
+      onUnavailableCallback = null;
+      if (callback) callback();
+    }
+
+    function release(measure = false) {
+      if (stopped) return !releaseFailed;
+      frozen = measure ? estimate() : null;
       stopped = true;
-      try { context.removeEventListener('statechange', stateChanged); } catch (_) { frozen = null; }
+      if (clockTimer !== null) {
+        clearTimeout(clockTimer);
+        clockTimer = null;
+      }
+      onSettledCallback = null;
+      onUnavailableCallback = null;
+      try { context.removeEventListener('statechange', stateChanged); } catch (_) { releaseFailed = true; }
       for (const chunk of chunks) {
-        try { chunk.node.stop(); } catch (_) { frozen = null; }
-        try { chunk.node.disconnect(); } catch (_) { frozen = null; }
+        if (!chunk.ended) {
+          try { chunk.node.stop(); } catch (_) { releaseFailed = true; }
+        }
+        try { chunk.node.disconnect(); } catch (_) { releaseFailed = true; }
       }
       chunks.length = 0;
+      if (releaseFailed) frozen = null;
+      return !releaseFailed;
+    }
+
+    function stop() {
+      release(true);
       return frozen;
     }
 
     function fail() {
+      const callback = onUnavailableCallback;
       invalidClock = true;
-      stop();
+      releaseFailed = true;
+      release();
+      if (callback) callback();
       return false;
     }
 
@@ -66,8 +130,21 @@
       if (context.state !== 'running') fail();
     }
 
+    function finish(onSettled, onUnavailable) {
+      if (stopped || completed || invalidClock || context.state !== 'running' ||
+          typeof onSettled !== 'function') {
+        return fail();
+      }
+      completed = true;
+      onSettledCallback = onSettled;
+      onUnavailableCallback = onUnavailable;
+      checkSettled();
+      return !stopped;
+    }
+
     function append(bytes) {
       if (stopped) return false;
+      if (completed) return fail();
       if (!(bytes instanceof Uint8Array) || bytes.byteLength === 0 || bytes.byteLength % 2 ||
           bytes.byteLength > sampleRate * 2 || chunks.length >= 256 ||
           context.state !== 'running' || !Number.isFinite(context.currentTime)) return fail();
@@ -94,7 +171,14 @@
           try { node.disconnect(); } catch (_) { /* Best effort release. */ }
           return fail();
         }
-        chunks.push({ start, end, node });
+        const chunk = { start, end, node, ended: false };
+        node.onended = () => {
+          if (chunk.ended) return;
+          chunk.ended = true;
+          try { node.disconnect(); } catch (_) {}
+          checkSettled();
+        };
+        chunks.push(chunk);
         node.start(start);
         if (stopped) return false;
         if (context.state !== 'running' || !Number.isFinite(context.currentTime) ||
@@ -109,7 +193,7 @@
     }
 
     context.addEventListener('statechange', stateChanged);
-    return { append, estimateSeconds: estimate, stop };
+    return { append, estimateSeconds: estimate, finish, release, stop };
   }
 
   // Routes already-authorized PCM to exactly one explicitly started response.
@@ -147,7 +231,7 @@
       const previous = active;
       active = null;
       if (previous) {
-        try { previous.player.stop(); } catch (_) { /* Best effort release. */ }
+        try { previous.player.release(); } catch (_) { /* Best effort release. */ }
       }
     }
 
@@ -162,13 +246,13 @@
       let player;
       try {
         player = create(context, sampleRate);
-        if (closed) { player.stop(); return false; }
+        if (closed) { player.release(); return false; }
         responses.add(responseId);
         items.add(itemId);
-        active = { responseId, itemId, player, eventCount: 0 };
+        active = { responseId, itemId, player, eventCount: 0, completing: false };
         return true;
       } catch (_) {
-        if (player) { try { player.stop(); } catch (_) {} }
+        if (player) { try { player.release(); } catch (_) {} }
         close();
         return false;
       } finally { busy = false; }
@@ -185,7 +269,7 @@
         if (responses.has(event.responseId) && event.responseId !== active?.responseId) {
           return 'stale';
         }
-        if (!active || event.responseId !== active.responseId ||
+        if (!active || active.completing || event.responseId !== active.responseId ||
             event.itemId !== active.itemId || !validId(event.eventId) ||
             event.outputIndex !== 0 || event.contentIndex !== 0 ||
             events.has(event.eventId) || active.eventCount >= 256) {
@@ -219,7 +303,8 @@
           return 'stale';
         }
         const encoded = event.delta;
-        if (!active || event.response_id !== active.responseId || event.item_id !== active.itemId ||
+        if (!active || active.completing || event.response_id !== active.responseId ||
+            event.item_id !== active.itemId ||
             !validId(event.event_id) || events.has(event.event_id) || active.eventCount >= 256 ||
             event.output_index !== 0 || event.content_index !== 0 ||
             typeof encoded !== 'string' || encoded.length === 0 ||
@@ -245,6 +330,39 @@
       return append(chunk);
     }
 
+    function complete(responseId, onSettled, onUnavailable = () => {}) {
+      if (closed) return false;
+      if (busy || !validId(responseId) || typeof onSettled !== 'function' ||
+          typeof onUnavailable !== 'function' ||
+          !active || active.responseId !== responseId || active.completing) {
+        close(); return false;
+      }
+      busy = true;
+      const target = active;
+      target.completing = true;
+      let notifySync = false;
+      let ready = false;
+      try {
+        const ok = target.player.finish(() => {
+          if (closed || active !== target) return;
+          active = null;
+          if (ready) onSettled(); else notifySync = true;
+        }, () => {
+          if (closed || active !== target) return;
+          close();
+          onUnavailable();
+        });
+        if (!ok) { close(); return false; }
+      } catch (_) {
+        close(); return false;
+      } finally {
+        busy = false;
+        ready = true;
+      }
+      if (notifySync && !closed) onSettled();
+      return !closed;
+    }
+
     function stop(responseId) {
       if (closed) return false;
       if (busy || !validId(responseId)) { close(); return false; }
@@ -253,8 +371,7 @@
       busy = true;
       const previous = active;
       try {
-        const result = previous.player.stop();
-        if (closed || result === null || !Number.isFinite(result) || result < 0) {
+        if (!previous.player.release() || closed) {
           close(); return false;
         }
         active = null;
@@ -264,7 +381,7 @@
       } finally { busy = false; }
     }
 
-    return { start, append, appendQwenDelta, stop, dispose: close };
+    return { start, append, appendQwenDelta, complete, stop, dispose: close };
   }
 
   window.simontalkStreamingPcmOutput = { create, createResponseRouter };

@@ -1,9 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:simontalk_client/design/app_theme.dart';
 import 'package:simontalk_client/features/account/account_controller.dart';
 import 'package:simontalk_client/features/account/account_models.dart';
+import 'package:simontalk_client/features/practice/daily_topic.dart';
 import 'package:simontalk_client/features/realtime/practice_media_controller.dart';
 import 'package:simontalk_client/features/realtime/practice_media_providers.dart';
 import 'package:simontalk_client/features/session/practice_session_screen.dart';
@@ -13,15 +16,15 @@ import '../practice/practice_fixtures.dart';
 import '../practice/practice_providers_test.dart' show ScopedAccountController;
 import '../realtime/media_fixtures.dart';
 
-AccountState _noSubtitles(String id) => AccountState(
+AccountState _noSubtitles(String id, {bool hints = true}) => AccountState(
   phase: SessionPhase.signedIn,
   session: AccountSession(
     AccountUser(id: id, username: 'test-only', displayName: 'Test'),
-    const AccountPreferences(
+    AccountPreferences(
       difficulty: Difficulty.beginner,
       speechPace: 'normal',
       subtitleDefault: false,
-      chineseHintsEnabled: true,
+      chineseHintsEnabled: hints,
       version: 1,
     ),
   ),
@@ -32,6 +35,11 @@ class NoSubtitlesAccountController extends AccountController {
   AccountState build() => _noSubtitles(accountId);
 }
 
+class NoHintsAccountController extends AccountController {
+  @override
+  AccountState build() => _noSubtitles(accountId, hints: false);
+}
+
 void main() {
   late MediaHarness harness;
   late ProviderContainer container;
@@ -39,10 +47,18 @@ void main() {
   Future<void> open(
     WidgetTester tester, {
     AccountController Function()? account,
+    TopicSessionLaunch? topicLaunch,
+    bool serverMediaAvailable = false,
   }) async {
     await tester.binding.setSurfaceSize(const Size(390, 844));
     addTearDown(() => tester.binding.setSurfaceSize(null));
-    harness = MediaHarness(tester);
+    harness = MediaHarness(
+      tester,
+      mediaSessionFactory: serverMediaAvailable
+          ? ({required connection, required onEvent, required onClosed}) =>
+                throw StateError('This request fixture supplies no media')
+          : null,
+    );
     container = ProviderContainer(
       overrides: [
         accountControllerProvider.overrideWith(
@@ -61,7 +77,8 @@ void main() {
               builder: (context) => TextButton(
                 onPressed: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (_) => const PracticeSessionScreen(),
+                    builder: (_) =>
+                        PracticeSessionScreen(topicLaunch: topicLaunch),
                   ),
                 ),
                 child: const Text('打开通话'),
@@ -92,6 +109,48 @@ void main() {
     expect(harness.signallerCreates, 1);
     expect(find.text('正在连接语音，请稍候…'), findsOneWidget);
     expect(find.text('正在听你说'), findsNothing);
+    await close(tester);
+  });
+
+  testWidgets('topic launch preserves the confirmed difficulty', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      serverMediaAvailable: true,
+      topicLaunch: const TopicSessionLaunch(
+        accountId: accountId,
+        topic: DailyTopic.travel,
+        difficulty: Difficulty.advanced,
+      ),
+    );
+    final creation = harness.requests.firstWhere(
+      (request) => request.url.path == '/v1/practice-sessions',
+    );
+    expect(jsonDecode(creation.body), {
+      'mode': 'daily_topic',
+      'topic_id': 'travel',
+      'difficulty_override': 'advanced',
+    });
+    expect(find.text('本次难度：深入表达'), findsOneWidget);
+    await close(tester);
+  });
+
+  testWidgets('a topic cannot reserve a connection with only legacy media', (
+    tester,
+  ) async {
+    await open(
+      tester,
+      topicLaunch: const TopicSessionLaunch(
+        accountId: accountId,
+        topic: DailyTopic.travel,
+        difficulty: Difficulty.beginner,
+      ),
+    );
+    expect(harness.requests, isEmpty);
+    expect(harness.signallerCreates, 0);
+    expect(harness.transportCreates, 0);
+    expect(harness.controller.errorCode, 'realtime_unavailable');
     await close(tester);
   });
 
@@ -168,6 +227,118 @@ void main() {
       await tester.pump();
       expect(find.text('字幕：开'), findsOneWidget);
       expect(find.text('字幕已关闭，可随时在右上角打开。'), findsNothing);
+      await close(tester);
+    },
+  );
+
+  testWidgets(
+    'Chinese opening guidance is independent of subtitles and microphone',
+    (tester) async {
+      await open(tester, account: NoHintsAccountController.new);
+      await harness.configured();
+      await tester.pump();
+      const hint = '可以先说一件今天发生的小事。';
+      expect(find.text(hint), findsNothing);
+      final requestCount = harness.requests.length;
+      await tester.tap(find.byTooltip('开启中文提示'));
+      await tester.pump();
+      expect(find.text(hint), findsOneWidget);
+      expect(find.text('字幕：关'), findsOneWidget);
+      expect(harness.requests, hasLength(requestCount));
+
+      await tester.tap(find.text('字幕：关'));
+      await tester.pump();
+      expect(find.text(hint), findsOneWidget);
+      await tester.tap(find.text('静音麦克风'));
+      await tester.pump();
+      expect(find.text(hint), findsNothing);
+      await tester.tap(find.text('打开麦克风'));
+      await tester.pump();
+      expect(find.text(hint), findsOneWidget);
+      harness.protocol!.callbacks.emitConversation(facts.user(), 'channel-0');
+      await tester.pump();
+      expect(find.text(hint), findsNothing);
+      expect(find.byTooltip('关闭中文提示'), findsOneWidget);
+      await close(tester);
+    },
+  );
+
+  testWidgets('starter checks the text service only on explicit action', (
+    tester,
+  ) async {
+    await open(tester, account: NoHintsAccountController.new);
+    await harness.configured();
+    await tester.pump();
+    expect(
+      harness.requests.where((r) => r.url.path.contains('/assistance')),
+      isEmpty,
+    );
+    final connection = harness.controller.connection!;
+    harness.handler = (request) async {
+      if (!request.url.path.endsWith('/assistance/context')) {
+        return harness.normalResponse(request);
+      }
+      return response({
+        'account_id': accountId,
+        'session_id': connection.sessionId,
+        'connection_id': connection.id,
+        'epoch': connection.epoch,
+        'kind': 'english_starter',
+        'input_revision': 'a' * 64,
+        'can_generate': false,
+      });
+    };
+    await tester.tap(find.text('给我一个英文开头'));
+    await tester.pumpAndSettle();
+    expect(find.text('英文开头服务暂不可用。'), findsOneWidget);
+    expect(
+      harness.requests
+          .where((r) => r.url.path.contains('/assistance'))
+          .map((r) => r.method),
+      ['GET'],
+    );
+    await tester.tap(find.text('关闭提示'));
+    await tester.pump();
+    expect(find.text('字幕：关'), findsOneWidget);
+    await close(tester);
+  });
+
+  testWidgets(
+    'translation selection lists only final turns and keeps captions',
+    (tester) async {
+      await open(tester);
+      await harness.configured();
+      final protocol = harness.protocol!;
+      protocol.callbacks.emitConversation(
+        facts.user(text: 'I am still starting', finalText: false),
+        'channel-0',
+      );
+      await tester.pump();
+      await tester.tap(find.text('逐句翻译'));
+      await tester.pump();
+      expect(find.text('选择要翻译的话轮'), findsOneWidget);
+      expect(find.text('I am still starting'), findsOneWidget);
+      expect(
+        find.widgetWithText(OutlinedButton, 'I am still starting'),
+        findsNothing,
+      );
+      protocol.callbacks.emitConversation(
+        facts.user(revision: 2, text: 'I like listening to music.'),
+        'channel-0',
+      );
+      await tester.pump();
+      expect(
+        find.widgetWithText(OutlinedButton, 'I like listening to music.'),
+        findsOneWidget,
+      );
+      expect(find.text('I like listening to music.'), findsNWidgets(2));
+      expect(
+        harness.requests.where((r) => r.url.path.contains('/assistance')),
+        isEmpty,
+      );
+      await tester.tap(find.text('关闭提示'));
+      await tester.pump();
+      expect(find.text('字幕：开'), findsOneWidget);
       await close(tester);
     },
   );

@@ -40,3 +40,9 @@
 Screen在实际点击时核对当前Route与最新URI、已登录owner、账号非busy、当前provider/controller及控制器非busy。明确准备绑定实际展示target对象和难度，后续选难度或重读目标后旧确认不提交；原请求核对绑定同一目标，仍由原Controller重放原key/body；放弃和查看记录绑定展示preparation。刷新、难度、当前练习和设置入口也遵守同一门。
 
 返回核对当前页面、账号非busy及当前owner/provider/controller，但保留控制器请求期间正常离页的既有契约；离页不宣称未受理或已取消。账号操作中保留已读内容并禁用操作/返回，单独显示账号提示；只在真实请求时显示进度。未连接页旧恢复先校验mounted/当前页面及仍不可达且非busy，销毁后不读WidgetRef。见[验证](../development/2026-10-24-rehearsal-action-guards-verification.md)。
+
+## 实时重练通话交接（2026-11-25）
+
+当非只读目标页已完成独立准备登记（`RehearsalState.prepared`、`status == created`、`connection_epoch == 0`）时，`RehearsalView` 提供“进入重练通话”。点击时复验当前路由、登录账号、非 busy 及展示的 `target` 与 `preparation` 引用一致，构造不可变的 `RehearsalSessionLaunch`（核验账号、一级重练 `kind == 'rehearsal'`、来源普通练习与建议项 ID 匹配），经路由 `extra` 进入 `/practice/session`；浏览器刷新丢失 `extra` 或账号不一致时，路由守卫重定向回 `/practice`（未登录回 `/login`），不会误开麦克风或新建普通练习。
+
+`PracticeSessionScreen` 在收到 `RehearsalSessionLaunch` 时调用 `PracticeMediaController.begin(preparation: ...)` 直接在该重练记录上预留连接，不额外创建或取消普通练习；通话中显式展示“重练：这一句表达”、本次覆盖难度及关注片段/参考说法，结束后提供“查看重练评价”（已封存时进入 `/practice/:childId/review?from=history`）、“查看本次记录”、“回原复盘”（固定回来源普通练习）、“再练一次”（失效旧重练控制器并回到同来源同建议项重新确认新同级重练）及“回到练习”。详见[一级重练实时语音验证](../development/2026-11-25-rehearsal-live-voice-verification.md)。

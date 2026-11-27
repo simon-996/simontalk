@@ -7,6 +7,7 @@ import 'package:http/testing.dart';
 import 'package:simontalk_client/core/api_client.dart';
 import 'package:simontalk_client/features/conversation/final_transcript_journal.dart';
 import 'package:simontalk_client/features/practice/practice_repository.dart';
+import 'package:simontalk_client/features/realtime/browser_media_session.dart';
 import 'package:simontalk_client/features/realtime/practice_media_controller.dart';
 import 'package:simontalk_client/features/realtime/connection_observation_journal.dart';
 import 'package:simontalk_client/features/realtime/realtime_session_protocol.dart';
@@ -158,6 +159,7 @@ class MediaHarness {
     this.tester, {
     Duration drainTimeout = const Duration(seconds: 3),
     TranscriptJournalFactory? transcriptJournalFactory,
+    RealtimeMediaSessionFactory? mediaSessionFactory,
   }) {
     origin = tester.binding.clock.now();
     api = ApiClient(
@@ -176,6 +178,7 @@ class MediaHarness {
     handler = normalResponse;
     controller = PracticeMediaController(
       repository: PracticeRepository(api, accountId: accountId),
+      mediaSessionFactory: mediaSessionFactory,
       drainTimeout: drainTimeout,
       transcriptJournalFactory: transcriptJournalFactory,
       elapsed: () =>

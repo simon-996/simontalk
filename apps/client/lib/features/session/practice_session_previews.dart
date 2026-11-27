@@ -5,6 +5,7 @@ import '../../design/app_theme.dart';
 import '../../design/preview_surface.dart';
 import '../account/account_models.dart';
 import '../conversation/conversation_models.dart';
+import '../practice/practice_completion_models.dart';
 import '../realtime/practice_media_controller.dart';
 import 'practice_session_view.dart';
 
@@ -51,6 +52,13 @@ Widget _example({
   String? errorCode,
   bool completionPending = false,
   bool subtitles = true,
+  String? openingHint,
+  Widget? assistancePanel,
+  SessionSpeechPace speechPace = SessionSpeechPace.normal,
+  bool showSlowPaceStatus = false,
+  VoidCallback? onRequestSlowPace,
+  bool showTakeOverAction = false,
+  VoidCallback? onTakeOverTurn,
 }) => MaterialApp(
   theme: buildAppTheme(brightness),
   builder: (context, child) => MediaQuery(
@@ -66,14 +74,22 @@ Widget _example({
     muted: muted,
     interruptionNeedsEnd: interruptionNeedsEnd,
     errorCode: errorCode,
-    turns: _turns,
+    turns: openingHint == null ? _turns : const [],
     subtitlesVisible: subtitles,
+    chineseOpeningHint: openingHint,
+    assistancePanel: assistancePanel,
+    speechPace: speechPace,
+    showSlowPaceStatus: showSlowPaceStatus,
+    onRequestSlowPace: onRequestSlowPace,
+    showTakeOverAction: showTakeOverAction,
+    onTakeOverTurn: onTakeOverTurn,
     completionPending: completionPending,
     onToggleMute: practiceSessionPreviewNoop,
     onResumePlayback: practiceSessionPreviewNoop,
     onEnd: practiceSessionPreviewNoop,
     onLeave: practiceSessionPreviewNoop,
     onToggleSubtitles: practiceSessionPreviewNoop,
+    onToggleChineseHints: practiceSessionPreviewNoop,
     onViewRecord: practiceSessionPreviewNoop,
   ),
 );
@@ -87,6 +103,36 @@ Widget _example({
 Widget practiceSessionListeningPreview() => _example();
 
 @Preview(
+  name: '通话 · 英文开头 · 窄屏大字',
+  group: '通话中',
+  size: Size(320, 640),
+  wrapper: previewWithFonts,
+)
+Widget practiceSessionStarterPreview() => _example(
+  brightness: Brightness.dark,
+  scale: 2,
+  subtitles: false,
+  assistancePanel: const AssistanceResultPanel(
+    heading: '英文开头',
+    result: 'One thing I enjoyed this weekend was…',
+    onClose: practiceSessionPreviewNoop,
+  ),
+);
+
+@Preview(
+  name: '通话 · 中文开口提示 · 窄屏大字',
+  group: '通话中',
+  size: Size(320, 640),
+  wrapper: previewWithFonts,
+)
+Widget practiceSessionChineseHintPreview() => _example(
+  brightness: Brightness.dark,
+  scale: 2,
+  openingHint: '分享一个周末安排',
+  subtitles: false,
+);
+
+@Preview(
   name: '通话 · 播报中 · 深色320 · 200%',
   group: '通话中',
   size: Size(320, 900),
@@ -96,6 +142,10 @@ Widget practiceSessionSpeakingPreview() => _example(
   brightness: Brightness.dark,
   scale: 2,
   playback: MediaPlayback.playing,
+  speechPace: SessionSpeechPace.slow,
+  showSlowPaceStatus: true,
+  showTakeOverAction: true,
+  onTakeOverTurn: practiceSessionPreviewNoop,
 );
 
 @Preview(
@@ -127,6 +177,19 @@ Widget practiceSessionUnavailablePreview() => _example(
 );
 
 @Preview(
+  name: '通话 · 麦克风输入中断',
+  group: '通话中',
+  size: Size(320, 720),
+  wrapper: previewWithFonts,
+)
+Widget practiceSessionDeviceLostPreview() => _example(
+  brightness: Brightness.dark,
+  scale: 2,
+  phase: PracticeMediaPhase.localClosed,
+  errorCode: 'device_lost',
+);
+
+@Preview(
   name: '通话 · 字幕关闭',
   group: '通话中',
   size: Size(760, 900),
@@ -147,3 +210,83 @@ Widget practiceSessionInterruptedPreview() => _example(
   playback: MediaPlayback.paused,
   interruptionNeedsEnd: true,
 );
+
+@Preview(
+  name: '重练通话 · 正在听你说 · 深色320 · 200%',
+  group: '通话中',
+  size: Size(320, 900),
+  wrapper: previewWithFonts,
+)
+Widget practiceSessionRehearsalPreview() => MaterialApp(
+  theme: buildAppTheme(Brightness.dark),
+  builder: (context, child) => MediaQuery(
+    data: MediaQuery.of(
+      context,
+    ).copyWith(textScaler: const TextScaler.linear(2), disableAnimations: true),
+    child: child!,
+  ),
+  home: PracticeSessionView(
+    difficulty: Difficulty.advanced,
+    phase: PracticeMediaPhase.active,
+    playback: MediaPlayback.idle,
+    muted: false,
+    rehearsalQuote: 'I enjoy English.',
+    rehearsalSuggestion: 'I enjoy learning English.',
+    turns: _turns,
+    onToggleMute: practiceSessionPreviewNoop,
+    onEnd: practiceSessionPreviewNoop,
+    onToggleSubtitles: practiceSessionPreviewNoop,
+  ),
+);
+
+@Preview(
+  name: '重练通话 · 已封存可看评价',
+  group: '通话中',
+  size: Size(760, 900),
+  wrapper: previewWithFonts,
+)
+Widget practiceSessionRehearsalSavedPreview() {
+  final scope = ConversationScope(
+    accountId: '11111111-1111-4111-8111-111111111111',
+    sessionId: '99999999-9999-4999-8999-999999999999',
+    connectionId: '33333333-3333-4333-8333-333333333333',
+    clientInstanceId: '44444444-4444-4444-8444-444444444444',
+    epoch: 1,
+  );
+  final summary = PracticeCompletionSummary.fromJson({
+    'source': 'server_recorded',
+    'account_id': scope.accountId,
+    'session_id': scope.sessionId,
+    'origin_connection_id': scope.connectionId,
+    'client_instance_id': scope.clientInstanceId,
+    'epoch': scope.epoch,
+    'end_key': '55555555-5555-4555-8555-555555555555',
+    'status': 'sealed',
+    'accepted_at': '2026-11-25T00:00:00Z',
+    'final_upload_deadline': '2026-11-25T00:00:30Z',
+    'sealed_at': '2026-11-25T00:00:02Z',
+    'input_revision': 1,
+    'input_hash': 'a' * 64,
+    'coverage': 'complete',
+    'connection_count': 1,
+    'gap_codes': <Object>[],
+  }, scope: scope);
+  return MaterialApp(
+    theme: buildAppTheme(Brightness.light),
+    home: PracticeSessionView(
+      difficulty: Difficulty.advanced,
+      phase: PracticeMediaPhase.localClosed,
+      playback: MediaPlayback.idle,
+      muted: false,
+      rehearsalQuote: 'I enjoy English.',
+      rehearsalSuggestion: 'I enjoy learning English.',
+      completion: summary,
+      onViewReview: practiceSessionPreviewNoop,
+      onViewRecord: practiceSessionPreviewNoop,
+      onBackToSourceReview: practiceSessionPreviewNoop,
+      onRehearseAgain: practiceSessionPreviewNoop,
+      onGoPractice: practiceSessionPreviewNoop,
+      onLeave: practiceSessionPreviewNoop,
+    ),
+  );
+}

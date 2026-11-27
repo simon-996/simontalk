@@ -12,6 +12,24 @@ import 'package:simontalk_client/features/practice/practice_repository.dart';
 import 'practice_fixtures.dart';
 
 void main() {
+  test('redacted topic recovery still carries an unknown connection', () {
+    final practice = {
+      ...practiceJson(status: 'completed', epoch: 1),
+      'mode': 'daily_topic',
+      'state_reason': 'content_deleted',
+    };
+    final recovery = PracticeRecovery.fromJson({
+      'practice': practice,
+      'connection': connectionJson(status: 'unknown', termination: 'unknown'),
+    });
+    expect(recovery.practice!.configuration.topic, isNull);
+    expect(recovery.connection!.terminationStatus, TerminationStatus.unknown);
+    expect(
+      () => PracticePreparation.fromJson({...practice, 'state_reason': null}),
+      throwsFormatException,
+    );
+  });
+
   late ApiClient api;
   late PracticeRepository repository;
   late List<http.Request> requests;

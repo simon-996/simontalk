@@ -10,7 +10,7 @@
 
 隔离应用可显式挂载 `browser_media_router(gateway)`。路径为 `/v1/practice-sessions/{session_id}/connections/{connection_id}/media/{client_instance_id}/{epoch}`，由接入端传入已经预留的连接。升级前检查 Origin、Cookie 头及查询串。升级后首条消息须在 5 秒期限内到达，使用既有 authenticate 文本格式，UTF-8 最多 1024 字节。此后只由一个协程读取浏览器连接，覆盖数据库声明、上游配置和运行阶段。
 
-主管确认配置并接管声明后，服务端发送 `{"kind":"ready"}`。客户端等待该帧后才能发送既有 mode/stop 文本或 3213 字节的二进制 PCM 帧。应用层输入队列最多四条。过早输入或队列满即关闭。实际 ASGI 服务器还须在解析层限制消息和队列大小。服务端输出沿用 provider_event / quarantine 格式。同一消息泵只支持一个受控回复。
+主管确认配置并接管声明后，服务端发送 `{"kind":"ready"}`。客户端等待该帧后才能发送既有 mode/stop/settled 文本或 3213 字节的二进制 PCM 帧。应用层输入队列最多四条。过早输入或队列满即关闭。实际 ASGI 服务器还须在解析层限制消息和队列大小。服务端输出沿用 provider_event / quarantine 格式。同一消息泵按客户端播放结算帧 `{"kind":"settled","response_id":"..."}` 顺序解锁最多 64 个受控回复。
 
 登记成功但主管未接管时，由入口负责为原声明补记 unknown 和 blocked 核验。入口最多接管 128 个连接，后台数据库收尾完成后才归还名额。主管接管后沿用既有退出处理。1000 关闭码表示本地停止流程完成，供应商退出仍需独立凭据。标准应用保留关闭的语音准入，此路由仅在显式挂载的应用生效。
 
@@ -19,3 +19,11 @@
 隔离应用在用户发起练习、取得 preparing 连接后可创建一次 BrowserMediaSession。客户端要求页面与 API 同源，使用 HTTPS 或本机回环 HTTP。凭据在 socket 打开时消费一次，关闭后重新连接需要新的预留。开始连接到收到 ready 最多等待 15 秒，随后才请求单条麦克风轨道，授权与音频初始化共限 30 秒。停止之后才返回的授权流立即停轨。
 
 输入沿用 16 kHz AudioWorklet 和带 epoch 的 PCM 发送器。输出按 response.created 与 response.output_item.added 绑定 24 kHz PCM；quarantine 在通知调用方前停止该回复的已排程音源，保留输入，丢弃该回复后续音频。账号身份变化、页面隐藏、页面离开、连接断开都触发本地收尾。关闭原因只供本地状态展示，可信远端退出仍以服务端核验为准。
+
+## 2026-11-24 正式练习页协调器接入
+
+`PracticeMediaController` 通过可选的 `RealtimeMediaSessionFactory`（Riverpod `realtimeMediaSessionCreatorProvider`，默认 `null`）与 `QwenServerMediaProtocol` 在隔离配置中接入正式 `/practice/session` 通话页。协调器沿用自身的练习创建、连接预留、租约续期、观测与最终文字/播放证据账本及完成固化流程，不创建 WebRTC 传输、不调用 `/offer` SDP 信令，并拒绝客户端侧原始控制帧发送。
+
+WebSocket 升级发起时标记已尝试连接（`negotiating`），升级前取消仍可安全释放预留，升级后关闭保持 `unconfirmed`。收到服务端 `ready` 后进入 `configuring` 并确认单通道配置，麦克风与 `AudioWorklet` 就绪后进入 `active`。收到 `response.done(completed)` 时浏览器等待该回复全部 `AudioBufferSourceNode.onended` 自然结束后发送 `{"kind":"settled","response_id":"..."}` 解锁服务端下一轮（最多 64 轮）。若用户在网络已完成但浏览器仍在播音期间开口插话，服务端直接下发 `quarantine`，已经完成的回复无需再取消。`settled` 与 `quarantine` 在途交叉时均保持隔离。音源成功停止只记录本地隔离结果，播放状态仍为 `DeliveryStatus.unknown`。
+
+用户点击“结束并复盘”时，浏览器同步停采集、释放麦克风轨道和播放音源，然后发送 `{"kind":"drain"}`。服务端验证此帧后拒绝新音频和除 `stop` 外的控制，停止尚未交给上游传输的回复请求，并只收尾已经登记的内容。对已登记且供应商尚未报告停说或提交的用户话轮，服务端最多发一次 `input_audio_buffer.commit`，只接受同一项的提交与最终识别。已登记助手回复的首个匹配项可以在窗口内绑定，已知失败仍按缺口收尾。客户端仍按原截止停会话并提交清单，服务端自收到收尾帧起最多等待 5 秒接收 `stop`。中途离开页面立即释放媒体，练习记为中断。标准入口继续保持正式语音准入关闭。[真实尾句验证](../../development/2026-11-25-websocket-drain-verification.md)

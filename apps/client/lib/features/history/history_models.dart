@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import '../account/account_models.dart';
+import '../practice/daily_topic.dart';
 import '../practice/practice_models.dart';
 
 T _parse<T>(T Function() read) {
@@ -40,6 +41,7 @@ final class HistoryItem {
     this.createdAt,
     this.endedAt,
     this.difficulty,
+    this.topic,
     this.completionStatus,
     this.coverage,
     this.connectionPending,
@@ -54,6 +56,10 @@ final class HistoryItem {
         kind == 'rehearsal' && source != null && source != id)) {
       throw const FormatException();
     }
+    final topic = j['topic'] == null
+        ? null
+        : PracticeTopicSnapshot.fromJson(j['topic'] as Map<String, dynamic>);
+    if (topic != null && kind != 'ordinary') throw const FormatException();
     final completion = j['completion_status'], coverage = j['coverage'];
     if (!(completion == 'unregistered' && coverage == null ||
             completion == 'ending' && coverage == 'pending' ||
@@ -75,6 +81,7 @@ final class HistoryItem {
       j['difficulty'] == null
           ? null
           : Difficulty.values.byName(j['difficulty'] as String),
+      topic,
       completion as String,
       coverage as String?,
       j['connection_pending'] as bool,
@@ -96,11 +103,12 @@ final class HistoryItem {
   final DateTime createdAt;
   final DateTime? endedAt;
   final Difficulty? difficulty;
+  final PracticeTopicSnapshot? topic;
   final String completionStatus;
   final String? coverage;
   final bool connectionPending;
   bool get isSealed => completionStatus == 'sealed';
-  String get title => kind == 'ordinary' ? '自由聊天' : '逐句重练';
+  String get title => kind == 'ordinary' ? topic?.title ?? '自由聊天' : '逐句重练';
   String get difficultyLabel => difficulty?.label ?? '难度未记录';
   String get statusLabel => switch (status) {
     PracticeStatus.created => '已登记准备',

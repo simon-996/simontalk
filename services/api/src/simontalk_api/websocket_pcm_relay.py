@@ -3,11 +3,13 @@
 import asyncio
 import json
 import math
+import re
 import time
 
 from simontalk_api.qwen_websocket import _invalid_constant, _unique_pairs
 from simontalk_api.websocket_pcm_wire import decode_pcm_frame
 
+_ID = re.compile(r"[A-Za-z0-9_-]{1,128}", re.ASCII)
 _MAX_EPOCH = 0xFFFFFFFF
 _MAX_FRAMES = 36000
 _MAX_CONTROLS = 256
@@ -29,7 +31,10 @@ class WebSocketPcmRelay:
         self._adapter = adapter
         self._clock = clock
         self._closed = False
+        self._draining = False
         self._stop_requested = False
+        self._pace_requested = False
+        self._interrupt_requested = False
         self._busy = False
         self._epoch = 0
         self._muted = True
@@ -91,6 +96,26 @@ class WebSocketPcmRelay:
             self._stop_requested = True
             await self.close()
             return "stopped"
+        if self._draining:
+            raise ValueError("unexpected control during drain")
+        if data == {"kind": "drain"}:
+            self._draining = True
+            return "draining"
+        if data == {"kind": "pace", "pace": "slow"}:
+            if self._pace_requested:
+                raise ValueError("duplicate pace control")
+            self._pace_requested = True
+            return ("pace", "slow")
+        if data == {"kind": "interrupt"}:
+            if self._interrupt_requested or self._muted:
+                raise ValueError("invalid interrupt control")
+            self._interrupt_requested = True
+            return "interrupt"
+        if set(data) == {"kind", "response_id"} and data["kind"] == "settled":
+            response_id = data["response_id"]
+            if type(response_id) is not str or not _ID.fullmatch(response_id):
+                raise ValueError("invalid settled control")
+            return ("settled", response_id)
         if set(data) != {"kind", "epoch", "muted"} or data["kind"] != "mode":
             raise ValueError("invalid control")
         epoch, muted = data["epoch"], data["muted"]
@@ -117,7 +142,7 @@ class WebSocketPcmRelay:
         try:
             if type(value) is str:
                 return await self._control(value)
-            if type(value) is not bytes:
+            if type(value) is not bytes or self._draining:
                 raise ValueError("invalid message")
             self._frames += 1
             if self._frames > _MAX_FRAMES:

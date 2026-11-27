@@ -6,7 +6,9 @@ import 'package:go_router/go_router.dart';
 
 import '../../design/account_components.dart';
 import '../account/account_controller.dart';
+import '../practice/practice_models.dart';
 import 'rehearsal_controller.dart';
+import 'rehearsal_models.dart';
 import 'rehearsal_providers.dart';
 import 'rehearsal_view.dart';
 
@@ -167,6 +169,34 @@ class _RehearsalScreenState extends ConsumerState<RehearsalScreen> {
           : () {
               if (canAct()) unawaited(c.load());
             },
+      onEnterSession:
+          widget.itemId != null &&
+              c?.state == RehearsalState.prepared &&
+              displayedTarget != null &&
+              displayedPreparation != null &&
+              displayedPreparation.kind == 'rehearsal' &&
+              displayedPreparation.status == PracticeStatus.created &&
+              displayedPreparation.connectionEpoch == 0
+          ? () {
+              if (!hasTarget() ||
+                  !hasPreparation() ||
+                  c!.state != RehearsalState.prepared ||
+                  displayedPreparation.status != PracticeStatus.created ||
+                  displayedPreparation.connectionEpoch != 0) {
+                return;
+              }
+              final launch = RehearsalSessionLaunch(
+                accountId: c.accountId,
+                preparation: displayedPreparation,
+                target: displayedTarget,
+              );
+              if (context.canPop()) {
+                context.pushReplacement('/practice/session', extra: launch);
+              } else {
+                context.go('/practice/session', extra: launch);
+              }
+            }
+          : null,
       onDiscard: c?.canDiscard == true
           ? () {
               if (hasPreparation() && c!.canDiscard) unawaited(c.discard());

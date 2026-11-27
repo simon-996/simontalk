@@ -7,8 +7,9 @@ from uuid import UUID
 from simontalk_api.connections import own_connection
 from simontalk_api.errors import APIError
 from simontalk_api.practice import own_preparation
+from simontalk_api.practice_topics import PracticeTopic, practice_topic
 from simontalk_api.qwen_websocket import _Attempt
-from simontalk_api.qwen_websocket_session import QwenSessionGate
+from simontalk_api.qwen_websocket_session import QwenSessionGate, RehearsalPrompt
 from simontalk_api.security import now
 from simontalk_api.websocket_claim import WebSocketClaim, _fingerprint
 from simontalk_api.websocket_handshake import HandshakeIdentity
@@ -44,7 +45,8 @@ def _revalidate(session_factory, identity, claim, admission, *, confirm, active=
             name: getattr(permit, name) for name in ("provider", "region", "model", "config_id")
         }
         if (
-            practice.status not in ({"connecting", "active"} if active else {"connecting"})
+            practice.status
+            not in ({"connecting", "active", "ending"} if active else {"connecting"})
             or practice.connection_epoch != claim.epoch
             or connection.epoch != claim.epoch
             or connection.client_instance_id != claim.client_instance_id
@@ -61,6 +63,10 @@ def _revalidate(session_factory, identity, claim, admission, *, confirm, active=
             or snapshot.get("effective_difficulty") != claim.difficulty
             or type(preferences) is not dict
             or preferences.get("speech_pace") != claim.speech_pace
+            or practice.kind != ("rehearsal" if claim.rehearsal is not None else "ordinary")
+            or practice.rehearsal_target_hash
+            != (claim.rehearsal.target_hash if claim.rehearsal is not None else None)
+            or practice_topic(practice) != claim.topic
         ):
             raise APIError(409, "connection_identity_changed", "连接身份或状态已变化。")
         # Recheck after all possibly blocking account, practice and connection locks.
@@ -82,7 +88,9 @@ async def _cleanup(session_factory, claim, connection, reason):
 
 
 @asynccontextmanager
-async def supervise_websocket(session_factory, identity, claim, admission, *, on_owned=None):
+async def supervise_websocket(
+    session_factory, identity, claim, admission, *, on_owned=None, on_configured=None
+):
     """Use a single durable attempt for bounded configuration and conservative exit.
 
     The yielded connection is server-internal; callers must not forward arbitrary
@@ -105,6 +113,9 @@ async def supervise_websocket(session_factory, identity, claim, admission, *, on
         or type(claim.epoch) is not int
         or not 1 <= claim.epoch <= 2147483647
         or type(claim.provider_attempt) is not _Attempt
+        or (claim.rehearsal is not None and type(claim.rehearsal) is not RehearsalPrompt)
+        or (claim.topic is not None and type(claim.topic) is not PracticeTopic)
+        or (on_configured is not None and not callable(on_configured))
         or claim.fingerprint
         != _fingerprint(
             claim.user_id,
@@ -173,13 +184,20 @@ async def supervise_websocket(session_factory, identity, claim, admission, *, on
                 )
                 connection = await claim.provider_attempt.open()
                 reason = "config_failed"
-                gate = QwenSessionGate(claim.difficulty, claim.speech_pace)
+                gate = QwenSessionGate(
+                    claim.difficulty,
+                    claim.speech_pace,
+                    rehearsal=claim.rehearsal,
+                    topic=claim.topic,
+                )
                 update = gate.accept_created(await connection.receive())
                 await connection.send(update)
                 gate.accept_updated(await connection.receive())
                 await asyncio.to_thread(
                     _revalidate, session_factory, identity, claim, admission, confirm=True
                 )
+                if on_configured is not None:
+                    on_configured(gate)
         except asyncio.CancelledError:
             reason = "cancelled"
             raise

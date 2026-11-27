@@ -22,6 +22,7 @@ class TestPracticeCompletion extends ChangeNotifier
   int requests = 0, aborts = 0, retries = 0;
   bool pending = false;
   final manifests = <PracticeCompletionManifest>[];
+  PracticeCompletionSummary? sealedSummary;
   PracticeCompletionReceipt? sealedReceipt;
   void Function()? onRequest;
   @override
@@ -29,7 +30,7 @@ class TestPracticeCompletion extends ChangeNotifier
   @override
   bool get hasPendingWork => pending;
   @override
-  PracticeCompletionSummary? get summary => null;
+  PracticeCompletionSummary? get summary => sealedSummary;
   @override
   PracticeCompletionReceipt? get receipt => sealedReceipt;
   @override
@@ -55,7 +56,11 @@ class TestPracticeCompletion extends ChangeNotifier
     notifyListeners();
   }
 
-  void confirmReceipt(PracticeCompletionReceipt receipt) {
+  void confirmReceipt(
+    PracticeCompletionReceipt receipt, {
+    PracticeCompletionSummary? summary,
+  }) {
+    sealedSummary = summary;
     sealedReceipt = receipt;
     confirm();
   }
@@ -72,6 +77,7 @@ class TestPracticeCompletion extends ChangeNotifier
     aborts++;
     pending = false;
     manifests.clear();
+    sealedSummary = null;
     sealedReceipt = null;
     notifyListeners();
   }

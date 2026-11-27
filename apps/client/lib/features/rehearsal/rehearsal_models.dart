@@ -231,3 +231,25 @@ PracticePreparation readRehearsalPreparation(
   }
   return p;
 }
+
+/// Verified handoff payload for starting a live call on an independent rehearsal
+/// preparation that is still `created` at `connection_epoch == 0`.
+final class RehearsalSessionLaunch {
+  RehearsalSessionLaunch({
+    required String accountId,
+    required this.preparation,
+    required this.target,
+  }) : accountId = rehearsalId(accountId) {
+    if (preparation.kind != 'rehearsal' ||
+        preparation.status != PracticeStatus.created ||
+        preparation.connectionEpoch != 0 ||
+        preparation.sourceSessionId != target.sourceSessionId ||
+        preparation.sourceReviewItemId != target.itemId ||
+        rehearsalId(target.toJson()['account_id']) != this.accountId) {
+      throw const FormatException('Invalid rehearsal session launch');
+    }
+  }
+  final String accountId;
+  final PracticePreparation preparation;
+  final RehearsalTarget target;
+}

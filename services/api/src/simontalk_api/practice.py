@@ -3,7 +3,7 @@ from datetime import datetime
 from typing import Literal, Protocol
 from uuid import UUID
 
-from pydantic import ConfigDict
+from pydantic import ConfigDict, model_validator
 from sqlalchemy import select
 
 from simontalk_api.errors import APIError
@@ -13,6 +13,7 @@ from simontalk_api.models import (
     RealtimeConnection,
     UserPreferences,
 )
+from simontalk_api.practice_topics import DAILY_TOPICS, TopicId
 from simontalk_api.schemas import InputModel, PreferencesOutput
 from simontalk_api.security import digest, now
 
@@ -35,8 +36,15 @@ class UnavailableAdmission:
 
 
 class PracticeInput(InputModel):
-    mode: Literal["free_chat"]
+    mode: Literal["free_chat", "daily_topic"]
     difficulty_override: Literal["beginner", "intermediate", "advanced"] | None = None
+    topic_id: TopicId | None = None
+
+    @model_validator(mode="after")
+    def validate_mode(self):
+        if (self.mode == "daily_topic") != (self.topic_id is not None):
+            raise ValueError("topic and practice mode must agree")
+        return self
 
 
 class PracticeOutput(InputModel):
@@ -55,7 +63,10 @@ class PracticeOutput(InputModel):
 
 
 def create_preparation(db, user_id, payload: PracticeInput, key, admission: PracticeAdmission):
-    request_digest = digest(payload.model_dump_json())
+    # Preserve existing free-chat digests and allow their original keys to replay.
+    request_digest = digest(
+        payload.model_dump_json(exclude={"topic_id"} if payload.topic_id is None else None)
+    )
     existing = db.scalar(
         select(PracticeSession).where(
             PracticeSession.user_id == user_id,
@@ -111,6 +122,7 @@ def build_preparation(db, user_id, payload, key, request_digest, admission):
             "schema_version": 1,
             "preferences": PreferencesOutput.model_validate(preferences).model_dump(mode="json"),
             "effective_difficulty": payload.difficulty_override or preferences.difficulty,
+            **({"topic": DAILY_TOPICS[payload.topic_id].snapshot()} if payload.topic_id else {}),
             "provider": {
                 "provider": permit.provider,
                 "region": permit.region,

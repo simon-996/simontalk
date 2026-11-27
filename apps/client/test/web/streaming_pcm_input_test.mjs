@@ -10,7 +10,8 @@ function emitter() {
     emit(name) { listeners.get(name)?.(); }, listeners };
 }
 function setup({modulePromise = Promise.resolve()} = {}) {
-  const track = {...emitter(), kind: 'audio', readyState: 'live', stops: 0, stop() { this.stops++; }};
+  const track = {...emitter(), kind: 'audio', readyState: 'live', muted: false,
+    stops: 0, stop() { this.stops++; }};
   const stream = {getTracks: () => [track], getAudioTracks: () => [track]};
   const source = {connects: 0, disconnects: 0, connect() { this.connects++; }, disconnect() { this.disconnects++; }};
   const gain = {gain: {value: 1}, connect() {}, disconnect() { this.disconnected = true; }};
@@ -63,6 +64,54 @@ test('invalid worklet messages and interruptions close delivery exactly once', a
   x.track.emit('ended'); port.onmessage?.({data:frame(1,2)});
   assert.deepEqual(x.errors,['capture_failed']); assert.equal(x.chunks.length,0);
   assert.equal(x.source.disconnects,1); assert.equal(x.track.stops,0);
+});
+
+test('a source already muted at acquisition cannot start the capture graph', async () => {
+  const x = setup();
+  x.track.muted = true;
+  assert.equal(await x.player.start(), false);
+  assert.deepEqual(x.errors, ['device_lost']);
+  assert.equal(x.nodes.length, 0);
+});
+
+test('a browser microphone mute aborts acquisition and cannot resume on unmute', async () => {
+  let loaded;
+  const x = setup({modulePromise: new Promise(resolve => { loaded = resolve; })});
+  const started = x.player.start();
+  x.track.muted = true;
+  x.track.emit('mute');
+  assert.deepEqual(x.errors, ['device_lost']);
+  x.track.muted = false;
+  x.track.emit('unmute');
+  loaded();
+  assert.equal(await started, false);
+  assert.equal(x.nodes.length, 0);
+  assert.equal(x.track.listeners.size, 0);
+});
+
+test('an active microphone mute prevents queued audio from reaching the owner', async () => {
+  const x = setup();
+  assert.equal(await x.player.start(), true);
+  assert.equal(x.player.setMuted(false), true);
+  const handler = x.nodes[0].port.onmessage;
+  x.track.muted = true;
+  handler({data: frame(1, 1)});
+  x.track.emit('mute');
+  x.track.emit('ended');
+  assert.deepEqual(x.errors, ['device_lost']);
+  assert.equal(x.chunks.length, 0);
+  assert.equal(x.nodes[0].port.closed, true);
+});
+
+test('suspended input cannot deliver queued PCM ahead of its statechange event', async () => {
+  const x = setup();
+  assert.equal(await x.player.start(), true);
+  assert.equal(x.player.setMuted(false), true);
+  const handler = x.nodes[0].port.onmessage;
+  x.context.state = 'suspended';
+  handler({data: frame(1, 1)});
+  assert.deepEqual(x.errors, ['capture_failed']);
+  assert.equal(x.chunks.length, 0);
 });
 
 test('background and failed async consumers cannot continue capture', async () => {

@@ -1,11 +1,13 @@
-"""Internal one-turn message pump; caller owns authentication and lifecycle."""
+"""Internal media message pump; caller owns authentication and lifecycle."""
 
 import asyncio
 import json
 import time
 
-from simontalk_api.qwen_outbound_serializer import QwenSerializedSender
+from simontalk_api.qwen_outbound_serializer import FINISH_INPUT, QwenSerializedSender
 from simontalk_api.qwen_pcm_upstream import QwenPcmInput
+from simontalk_api.qwen_websocket import _valid_message
+from simontalk_api.qwen_websocket_session import QwenSessionGate
 from simontalk_api.qwen_websocket_turn_policy import QwenTurnPolicy
 from simontalk_api.websocket_pcm_relay import WebSocketPcmRelay
 
@@ -30,8 +32,26 @@ def _consume_delivery(task):
         pass
 
 
+def _is_session_updated(raw):
+    if not _valid_message(raw):
+        return False
+    try:
+        return json.loads(raw).get("type") == "session.updated"
+    except Exception:
+        return False
+
+
 class QwenTurnPump:
-    def __init__(self, connection, send_downstream, close_downstream, *, clock=time.monotonic):
+    def __init__(
+        self,
+        connection,
+        send_downstream,
+        close_downstream,
+        *,
+        clock=time.monotonic,
+        on_response_usage=None,
+        session_gate=None,
+    ):
         if (
             not callable(getattr(connection, "send", None))
             or not callable(getattr(connection, "receive", None))
@@ -39,12 +59,19 @@ class QwenTurnPump:
             or not callable(send_downstream)
             or not callable(close_downstream)
             or not callable(clock)
+            or (on_response_usage is not None and not callable(on_response_usage))
+            or (
+                session_gate is not None
+                and (type(session_gate) is not QwenSessionGate or not session_gate.configured)
+            )
             or len(_PUMPS) >= _MAX_PUMPS
         ):
             raise QwenPumpError("pump_unavailable")
         self._connection = connection
         self._send_downstream = send_downstream
         self._close_downstream = close_downstream
+        self._on_response_usage = on_response_usage
+        self._session_gate = session_gate
         self._sender = QwenSerializedSender(connection)
         self._relay = WebSocketPcmRelay(QwenPcmInput(self._sender, clock=clock), clock=clock)
         self._policy = QwenTurnPolicy()
@@ -122,7 +149,10 @@ class QwenTurnPump:
             raise QwenPumpError("pump_unavailable")
         task.result()
 
-    async def _interrupt(self, response_id):
+    async def _interrupt(self, response_id, *, cancel_upstream=True):
+        if not cancel_upstream:
+            await self._deliver({"kind": "quarantine", "response_id": response_id})
+            return
         notify = asyncio.create_task(
             self._deliver({"kind": "quarantine", "response_id": response_id})
         )
@@ -154,6 +184,32 @@ class QwenTurnPump:
             result = await self._relay.accept(value)
             if result == "stopped":
                 await self.close()
+                return "stopped"
+            if result == "draining":
+                self._sender.stop_creating_responses()
+                if self._policy.begin_drain():
+                    async with asyncio.timeout(_ACTION_TIMEOUT):
+                        await self._sender.send(FINISH_INPUT)
+                return "draining"
+            if result == ("pace", "slow"):
+                if self._session_gate is None:
+                    raise ValueError("pace unavailable")
+                if self._policy.interrupting and self._session_gate.pace == "normal":
+                    return "ignored"
+                update = self._session_gate.request_slow_pace()
+                async with asyncio.timeout(_ACTION_TIMEOUT):
+                    await self._sender.send_session_update(update)
+                return "pace_requested"
+            if result == "interrupt":
+                decision = self._policy.interrupt_by_client()
+                if decision.quarantine:
+                    await self._interrupt(
+                        decision.quarantine_response, cancel_upstream=decision.cancel_response
+                    )
+                return "interrupted" if decision.quarantine else "ignored"
+            if type(result) is tuple and result[0] == "settled":
+                self._policy.settle(result[1])
+                return "settled"
             return result
         except asyncio.CancelledError:
             self._start_close()
@@ -171,9 +227,26 @@ class QwenTurnPump:
             self._reader = asyncio.create_task(self._connection.receive())
             raw = await self._reader
             self._reader = None
+            if (
+                self._session_gate is not None
+                and self._session_gate.slow_pace_pending
+                and _is_session_updated(raw)
+            ):
+                applied = self._policy.accept_session_updated(
+                    raw, self._session_gate.accept_pace_updated
+                )
+                if applied and not self._policy.draining:
+                    await self._deliver({"kind": "pace_updated", "pace": "slow"})
+                if self._closed:
+                    raise QwenPumpError("pump_unavailable")
+                return "pace_updated" if applied else "ignored"
             decision = self._policy.accept(raw)
+            if decision.usage_measurement is not None and self._on_response_usage is not None:
+                self._on_response_usage(decision.usage_measurement)
             if decision.quarantine:
-                await self._interrupt(decision.quarantine_response)
+                await self._interrupt(
+                    decision.quarantine_response, cancel_upstream=decision.cancel_response
+                )
             if decision.forward:
                 event = decision.audio if decision.audio is not None else decision.event
                 await self._deliver({"kind": "provider_event", "event": event})

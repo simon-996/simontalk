@@ -7,6 +7,7 @@ import 'design/app_theme.dart';
 import 'features/account/account_controller.dart';
 import 'features/account/auth_screen.dart';
 import 'features/account/preferences_screen.dart';
+import 'features/practice/daily_topic.dart';
 import 'features/practice/practice_models.dart';
 import 'features/practice/practice_entry_screen.dart';
 import 'features/practice/saved_practice_status_screen.dart';
@@ -14,6 +15,7 @@ import 'features/history/history_screen.dart';
 import 'features/history/deletion_screen.dart';
 import 'features/review/review_screen.dart';
 import 'features/transcript/saved_transcript_screen.dart';
+import 'features/rehearsal/rehearsal_models.dart';
 import 'features/rehearsal/rehearsal_screen.dart';
 import 'features/rehearsal/rehearsal_list_screen.dart';
 import 'features/session/practice_session_screen.dart';
@@ -67,8 +69,25 @@ final _routerProvider = Provider<GoRouter>((ref) {
       // A live call is entered only from the preparation handoff. A browser
       // reload restores the URL without router extra, so it must never open the
       // microphone or create another practice on its own.
-      if (path == '/practice/session' && route.extra != true) {
+      final validSessionLaunch =
+          route.extra == true ||
+          (route.extra is TopicSessionLaunch &&
+              (state.phase != SessionPhase.signedIn ||
+                  (route.extra as TopicSessionLaunch).accountId ==
+                      state.session?.user.id.toLowerCase())) ||
+          (route.extra is RehearsalSessionLaunch &&
+              (state.phase != SessionPhase.signedIn ||
+                  (route.extra as RehearsalSessionLaunch).accountId ==
+                      state.session?.user.id.toLowerCase()));
+      if (path == '/practice/session' && !validSessionLaunch) {
         return state.phase == SessionPhase.signedIn ? '/practice' : '/login';
+      }
+      final topicIds = route.uri.queryParametersAll['topic'];
+      if (path == '/practice/prepare' &&
+          topicIds != null &&
+          (topicIds.length != 1 ||
+              DailyTopic.fromId(topicIds.single) == null)) {
+        return '/practice';
       }
       final readingPath = _isReadingPath(path);
       final validReading = _isValidReadingPath(path);
@@ -153,12 +172,25 @@ final _routerProvider = Provider<GoRouter>((ref) {
       ),
       GoRoute(
         path: '/practice/prepare',
-        builder: (_, _) =>
-            const _SignedInPage(child: PracticePreparationScreen()),
+        builder: (_, route) => _SignedInPage(
+          child: PracticePreparationScreen(
+            key: ValueKey(route.uri),
+            topic: DailyTopic.fromId(route.uri.queryParameters['topic']),
+          ),
+        ),
       ),
       GoRoute(
         path: '/practice/session',
-        builder: (_, _) => const _SignedInPage(child: PracticeSessionScreen()),
+        builder: (_, route) => _SignedInPage(
+          child: PracticeSessionScreen(
+            topicLaunch: route.extra is TopicSessionLaunch
+                ? route.extra as TopicSessionLaunch
+                : null,
+            rehearsal: route.extra is RehearsalSessionLaunch
+                ? route.extra as RehearsalSessionLaunch
+                : null,
+          ),
+        ),
       ),
       GoRoute(
         path: '/practice/:sessionId/transcript',

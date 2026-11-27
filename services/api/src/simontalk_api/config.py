@@ -25,6 +25,7 @@ class Settings(BaseSettings):
 
     review_job_interval_seconds: float = Field(default=5, ge=1, le=300, allow_inf_nan=False)
     review_provider: Literal["disabled", "qwen"] = "disabled"
+    assistance_provider: Literal["disabled", "qwen"] = "disabled"
     qwen_env_file: Path | None = Path(".env")
 
     @model_validator(mode="after")

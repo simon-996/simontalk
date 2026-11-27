@@ -120,6 +120,7 @@ class HistoryView extends StatelessWidget {
           ],
           if (currentItem != null) ...[
             Text(currentItem.title, style: theme.textTheme.titleLarge),
+            if (currentItem.topic case final topic?) Text(topic.goal),
             const SizedBox(height: 8),
             Text('原难度：${currentItem.difficultyLabel}'),
             const SizedBox(height: 16),

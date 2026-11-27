@@ -20,6 +20,11 @@ class PracticeSessionView extends StatelessWidget {
     required this.phase,
     required this.playback,
     required this.muted,
+    this.rehearsalQuote,
+    this.rehearsalSuggestion,
+    this.topicTitle,
+    this.chineseOpeningHint,
+    this.chineseHintsVisible = true,
     this.interruptionNeedsEnd = false,
     this.errorCode,
     this.turns = const [],
@@ -31,16 +36,34 @@ class PracticeSessionView extends StatelessWidget {
     this.onResumePlayback,
     this.onEnd,
     this.onRetryCompletion,
+    this.onViewReview,
     this.onViewRecord,
+    this.onBackToSourceReview,
+    this.onRehearseAgain,
+    this.onGoPractice,
     this.onLeave,
     this.onCancelAttempt,
     this.onToggleSubtitles,
+    this.onToggleChineseHints,
+    this.speechPace = SessionSpeechPace.normal,
+    this.showSlowPaceStatus = false,
+    this.onRequestSlowPace,
+    this.showTakeOverAction = false,
+    this.onTakeOverTurn,
+    this.onAskForStarter,
+    this.onChooseTranslation,
+    this.assistancePanel,
   });
 
   final Difficulty difficulty;
   final PracticeMediaPhase phase;
   final MediaPlayback playback;
   final bool muted;
+  final String? rehearsalQuote;
+  final String? rehearsalSuggestion;
+  final String? topicTitle;
+  final String? chineseOpeningHint;
+  final bool chineseHintsVisible;
   final bool interruptionNeedsEnd;
   final String? errorCode;
   final List<ConversationTurn> turns;
@@ -52,11 +75,25 @@ class PracticeSessionView extends StatelessWidget {
   final VoidCallback? onResumePlayback;
   final VoidCallback? onEnd;
   final VoidCallback? onRetryCompletion;
+  final VoidCallback? onViewReview;
   final VoidCallback? onViewRecord;
+  final VoidCallback? onBackToSourceReview;
+  final VoidCallback? onRehearseAgain;
+  final VoidCallback? onGoPractice;
   final VoidCallback? onLeave;
   final VoidCallback? onCancelAttempt;
   final VoidCallback? onToggleSubtitles;
+  final VoidCallback? onToggleChineseHints;
+  final SessionSpeechPace speechPace;
+  final bool showSlowPaceStatus;
+  final VoidCallback? onRequestSlowPace;
+  final bool showTakeOverAction;
+  final VoidCallback? onTakeOverTurn;
+  final VoidCallback? onAskForStarter;
+  final VoidCallback? onChooseTranslation;
+  final Widget? assistancePanel;
 
+  bool get _isRehearsal => rehearsalQuote != null;
   bool get _closed => phase == PracticeMediaPhase.localClosed;
   bool get _live => phase == PracticeMediaPhase.active;
   bool get _draining => phase == PracticeMediaPhase.draining;
@@ -72,9 +109,35 @@ class PracticeSessionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compactActions =
+        MediaQuery.sizeOf(context).width /
+            MediaQuery.textScalerOf(context).scale(1) <
+        250;
+    final showOpeningHint =
+        _live &&
+        !_interrupted &&
+        !muted &&
+        errorCode == null &&
+        playback == MediaPlayback.idle &&
+        chineseHintsVisible &&
+        chineseOpeningHint != null &&
+        turns.every((turn) => turn.text.trim().isEmpty);
+    final captions = showOpeningHint
+        ? _ChineseOpeningHint(
+            message: chineseOpeningHint!,
+            subtitlesVisible: subtitlesVisible,
+          )
+        : subtitlesVisible
+        ? _TranscriptList(
+            turns: turns,
+            phase: phase,
+            interruptionNeedsEnd: _interrupted,
+          )
+        : const _SubtitlesHidden();
+    final panel = assistancePanel;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('自由聊天'),
+        title: Text(_isRehearsal ? '重练：这一句表达' : topicTitle ?? '自由聊天'),
         centerTitle: false,
         automaticallyImplyLeading: false,
         actions: [
@@ -82,11 +145,33 @@ class PracticeSessionView extends StatelessWidget {
             TextButton(onPressed: onLeave, child: const Text('返回练习')),
           if (_starting && onCancelAttempt != null)
             TextButton(onPressed: onCancelAttempt, child: const Text('关闭')),
-          if (!_closed && !_starting && onToggleSubtitles != null)
-            TextButton(
-              onPressed: onToggleSubtitles,
-              child: Text(subtitlesVisible ? '字幕：开' : '字幕：关'),
+          if (_live &&
+              !_interrupted &&
+              chineseOpeningHint != null &&
+              onToggleChineseHints != null)
+            IconButton(
+              tooltip: chineseHintsVisible ? '关闭中文提示' : '开启中文提示',
+              isSelected: chineseHintsVisible,
+              icon: const Icon(Icons.lightbulb_outline),
+              selectedIcon: const Icon(Icons.lightbulb),
+              onPressed: onToggleChineseHints,
             ),
+          if (!_closed && !_starting && onToggleSubtitles != null)
+            if (compactActions)
+              IconButton(
+                onPressed: onToggleSubtitles,
+                tooltip: subtitlesVisible ? '关闭英文字幕' : '开启英文字幕',
+                icon: Icon(
+                  subtitlesVisible
+                      ? Icons.closed_caption_outlined
+                      : Icons.closed_caption_disabled_outlined,
+                ),
+              )
+            else
+              TextButton(
+                onPressed: onToggleSubtitles,
+                child: Text(subtitlesVisible ? '字幕：开' : '字幕：关'),
+              ),
         ],
       ),
       body: SafeArea(
@@ -105,7 +190,15 @@ class PracticeSessionView extends StatelessWidget {
                     muted: muted,
                     interruptionNeedsEnd: _interrupted,
                     errorCode: errorCode,
+                    turns: turns,
                   ),
+                  if (_isRehearsal && !_closed) ...[
+                    const SizedBox(height: 12),
+                    _RehearsalBanner(
+                      quote: rehearsalQuote!,
+                      suggestion: rehearsalSuggestion,
+                    ),
+                  ],
                   const SizedBox(height: 16),
                   if (_interrupted) ...[
                     StatusMessage(
@@ -120,19 +213,28 @@ class PracticeSessionView extends StatelessWidget {
                   Expanded(
                     child: _closed
                         ? _SavedSection(
+                            isRehearsal: _isRehearsal,
                             completion: completion,
                             pending: completionPending,
                             errorCode: completionErrorCode,
+                            stopReason: errorCode,
                             onRetry: onRetryCompletion,
+                            onViewReview: onViewReview,
                             onViewRecord: onViewRecord,
+                            onBackToSourceReview: onBackToSourceReview,
+                            onRehearseAgain: onRehearseAgain,
+                            onGoPractice: onGoPractice,
                           )
-                        : subtitlesVisible
-                        ? _TranscriptList(
-                            turns: turns,
-                            phase: phase,
-                            interruptionNeedsEnd: _interrupted,
-                          )
-                        : const _SubtitlesHidden(),
+                        : panel == null
+                        ? captions
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              Expanded(child: panel),
+                              const Divider(height: 16),
+                              Expanded(child: captions),
+                            ],
+                          ),
                   ),
                   if (playback == MediaPlayback.blocked &&
                       _live &&
@@ -143,6 +245,52 @@ class PracticeSessionView extends StatelessWidget {
                       child: const Text('继续播放'),
                     ),
                   ],
+                  if (showTakeOverAction && _live && !_interrupted) ...[
+                    const SizedBox(height: 12),
+                    OutlinedButton(
+                      onPressed: muted ? null : onTakeOverTurn,
+                      child: Text(muted ? '我来说（先开启麦克风）' : '我来说'),
+                    ),
+                  ],
+                  if (_live &&
+                      !_interrupted &&
+                      (onRequestSlowPace != null ||
+                          (showSlowPaceStatus &&
+                              speechPace != SessionSpeechPace.normal) ||
+                          onAskForStarter != null ||
+                          onChooseTranslation != null))
+                    Wrap(
+                      spacing: 8,
+                      children: [
+                        if (showSlowPaceStatus &&
+                            speechPace == SessionSpeechPace.slowing)
+                          const TextButton(
+                            onPressed: null,
+                            child: Text('正在放慢语速…'),
+                          )
+                        else if (showSlowPaceStatus &&
+                            speechPace == SessionSpeechPace.slow)
+                          const TextButton(
+                            onPressed: null,
+                            child: Text('本场已放慢语速'),
+                          )
+                        else if (onRequestSlowPace != null)
+                          TextButton(
+                            onPressed: onRequestSlowPace,
+                            child: const Text('说慢一点'),
+                          ),
+                        if (onAskForStarter != null)
+                          TextButton(
+                            onPressed: onAskForStarter,
+                            child: const Text('给我一个英文开头'),
+                          ),
+                        if (onChooseTranslation != null)
+                          TextButton(
+                            onPressed: onChooseTranslation,
+                            child: const Text('逐句翻译'),
+                          ),
+                      ],
+                    ),
                   if (!_closed) ...[
                     const SizedBox(height: 16),
                     if (_live)
@@ -219,6 +367,7 @@ class _StatusHeader extends StatelessWidget {
     required this.muted,
     required this.interruptionNeedsEnd,
     required this.errorCode,
+    required this.turns,
   });
   final Difficulty difficulty;
   final PracticeMediaPhase phase;
@@ -226,13 +375,14 @@ class _StatusHeader extends StatelessWidget {
   final bool muted;
   final bool interruptionNeedsEnd;
   final String? errorCode;
+  final List<ConversationTurn> turns;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final status = interruptionNeedsEnd
         ? '对话已中断，暂时无法继续'
-        : _statusText(phase, playback, muted, errorCode);
+        : _statusText(phase, playback, muted, errorCode, turns);
     return Row(
       children: [
         Expanded(
@@ -309,6 +459,140 @@ class _TranscriptList extends StatelessWidget {
   }
 }
 
+class _ChineseOpeningHint extends StatelessWidget {
+  const _ChineseOpeningHint({
+    required this.message,
+    required this.subtitlesVisible,
+  });
+
+  final String message;
+  final bool subtitlesVisible;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListView(
+      children: [
+        Card(
+          margin: EdgeInsets.zero,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('中文提示', style: theme.textTheme.labelLarge),
+                const SizedBox(height: 4),
+                Text(message),
+              ],
+            ),
+          ),
+        ),
+        if (!subtitlesVisible)
+          const Padding(
+            padding: EdgeInsets.only(top: 16),
+            child: _SubtitlesHidden(),
+          ),
+      ],
+    );
+  }
+}
+
+class AssistanceResultPanel extends StatelessWidget {
+  const AssistanceResultPanel({
+    super.key,
+    required this.heading,
+    this.result,
+    this.sourceText,
+    this.message,
+    this.actionLabel,
+    this.onAction,
+    this.onClose,
+  });
+
+  final String heading;
+  final String? result, sourceText, message, actionLabel;
+  final VoidCallback? onAction, onClose;
+
+  @override
+  Widget build(BuildContext context) => ListView(
+    children: [
+      SectionHeading(heading),
+      const SizedBox(height: 12),
+      if (result case final phrase?) SelectableText(phrase),
+      if (message case final status?)
+        Semantics(liveRegion: true, child: Text(status)),
+      const SizedBox(height: 12),
+      Wrap(
+        spacing: 8,
+        children: [
+          if (actionLabel case final label?)
+            OutlinedButton(onPressed: onAction, child: Text(label)),
+          TextButton(onPressed: onClose, child: const Text('关闭提示')),
+        ],
+      ),
+      if (sourceText case final original?) ...[
+        const SizedBox(height: 12),
+        Text('原文', style: Theme.of(context).textTheme.labelLarge),
+        SelectableText(original),
+      ],
+    ],
+  );
+}
+
+class TranslationSelectionPanel extends StatelessWidget {
+  const TranslationSelectionPanel({
+    super.key,
+    required this.turns,
+    required this.onSelect,
+    required this.onClose,
+  });
+
+  final List<ConversationTurn> turns;
+  final ValueChanged<ConversationTurn> onSelect;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    final english = RegExp(r'[A-Za-z]{2}');
+    final options = turns.reversed.where((turn) {
+      final text = turn.text.trim();
+      return turn.isFinal && text.runes.length <= 400 && english.hasMatch(text);
+    }).toList();
+    return ListView.builder(
+      itemCount: options.length + 1,
+      itemBuilder: (context, index) {
+        if (index == 0) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SectionHeading('选择要翻译的话轮'),
+              TextButton(onPressed: onClose, child: const Text('关闭提示')),
+              if (options.isEmpty) const Text('暂无可翻译的最终英文话轮。'),
+            ],
+          );
+        }
+        final turn = options[index - 1];
+        return Padding(
+          padding: const EdgeInsets.only(top: 8),
+          child: OutlinedButton(
+            onPressed: () => onSelect(turn),
+            style: OutlinedButton.styleFrom(
+              alignment: AlignmentDirectional.centerStart,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(turn.role == ConversationRole.user ? '你' : 'AI'),
+                Text(turn.text),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
 class _SubtitlesHidden extends StatelessWidget {
   const _SubtitlesHidden();
 
@@ -355,19 +639,69 @@ class _TurnBubble extends StatelessWidget {
   }
 }
 
+class _RehearsalBanner extends StatelessWidget {
+  const _RehearsalBanner({required this.quote, this.suggestion});
+  final String quote;
+  final String? suggestion;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: const BorderRadius.all(Radius.circular(12)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            '重练片段：$quote',
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.bodySmall,
+          ),
+          if (suggestion != null && suggestion!.trim().isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              '参考说法：$suggestion',
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelLarge,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
 class _SavedSection extends StatelessWidget {
   const _SavedSection({
+    required this.isRehearsal,
     required this.completion,
     required this.pending,
     required this.errorCode,
+    required this.stopReason,
     required this.onRetry,
+    required this.onViewReview,
     required this.onViewRecord,
+    required this.onBackToSourceReview,
+    required this.onRehearseAgain,
+    required this.onGoPractice,
   });
+  final bool isRehearsal;
   final PracticeCompletionSummary? completion;
   final bool pending;
   final String? errorCode;
+  final String? stopReason;
   final VoidCallback? onRetry;
+  final VoidCallback? onViewReview;
   final VoidCallback? onViewRecord;
+  final VoidCallback? onBackToSourceReview;
+  final VoidCallback? onRehearseAgain;
+  final VoidCallback? onGoPractice;
 
   @override
   Widget build(BuildContext context) {
@@ -383,7 +717,12 @@ class _SavedSection extends StatelessWidget {
         ? '本次记录已保存'
         : sealed
         ? '已保存，仍有内容缺失'
-        : '已停止收音，等待保存回执';
+        : completion?.status == PracticeCompletionStatus.ending
+        ? '已停止收音，等待保存回执'
+        : switch (stopReason) {
+            final reason? => _errorMessage(reason),
+            null => '本机语音已停止',
+          };
     final detail = errorCode != null
         ? '内容可能已部分收到。重试不会重复创建练习。'
         : sealed && !complete
@@ -395,15 +734,57 @@ class _SavedSection extends StatelessWidget {
         Text(headline, style: theme.textTheme.titleMedium),
         const SizedBox(height: 8),
         Text(detail, style: theme.textTheme.bodySmall),
+        if (isRehearsal) ...[
+          const SizedBox(height: 8),
+          Text(
+            sealed
+                ? '可在重练评价中查看原意与目标问题两项判断；缺少可靠转写时不会直接宣布已掌握。'
+                : '本次重练作为独立练习记录保存，不覆盖来源复盘。',
+            style: theme.textTheme.bodySmall,
+          ),
+        ],
         const SizedBox(height: 20),
         if (errorCode != null || pending)
           OutlinedButton(
             onPressed: errorCode != null ? onRetry : null,
             child: const Text('重试保存'),
           ),
-        if (onViewRecord != null) ...[
+        if (onViewReview != null) ...[
+          const SizedBox(height: 12),
+          FilledButton(onPressed: onViewReview, child: const Text('查看重练评价')),
+          if (onViewRecord != null) ...[
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: onViewRecord,
+              child: const Text('查看本次记录'),
+            ),
+          ],
+        ] else if (onViewRecord != null) ...[
           const SizedBox(height: 12),
           FilledButton(onPressed: onViewRecord, child: const Text('查看本次记录')),
+        ],
+        if (onBackToSourceReview != null ||
+            onRehearseAgain != null ||
+            onGoPractice != null) ...[
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
+            children: [
+              if (onBackToSourceReview != null)
+                OutlinedButton(
+                  onPressed: onBackToSourceReview,
+                  child: const Text('回原复盘'),
+                ),
+              if (onRehearseAgain != null)
+                OutlinedButton(
+                  onPressed: onRehearseAgain,
+                  child: const Text('再练一次'),
+                ),
+              if (onGoPractice != null)
+                TextButton(onPressed: onGoPractice, child: const Text('回到练习')),
+            ],
+          ),
         ],
       ],
     );
@@ -425,6 +806,7 @@ String _statusText(
   MediaPlayback playback,
   bool muted,
   String? errorCode,
+  List<ConversationTurn> turns,
 ) {
   if (errorCode != null &&
       phase != PracticeMediaPhase.active &&
@@ -439,9 +821,14 @@ String _statusText(
     PracticeMediaPhase.active => switch (playback) {
       MediaPlayback.playing => '正在说',
       MediaPlayback.blocked => '需要点击继续播放',
-      MediaPlayback.waiting => '正在等语音到达',
+      MediaPlayback.waiting => '正在想怎么回应',
       MediaPlayback.paused => muted ? '麦克风已关闭' : '已暂停播放',
-      MediaPlayback.idle => muted ? '麦克风已关闭' : '正在听你说',
+      MediaPlayback.idle =>
+        muted
+            ? '麦克风已关闭'
+            : turns.isNotEmpty && turns.last.role == ConversationRole.user
+            ? (turns.last.isFinal ? '正在想怎么回应' : '在听，请继续')
+            : '正在听你说',
     },
     PracticeMediaPhase.draining => '正在收尾，等待最后一句识别…',
     PracticeMediaPhase.localClosed => '本次练习已结束',
@@ -450,10 +837,12 @@ String _statusText(
 
 String _errorMessage(String code) => switch (code) {
   'realtime_unavailable' => '实时语音尚未就绪，本次无法开始交流。',
+  'practice_in_progress' => '已有练习尚未结束，请返回练习查看当前状态。',
   'microphone_denied' || 'no_device' => '无法使用麦克风，请检查浏览器权限后重试。',
   'connection_timeout' || 'connection_failed' => '连接没有建立，请稍后重试。',
   'configuration_timeout' => '语音配置没有确认，已停止本次尝试。',
-  'device_lost' => '麦克风已断开，本次练习已停止。',
+  'device_lost' => '麦克风输入已中断，本次练习已停止。',
+  'capture_failed' => '语音收音失败，本次练习已停止。',
   'playback_failed' => '语音播放失败，本次练习已停止。',
   'remote_media_ended' => '对方语音已中断，本次练习已停止。',
   'account_changed' || 'unauthorized' => '当前登录已变化，请重新确认账号。',

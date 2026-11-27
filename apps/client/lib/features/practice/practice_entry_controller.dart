@@ -55,7 +55,7 @@ class PracticeEntryController extends ChangeNotifier
     if (!_disposed) notifyListeners();
   }
 
-  Future<void> begin(Difficulty difficulty) async {
+  Future<void> begin(Difficulty difficulty, {VoidCallback? onAvailable}) async {
     if (!canStart) return;
     final generation = ++_generation;
     _requestedDifficulty = difficulty;
@@ -72,7 +72,11 @@ class PracticeEntryController extends ChangeNotifier
           recovery.recovery!.practice != null) {
         return;
       }
-      await preparation.begin(difficulty: difficulty);
+      if (onAvailable == null) {
+        await preparation.begin(difficulty: difficulty);
+      } else {
+        onAvailable();
+      }
     } finally {
       if (!_disposed && generation == _generation) {
         if (preparation.phase == PreparationPhase.idle) {

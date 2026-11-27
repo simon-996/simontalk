@@ -5,7 +5,7 @@ import os
 import tempfile
 from datetime import UTC
 from pathlib import Path
-from typing import Literal
+from typing import Literal, get_args
 from uuid import UUID
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -19,7 +19,10 @@ from simontalk_api.security import digest, now
 MAX_ARCHIVE_BYTES = 32 * 1024 * 1024
 MAX_ARCHIVE_RECEIPTS = 100_000
 MAX_ARCHIVE_MEMBERS = 1_000_000
-SUPPORTED_SCHEMA_REVISION = "4f6a58cd2e32"
+ArchiveSchemaRevision = Literal[
+    "4f6a58cd2e32", "56bd3c921ab4", "329ce39bc5a2", "7cfa81b28360", "19d7a3ec0b51"
+]
+_SUPPORTED_SCHEMA_REVISIONS = frozenset(get_args(ArchiveSchemaRevision))
 
 
 class DeletionArchiveError(ValueError):
@@ -116,10 +119,10 @@ class DeletionArchive(_Strict):
 
 
 def check_archive_schema(db):
-    if db.scalars(text("SELECT version_num FROM alembic_version")).all() != [
-        SUPPORTED_SCHEMA_REVISION
-    ]:
+    revisions = db.scalars(text("SELECT version_num FROM alembic_version")).all()
+    if len(revisions) != 1 or revisions[0] not in _SUPPORTED_SCHEMA_REVISIONS:
         raise DeletionArchiveError("deletion_archive_schema_mismatch")
+    return revisions[0]
 
 
 def export_deletions(factory):

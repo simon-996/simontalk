@@ -22,6 +22,7 @@ void main() {
     'dark-320-200': rehearsalDarkPreview,
     'unknown': rehearsalUnknownPreview,
     'unavailable': rehearsalUnavailablePreview,
+    'prepared': rehearsalPreparedPreview,
   }.entries) {
     testWidgets(
       'isolated preview ${entry.key} renders and has usable action bounds',
@@ -75,6 +76,8 @@ void main() {
               ? '确认上次准备请求'
               : entry.key == 'unavailable'
               ? '重新读取目标'
+              : entry.key == 'prepared'
+              ? '进入重练通话'
               : '确认并准备',
         );
         await t.ensureVisible(action);

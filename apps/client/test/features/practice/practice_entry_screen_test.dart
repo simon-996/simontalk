@@ -298,6 +298,34 @@ void main() {
     },
   );
   testWidgets(
+    'topic selection is a read-free preparation before explicit start',
+    (t) async {
+      await launch(t);
+      await tap(t, '周末计划');
+      expect(path(t), '/practice/prepare');
+      expect(find.text('周末计划'), findsOneWidget);
+      expect(find.text('分享一个周末安排'), findsOneWidget);
+      expect(find.text('开始语音练习'), findsOneWidget);
+      expect(requests, isEmpty);
+      await tap(t, '返回练习');
+      expect(path(t), '/practice');
+      expect(requests, isEmpty);
+    },
+  );
+  testWidgets('topic checks an unresolved call before launching media', (
+    t,
+  ) async {
+    await launch(t, location: '/practice/prepare?topic=travel');
+    handler = (_) async => response({
+      'practice': practiceJson(epoch: 1),
+      'connection': connectionJson(status: 'unknown', termination: 'unknown'),
+    });
+    await tap(t, '开始语音练习');
+    expect(path(t), '/practice/prepare');
+    expect(find.text('远端是否结束尚未确认'), findsOneWidget);
+    expect(requests.map((r) => r.method), ['GET']);
+  });
+  testWidgets(
     'unknown existing practice disables start and refresh remains read only',
     (t) async {
       await launch(t, location: '/practice/prepare');

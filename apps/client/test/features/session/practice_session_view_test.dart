@@ -35,9 +35,14 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: buildAppTheme(brightness),
-        home: MediaQuery(
-          data: MediaQueryData(textScaler: TextScaler.linear(scale)),
-          child: view,
+        home: Builder(
+          builder: (context) => MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              size: Size(width, 900),
+              textScaler: TextScaler.linear(scale),
+            ),
+            child: view,
+          ),
         ),
       ),
     );
@@ -211,7 +216,30 @@ void main() {
       expect(find.text('本次练习已结束'), findsOneWidget);
       expect(find.text('静音麦克风'), findsNothing);
       expect(find.text('结束并复盘'), findsNothing);
-      expect(find.text('已停止收音，等待保存回执'), findsOneWidget);
+      expect(find.text('实时语音尚未就绪，本次无法开始交流。'), findsOneWidget);
+      expect(find.text('已停止收音，等待保存回执'), findsNothing);
+    },
+  );
+
+  testWidgets(
+    'a device interruption gives the reason and keeps record access',
+    (tester) async {
+      var views = 0;
+      await pump(
+        tester,
+        view(
+          phase: PracticeMediaPhase.localClosed,
+          errorCode: 'device_lost',
+          onViewRecord: () => views++,
+        ),
+        width: 320,
+        scale: 2,
+        brightness: Brightness.dark,
+      );
+      expect(find.text('麦克风输入已中断，本次练习已停止。'), findsOneWidget);
+      expect(find.text('已停止收音，等待保存回执'), findsNothing);
+      await tester.tap(find.text('查看本次记录'));
+      expect(views, 1);
     },
   );
 
@@ -220,7 +248,7 @@ void main() {
   ) async {
     await pump(tester, view(phase: PracticeMediaPhase.localClosed));
     expect(find.text('本次记录已保存'), findsNothing);
-    expect(find.text('已停止收音，等待保存回执'), findsOneWidget);
+    expect(find.text('本机语音已停止'), findsOneWidget);
 
     await pump(
       tester,
@@ -324,4 +352,225 @@ void main() {
     expect(find.text('麦克风已关闭'), findsOneWidget);
     expect(find.text('打开麦克风'), findsOneWidget);
   });
+
+  testWidgets('topic call shows both controls at 320px and 200%', (
+    tester,
+  ) async {
+    await pump(
+      tester,
+      PracticeSessionView(
+        difficulty: Difficulty.beginner,
+        phase: PracticeMediaPhase.active,
+        playback: MediaPlayback.idle,
+        muted: false,
+        topicTitle: '周末计划',
+        chineseOpeningHint: '分享一个周末安排',
+        subtitlesVisible: false,
+        onToggleMute: () {},
+        onEnd: () {},
+        onToggleSubtitles: () {},
+        onToggleChineseHints: () {},
+      ),
+      width: 320,
+      scale: 2,
+      brightness: Brightness.dark,
+    );
+    expect(find.text('周末计划'), findsOneWidget);
+    expect(find.text('分享一个周末安排'), findsOneWidget);
+    expect(find.byTooltip('关闭中文提示').hitTestable(), findsOneWidget);
+    expect(find.byTooltip('开启英文字幕').hitTestable(), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'rehearsal call renders target banner on 320px dark 200% and post-call actions',
+    (tester) async {
+      await pump(
+        tester,
+        PracticeSessionView(
+          difficulty: Difficulty.advanced,
+          phase: PracticeMediaPhase.active,
+          playback: MediaPlayback.idle,
+          muted: false,
+          rehearsalQuote: 'I enjoy English.',
+          rehearsalSuggestion: 'I enjoy learning English.',
+          onToggleMute: () {},
+          onEnd: () {},
+          onToggleSubtitles: () {},
+        ),
+        width: 320,
+        scale: 2,
+        brightness: Brightness.dark,
+      );
+      expect(find.text('重练：这一句表达'), findsOneWidget);
+      expect(find.text('重练片段：I enjoy English.'), findsOneWidget);
+      expect(find.text('参考说法：I enjoy learning English.'), findsOneWidget);
+      expect(find.text('本次难度：${Difficulty.advanced.label}'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      var reviews = 0, records = 0, sourceReviews = 0, again = 0, home = 0;
+      await pump(
+        tester,
+        PracticeSessionView(
+          difficulty: Difficulty.advanced,
+          phase: PracticeMediaPhase.localClosed,
+          playback: MediaPlayback.idle,
+          muted: false,
+          rehearsalQuote: 'I enjoy English.',
+          rehearsalSuggestion: 'I enjoy learning English.',
+          onViewReview: () => reviews++,
+          onViewRecord: () => records++,
+          onBackToSourceReview: () => sourceReviews++,
+          onRehearseAgain: () => again++,
+          onGoPractice: () => home++,
+        ),
+      );
+      expect(find.text('重练片段：I enjoy English.'), findsNothing);
+      await tester.tap(find.text('查看重练评价'));
+      await tester.tap(find.text('查看本次记录'));
+      await tester.tap(find.text('回原复盘'));
+      await tester.tap(find.text('再练一次'));
+      await tester.tap(find.text('回到练习'));
+      expect([reviews, records, sourceReviews, again, home], [1, 1, 1, 1, 1]);
+    },
+  );
+
+  testWidgets(
+    'in-call slow pace renders button, pending, and confirmed states without overflow at 320px 200%',
+    (tester) async {
+      var slowRequests = 0;
+      await pump(
+        tester,
+        PracticeSessionView(
+          difficulty: Difficulty.intermediate,
+          phase: PracticeMediaPhase.active,
+          playback: MediaPlayback.playing,
+          muted: false,
+          showSlowPaceStatus: true,
+          onRequestSlowPace: () => slowRequests++,
+          onAskForStarter: () {},
+          onChooseTranslation: () {},
+          onToggleMute: () {},
+          onEnd: () {},
+          onToggleSubtitles: () {},
+        ),
+        width: 320,
+        scale: 2,
+        brightness: Brightness.dark,
+      );
+      expect(find.text('说慢一点'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.text('说慢一点'));
+      expect(slowRequests, 1);
+
+      await pump(
+        tester,
+        PracticeSessionView(
+          difficulty: Difficulty.intermediate,
+          phase: PracticeMediaPhase.active,
+          playback: MediaPlayback.playing,
+          muted: false,
+          speechPace: SessionSpeechPace.slowing,
+          showSlowPaceStatus: true,
+          onAskForStarter: () {},
+          onChooseTranslation: () {},
+          onToggleMute: () {},
+          onEnd: () {},
+        ),
+        width: 320,
+        scale: 2,
+        brightness: Brightness.dark,
+      );
+      expect(find.text('正在放慢语速…'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+
+      await pump(
+        tester,
+        PracticeSessionView(
+          difficulty: Difficulty.intermediate,
+          phase: PracticeMediaPhase.active,
+          playback: MediaPlayback.idle,
+          muted: false,
+          speechPace: SessionSpeechPace.slow,
+          showSlowPaceStatus: true,
+          onAskForStarter: () {},
+          onChooseTranslation: () {},
+          onToggleMute: () {},
+          onEnd: () {},
+        ),
+        width: 320,
+        scale: 2,
+        brightness: Brightness.dark,
+      );
+      expect(find.text('本场已放慢语速'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+  );
+
+  testWidgets(
+    'turn phases render listening-in-progress, thinking, and explicit takeover with mute guard',
+    (tester) async {
+      await pump(
+        tester,
+        view(
+          turns: [
+            ConversationTurn(
+              turnId: 'turn-1',
+              turnIndex: 1,
+              role: ConversationRole.user,
+              revision: 1,
+              text: 'I am thinking...',
+              isFinal: false,
+              responseId: null,
+              providerItemId: null,
+              playback: const ConversationPlayback.unknown(),
+            ),
+          ],
+        ),
+      );
+      expect(find.text('在听，请继续'), findsOneWidget);
+
+      await pump(tester, view(playback: MediaPlayback.waiting));
+      expect(find.text('正在想怎么回应'), findsOneWidget);
+
+      var takeovers = 0;
+      await pump(
+        tester,
+        PracticeSessionView(
+          difficulty: Difficulty.intermediate,
+          phase: PracticeMediaPhase.active,
+          playback: MediaPlayback.playing,
+          muted: true,
+          showTakeOverAction: true,
+          onTakeOverTurn: () => takeovers++,
+          onToggleMute: () {},
+          onEnd: () {},
+        ),
+        width: 320,
+        scale: 2,
+        brightness: Brightness.dark,
+      );
+      expect(find.text('正在说'), findsOneWidget);
+      expect(find.text('我来说（先开启麦克风）'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.tap(find.text('我来说（先开启麦克风）'));
+      expect(takeovers, 0);
+
+      await pump(
+        tester,
+        PracticeSessionView(
+          difficulty: Difficulty.intermediate,
+          phase: PracticeMediaPhase.active,
+          playback: MediaPlayback.playing,
+          muted: false,
+          showTakeOverAction: true,
+          onTakeOverTurn: () => takeovers++,
+          onToggleMute: () {},
+          onEnd: () {},
+        ),
+      );
+      await tester.tap(find.text('我来说'));
+      expect(takeovers, 1);
+    },
+  );
 }

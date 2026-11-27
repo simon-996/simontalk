@@ -7,7 +7,7 @@ import re
 from datetime import UTC, datetime
 from uuid import UUID
 
-from sqlalchemy import and_, exists, func, or_, select, tuple_
+from sqlalchemy import and_, case, exists, func, or_, select, tuple_
 
 from simontalk_api.errors import APIError
 from simontalk_api.models import (
@@ -50,6 +50,7 @@ def decode_cursor(value, user_id):
 
 def history_query(user_id):
     p, c, connection = PracticeSession, PracticeCompletion, RealtimeConnection
+    topic = p.configuration["topic"]
     pending = exists().where(
         connection.user_id == p.user_id,
         connection.session_id == p.id,
@@ -67,6 +68,19 @@ def history_query(user_id):
             p.created_at,
             p.ended_at,
             p.configuration["effective_difficulty"].as_string().label("difficulty"),
+            case(
+                (
+                    p.mode == "daily_topic",
+                    func.jsonb_build_object(
+                        "id",
+                        topic["id"].as_string(),
+                        "title",
+                        topic["title"].as_string(),
+                        "goal",
+                        topic["goal"].as_string(),
+                    ),
+                )
+            ).label("topic"),
             func.coalesce(c.status, "unregistered").label("completion_status"),
             c.coverage,
             pending.label("connection_pending"),

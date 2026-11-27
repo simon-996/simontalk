@@ -10,6 +10,7 @@ import '../practice/practice_completion_client.dart';
 import '../practice/practice_repository.dart';
 import '../practice/practice_models.dart';
 import 'api_realtime_signaller.dart';
+import 'browser_media_session.dart';
 import 'connection_observation_journal.dart';
 import 'practice_media_controller.dart';
 import 'realtime_session_protocol.dart';
@@ -19,6 +20,8 @@ import 'realtime_transport_factory.dart';
 final realtimeTransportFactoryProvider = Provider<RealtimeTransport Function()>(
   (ref) => createRealtimeTransport,
 );
+final realtimeMediaSessionCreatorProvider =
+    Provider<RealtimeMediaSessionCreator?>((ref) => null);
 final realtimeProtocolFactoryProvider = Provider<RealtimeProtocolFactory>(
   (ref) => unavailableRealtimeProtocol,
 );
@@ -81,6 +84,7 @@ final practiceMediaProvider = Provider.autoDispose<PracticeMediaController?>((
   final api = ref.watch(accountRepositoryProvider).api;
   final createJournal = ref.watch(realtimeObservationJournalFactoryProvider);
   final createSignaller = ref.watch(realtimeSignallerCreatorProvider);
+  final createMediaSession = ref.watch(realtimeMediaSessionCreatorProvider);
   final createTranscriptJournal = ref.watch(
     realtimeTranscriptJournalFactoryProvider,
   );
@@ -91,6 +95,16 @@ final practiceMediaProvider = Provider.autoDispose<PracticeMediaController?>((
   final controller = PracticeMediaController(
     repository: PracticeRepository(api, accountId: accountId),
     transportFactory: ref.watch(realtimeTransportFactoryProvider),
+    mediaSessionFactory: createMediaSession == null
+        ? null
+        : ({required connection, required onEvent, required onClosed}) =>
+              createMediaSession(
+                accountApi: api,
+                accountId: accountId,
+                connection: connection,
+                onEvent: onEvent,
+                onClosed: onClosed,
+              ),
     protocolFactory: ref.watch(realtimeProtocolFactoryProvider),
     observationJournalFactory: (connection, clientInstanceId) =>
         createJournal(api, accountId, connection, clientInstanceId),

@@ -155,7 +155,13 @@ class PracticeSession(Base):
             name="practice_rehearsal_shape",
         ),
         CheckConstraint("connection_epoch >= 0", name="practice_connection_epoch"),
-        CheckConstraint("mode = 'free_chat'", name="practice_mode"),
+        CheckConstraint(
+            "(mode = 'free_chat' AND NOT (configuration ? 'topic')) OR "
+            "(mode = 'daily_topic' AND kind = 'ordinary' AND "
+            "((deleted_at IS NULL AND (jsonb_typeof(configuration -> 'topic') = 'object') IS TRUE) "
+            "OR (deleted_at IS NOT NULL AND NOT (configuration ? 'topic'))))",
+            name="practice_mode",
+        ),
         CheckConstraint(
             "status IN ('created','connecting','active','interrupted',"
             "'ending','completed','cancelled','failed')",
@@ -266,6 +272,41 @@ class RealtimeConnection(Base):
     )
 
 
+class VoiceResponseUsage(Base):
+    __tablename__ = "voice_response_usage"
+    connection_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("realtime_connections.id", ondelete="CASCADE"), primary_key=True
+    )
+    response_digest: Mapped[str] = mapped_column(String(64), primary_key=True)
+    status: Mapped[str] = mapped_column(String(10))
+    input_tokens: Mapped[int | None] = mapped_column(Integer)
+    output_tokens: Mapped[int | None] = mapped_column(Integer)
+    input_text_tokens: Mapped[int | None] = mapped_column(Integer)
+    input_audio_tokens: Mapped[int | None] = mapped_column(Integer)
+    output_text_tokens: Mapped[int | None] = mapped_column(Integer)
+    output_audio_tokens: Mapped[int | None] = mapped_column(Integer)
+    recorded_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    __table_args__ = (
+        CheckConstraint("response_digest ~ '^[a-f0-9]{64}$'", name="voice_usage_response_digest"),
+        CheckConstraint(
+            "status IN ('completed','cancelled','failed','incomplete')", name="voice_usage_status"
+        ),
+        *(
+            CheckConstraint(f"{column} BETWEEN 0 AND 1000000000", name=f"voice_usage_{column}")
+            for column in (
+                "input_tokens",
+                "output_tokens",
+                "input_text_tokens",
+                "input_audio_tokens",
+                "output_text_tokens",
+                "output_audio_tokens",
+            )
+        ),
+    )
+
+
 class ConnectionObservation(Base):
     __tablename__ = "connection_observations"
     connection_id: Mapped[uuid.UUID] = mapped_column(primary_key=True)
@@ -310,6 +351,85 @@ class ConnectionObservation(Base):
             "('user_stop','background','disposed','account_changed','lease_expired',"
             "'connection_failed','configuration_failed','other'))",
             name="observation_reason",
+        ),
+    )
+
+
+class AssistanceJob(Base):
+    __tablename__ = "assistance_jobs"
+    id: Mapped[uuid.UUID] = mapped_column(primary_key=True, default=uuid.uuid4)
+    session_id: Mapped[uuid.UUID] = mapped_column()
+    user_id: Mapped[uuid.UUID] = mapped_column()
+    auth_session_id: Mapped[uuid.UUID] = mapped_column()
+    connection_id: Mapped[uuid.UUID] = mapped_column()
+    epoch: Mapped[int] = mapped_column(Integer)
+    kind: Mapped[str] = mapped_column(String(20))
+    source_turn_id: Mapped[uuid.UUID | None] = mapped_column()
+    source_turn_revision: Mapped[int | None] = mapped_column(Integer)
+    input_revision: Mapped[str] = mapped_column(String(64))
+    config_id: Mapped[str] = mapped_column(String(128))
+    status: Mapped[str] = mapped_column(String(16))
+    attempt_count: Mapped[int] = mapped_column(Integer)
+    result: Mapped[str | None] = mapped_column(String(240))
+    deadline: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["session_id", "user_id"],
+            ["practice_sessions.id", "practice_sessions.user_id"],
+            ondelete="CASCADE",
+            name="assistance_practice_owner",
+        ),
+        UniqueConstraint("session_id", "kind", "input_revision", name="assistance_input_unique"),
+        CheckConstraint("epoch > 0 AND attempt_count BETWEEN 0 AND 2", name="assistance_bounds"),
+        CheckConstraint(
+            "(kind = 'english_starter' AND source_turn_id IS NULL AND source_turn_revision IS NULL)"
+            " OR (kind = 'translation' AND source_turn_id IS NOT NULL "
+            "AND source_turn_revision IS NOT NULL AND source_turn_revision > 0)",
+            name="assistance_selection",
+        ),
+        CheckConstraint(
+            "status IN ('queued','running','succeeded','failed','unknown','expired') "
+            "AND ((status = 'succeeded') = (result IS NOT NULL))",
+            name="assistance_result_state",
+        ),
+        Index(
+            "assistance_due",
+            "deadline",
+            "id",
+            postgresql_where=text("status IN ('queued','running')"),
+        ),
+    )
+
+
+class AssistanceAction(Base):
+    __tablename__ = "assistance_actions"
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True
+    )
+    key: Mapped[uuid.UUID] = mapped_column(primary_key=True)
+    job_id: Mapped[uuid.UUID] = mapped_column(ForeignKey("assistance_jobs.id", ondelete="CASCADE"))
+    request_hash: Mapped[str] = mapped_column(String(64))
+    __table_args__ = (Index("assistance_action_job", "job_id"),)
+
+
+class AssistanceAttempt(Base):
+    __tablename__ = "assistance_attempts"
+    job_id: Mapped[uuid.UUID] = mapped_column(
+        ForeignKey("assistance_jobs.id", ondelete="CASCADE"), primary_key=True
+    )
+    number: Mapped[int] = mapped_column(Integer, primary_key=True)
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    input_tokens: Mapped[int | None] = mapped_column(Integer)
+    output_tokens: Mapped[int | None] = mapped_column(Integer)
+    __table_args__ = (
+        CheckConstraint(
+            "number BETWEEN 1 AND 2 AND input_tokens BETWEEN 0 AND 1000000000",
+            name="assistance_attempt_bounds",
+        ),
+        CheckConstraint(
+            "output_tokens BETWEEN 0 AND 1000000000", name="assistance_attempt_output_bounds"
         ),
     )
 

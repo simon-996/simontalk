@@ -1,4 +1,5 @@
 import '../account/account_models.dart';
+import 'daily_topic.dart';
 
 bool isPracticeUuid(String value) => RegExp(
   r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$',
@@ -85,6 +86,7 @@ class PracticeConfiguration {
     this.preferences,
     this.effectiveDifficulty,
     this.provider,
+    this.topic,
   );
   factory PracticeConfiguration.fromJson(Map<String, dynamic> json) =>
       _parse(() {
@@ -103,16 +105,25 @@ class PracticeConfiguration {
           ProviderConfiguration.fromJson(
             json['provider'] as Map<String, dynamic>,
           ),
+          json.containsKey('topic')
+              ? PracticeTopicSnapshot.fromJson(
+                  json['topic'] as Map<String, dynamic>,
+                )
+              : null,
         );
       });
   final AccountPreferences preferences;
   final Difficulty effectiveDifficulty;
   final ProviderConfiguration provider;
+  final PracticeTopicSnapshot? topic;
 }
 
 class PracticePreparation {
   PracticePreparation._(
     this.id,
+    this.kind,
+    this.sourceSessionId,
+    this.sourceReviewItemId,
     this.status,
     this.connectionEpoch,
     this.configuration,
@@ -121,20 +132,59 @@ class PracticePreparation {
     this.stateReason,
   );
   factory PracticePreparation.fromJson(Map<String, dynamic> json) => _parse(() {
-    if (json['mode'] != 'free_chat') throw const FormatException();
+    final mode = json['mode'];
+    if (mode != 'free_chat' && mode != 'daily_topic') {
+      throw const FormatException();
+    }
+    final kind = json['kind'] == null ? 'ordinary' : json['kind'] as String;
+    if (!['ordinary', 'rehearsal'].contains(kind)) {
+      throw const FormatException();
+    }
+    final sourceSessionId = json['source_session_id'] == null
+        ? null
+        : _uuid(json['source_session_id']);
+    final sourceReviewItemId = json['source_review_item_id'] == null
+        ? null
+        : _uuid(json['source_review_item_id']);
+    final id = _uuid(json['id']);
+    if (kind == 'ordinary') {
+      if (sourceSessionId != null || sourceReviewItemId != null) {
+        throw const FormatException();
+      }
+    } else if (sourceSessionId == null ||
+        sourceReviewItemId == null ||
+        sourceSessionId == id) {
+      throw const FormatException();
+    }
+    final configuration = PracticeConfiguration.fromJson(
+      json['configuration'] as Map<String, dynamic>,
+    );
+    final status = PracticeStatus.values.byName(json['status'] as String);
+    final reason = json['state_reason'] as String?;
+    final hasTopic =
+        mode == 'daily_topic' &&
+        !(status == PracticeStatus.completed && reason == 'content_deleted');
+    if (hasTopic != (configuration.topic != null) ||
+        (mode == 'daily_topic' && kind != 'ordinary')) {
+      throw const FormatException();
+    }
     return PracticePreparation._(
-      _uuid(json['id']),
-      PracticeStatus.values.byName(json['status'] as String),
+      id,
+      kind,
+      sourceSessionId,
+      sourceReviewItemId,
+      status,
       _integer(json['connection_epoch'], 0),
-      PracticeConfiguration.fromJson(
-        json['configuration'] as Map<String, dynamic>,
-      ),
+      configuration,
       _time(json['created_at']),
       json['ended_at'] == null ? null : _time(json['ended_at']),
-      json['state_reason'] as String?,
+      reason,
     );
   });
   final String id;
+  final String kind;
+  final String? sourceSessionId;
+  final String? sourceReviewItemId;
   final PracticeStatus status;
   final int connectionEpoch;
   final PracticeConfiguration configuration;

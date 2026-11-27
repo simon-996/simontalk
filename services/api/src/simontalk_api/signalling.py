@@ -80,6 +80,8 @@ class SignallingAttempt:
 
 
 def _configuration(request, user_id, practice, connection):
+    if practice.mode == "daily_topic":
+        raise APIError(409, "practice_configuration_changed", "话题练习需要受支持的实时语音连接。")
     permit = request.app.state.practice_admission.admit(user_id)
     configuration = {
         name: getattr(permit, name) for name in ("provider", "region", "model", "config_id")

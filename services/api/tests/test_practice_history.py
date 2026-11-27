@@ -86,7 +86,7 @@ def test_detail_owner_snapshot_and_no_body(client, signup, factory):
     assert item["connection_pending"] is False
     assert set(item) == set(
         (
-            "id kind source_session_id status created_at ended_at difficulty "
+            "id kind source_session_id status created_at ended_at difficulty topic "
             "completion_status coverage connection_pending"
         ).split()
     )
