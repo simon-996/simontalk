@@ -39,9 +39,12 @@ uv run --locked uvicorn simontalk_api.main:create_app --factory --host 127.0.0.1
 ```powershell
 Invoke-RestMethod http://127.0.0.1:8000/health/ready
 Set-Location apps/client
+$env:PUB_HOSTED_URL = 'https://pub.flutter-io.cn'
 flutter pub get --enforce-lockfile
 flutter run -d chrome --web-hostname 127.0.0.1 --web-port 7357 --dart-define=API_BASE_URL=http://127.0.0.1:8000
 ```
+
+Flutter 锁文件记录的是 `https://pub.flutter-io.cn`。每次在新 PowerShell 里重新安装客户端依赖前，都要先设置上面的 `PUB_HOSTED_URL`。
 
 Web 入口是 `http://127.0.0.1:7357`。浏览器、Web 与 API 使用同一主机名。新开发库需要登录账号时，从 `services/api` 运行 `uv run --locked simontalk-admin invite` 签发开发邀请，再在 Web 注册。
 

@@ -52,6 +52,8 @@ jobs:
 
   client:
     runs-on: ubuntu-latest
+    env:
+      PUB_HOSTED_URL: https://pub.flutter-io.cn
     defaults:
       run:
         working-directory: apps/client

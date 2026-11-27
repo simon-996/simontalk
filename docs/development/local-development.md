@@ -46,6 +46,7 @@ uv run simontalk-admin cleanup-preparations --limit 100
 
 ```sh
 cd apps/client
+export PUB_HOSTED_URL=https://pub.flutter-io.cn
 flutter pub get --enforce-lockfile
 flutter run -d chrome --web-hostname 127.0.0.1 --web-port 7357 --dart-define=API_BASE_URL=http://127.0.0.1:8000
 ```
